@@ -1,0 +1,196 @@
+/* ===== GLOBAL ===== */
+body {
+  font-family: 'Oswald', sans-serif;
+  background-color: #2d2d2d; /* fond sombre type sport mécanique */
+  color: #fff;
+  margin: 0;
+  padding: 20px;
+}
+
+.background {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background: url("fond.jpg") no-repeat center center/cover;
+  filter: blur(8px);
+  z-index: -1;
+}
+
+h1, h2 {
+  font-family: 'Oswald', sans-serif;
+  text-transform: uppercase;
+  color: #dc0544; 
+}
+
+h2 {
+  border-bottom: 2px solid #dc054667;
+  padding-bottom: 5px;
+  margin-top: 30px;
+}
+
+/* ===== TABLES ===== */
+table {
+  width: 300px;
+  border-collapse: collapse;
+  margin-bottom: 20px;
+  background-color: #2d2d2d;
+  box-shadow: 0 4px 8px rgba(34, 0, 0, 0.5);
+}
+
+table th, table td {
+  padding: 10px;
+  text-align: center;
+  border: 1px solid #2d2d2d;
+}
+
+table th {
+  background-color: #dc0546ae;
+  color: #fff;
+  text-transform: uppercase;
+}
+
+/* ===== BUTTONS ===== */
+button {
+  padding: 8px 16px;
+  background-color: #dc0546aa;
+  border: none;
+  border-radius: 4px;
+  color: #fff;
+  font-weight: bold;
+  cursor: pointer;
+  transition: 0.2s;
+  margin-left: 5px;
+}
+
+button:hover {
+  background-color: #ff4d4d;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 768px) {
+  table, input[type="text"], input[type="number"], button {
+    font-size: 14px;
+  }
+  input[type="text"], input[type="number"] {
+    width: 60px;
+  }
+}
+
+
+.podium-container {
+    display: flex;
+    align-items: flex-end; /* Aligne les blocs en bas */
+    justify-content: center;
+    gap: 10px;
+    height: 200px;
+    margin-bottom: 40px;
+}
+
+.step {
+    width: 100px;
+    background: #f0f0f0;
+    border: 2px solid #2d2d2d;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    padding: 10px;
+    font-weight: bold;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+}
+
+.player-name {
+    display: block;
+    margin-top: 10px;
+    color: #dc0544;
+    font-size: 1.1em;
+}
+
+body { font-family: sans-serif; background: #f4f4f4; padding: 20px; }
+.main-container { max-width: 900px; margin: auto; }
+
+.pilotes-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    background: #ffffffb7;
+    padding: 20px;
+    border-radius: 12px;
+    box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+    margin-bottom: 30px;
+}
+
+.pilote-card {
+    padding: 10px 15px;
+    background: #222;
+    color: white;
+    border-radius: 6px;
+    cursor: grab;
+    font-weight: bold;
+    border-left: 4px solid #e10600; /* Rouge MotoGP */
+}
+
+.podiums-container {
+    display: flex;
+    justify-content: space-around;
+    gap: 40px;
+    flex-wrap: wrap;
+}
+
+.podium {
+    display: flex;
+    align-items: flex-end;
+    height: 200px;
+    gap: 5px;
+}
+
+.step {
+    width: 120px;
+    background: #ddd;
+    border: 2px solid #bbb;
+    border-radius: 8px 8px 0 0;
+    text-align: center;
+    transition: 0.2s;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-start;
+    padding-top: 10px;
+}
+
+/* Hauteurs différentes pour l'effet podium */
+.rank-1 { height: 180px; background: #dc0544; border-color: #dc0546; }
+.rank-2 { height: 140px; background: #dc0544; border-color: #dc0544; }
+.rank-3 { height: 110px; background: #dc0544; border-color: #dc0544; }
+
+.step.drag-over { background: #fff; border-style: dashed; }
+.dropped-name { font-weight: 800; font-size: 1.2em; color: rgb(255, 255, 255); margin-top: 15px; }
+
+.course-title {
+    color: white; /* Texte en blanc comme demandé */
+    text-transform: uppercase;
+    letter-spacing: 2px;
+}
+
+.hidden { display: none; }
+
+.btn-valider {
+    margin-top: 20px;
+    padding: 10px 25px;
+    background: #dc0544;
+    color: white;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+    font-weight: bold;
+}
+
+.btn-valider:hover { background: #218838; }
+
+/* Empêcher le drag sur les pilotes déjà sélectionnés */
+.pilote-card.used {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}

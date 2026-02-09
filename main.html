@@ -1,0 +1,61 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+<meta charset="UTF-8">
+<title>Paris MotoGP</title>
+<link rel="stylesheet" href="style.css">
+</head>
+
+<body>
+
+<div class="background"></div>
+<div class="content">
+
+<h1>Paris MotoGP</h1>
+
+<h2>Prochaine course</h2>
+<p><strong>GP :</strong> <span id="race-name"></span></p>
+
+<h2>Classement</h2>
+<table>
+<thead>
+<tr><th>Joueur</th><th>Points</th></tr>
+</thead>
+<tbody id="score-table"></tbody>
+</table>
+
+<div class="container">
+    <h2 style="color: white; background: #dc054672; padding: 10px; border-radius: 5px;">Pronostics MotoGP</h2>
+
+    <div class="pilotes-section">
+            <h3 id="current-title">Choisissez pour le SPRINT</h3>
+            <div class="pilotes-list" id="pilotes-list"></div>
+    </div>
+
+    <div class="podiums-wrapper">
+        <div id="section-sprint" class="podium-box">
+            <h3 class="course-title">SPRINT</h3>
+            <div class="podium">
+                <div class="step rank-2" data-rank="2e">2e</div>
+                <div class="step rank-1" data-rank="1er">1er</div>
+                <div class="step rank-3" data-rank="3e">3e</div>
+            </div>
+            <button class="btn-valider" onclick="validerCourse('Sprint')">Valider le Sprint</button>
+        </div>
+
+        <div id="section-race" class="podium-box hidden">
+            <h3 class="course-title">GRAND PRIX</h3>
+            <div class="podium">
+                <div class="step rank-2" data-rank="2e">2e</div>
+                <div class="step rank-1" data-rank="1er">1er</div>
+                <div class="step rank-3" data-rank="3e">3e</div>
+            </div>
+            <button class="btn-valider" onclick="validerCourse('Race')">Valider le Grand Prix</button>
+        </div>
+    </div>
+</div>
+
+
+<script src="script.js"></script>
+</body>
+</html>
