@@ -39,6 +39,7 @@ async function chargerCalendrier() {
             }
         }
     } catch (e) { console.error("Erreur Calendrier", e); }
+    verifierResultatsOfficiels();
 }
 
 function demarrerTimer(cible, id) {
@@ -198,6 +199,8 @@ function commencerJeu() {
     if (pseudo.toLowerCase() === 'root') {
         isAdmin = true;
         welcomeTitle.innerText = "Mode Administrateur : Résultats Officiels";
+        document.getElementById('timer-sprint').style.display = 'none';
+        document.querySelector('.classement-joueurs-section')?.classList.add('hidden');
     } else {
         isAdmin = false;
         if (joueurs[pseudo]) {
@@ -257,13 +260,31 @@ function afficherRecapVisuel(idElement, res) {
     document.getElementById(idElement).innerHTML = 
         `🥇 ${res["1er"]}<br>🥈 ${res["2e"]}<br>🥉 ${res["3e"]}<br>⚠️ Chute: ${res["Chute"]}`;
 }
-
 function validerCourse(type) {
     const sid = type === 'Sprint' ? 'section-sprint' : 'section-race';
     const rid = type === 'Sprint' ? 'recap-sprint' : 'recap-race';
     const steps = document.querySelectorAll(`#${sid} .step`);
     
     let res = { "1er": "---", "2e": "---", "3e": "---", "Chute": "---" };
+
+    // 1. ON RÉCUPÈRE D'ABORD LES DONNÉES
+    steps.forEach(s => {
+        const card = s.querySelector('.pilote-card');
+        const n = card ? card.innerText.replace(/#\d+\s/, "").trim() : "---";
+        res[s.dataset.rank] = n;
+    });
+
+    if (res["1er"] === "---") return alert("Podium incomplet !");
+
+    // 2. ENSUITE ON SAUVEGARDE
+    if (isAdmin) {
+        sauvegarderResultatsOfficiels(type, res);
+    } else {
+        sauvegarderDansDB(type, res);
+    }
+
+    // 3. AFFICHAGE RECAP
+    document.getElementById(rid).innerHTML = `🥇 ${res["1er"]}<br>🥈 ${res["2e"]}<br>🥉 ${res["3e"]}<br>⚠️ Chute: ${res["Chute"]}`;
 
     if (isAdmin) {
         sauvegarderResultatsOfficiels(type, res);
@@ -360,4 +381,26 @@ async function sauvegarderResultatsOfficiels(type, res) {
     } catch (err) {
         console.error("Erreur API:", err);
     }
+}
+
+async function verifierResultatsOfficiels() {
+    try {
+        const resp = await fetch('v01_results_dataset.csv');
+        if (!resp.ok) return; // Pas encore de résultats
+
+        const text = await resp.text();
+        const lignes = text.trim().split('\n');
+        
+        if (lignes.length > 1) {
+            // 1. On cache les timers
+            document.querySelectorAll('.timer-container').forEach(el => el.style.display = 'none');
+            
+            // 2. On affiche une bannière "Résultats Officiels"
+            const raceDateEl = document.getElementById('race-date');
+            raceDateEl.innerHTML = "<span class='badge-officiel'>RÉSULTATS FINAUX 🏁</span>";
+            
+            // 3. On peut remplir une section spéciale avec les données du CSV
+            afficherPodiumOfficiel(lignes);
+        }
+    } catch (e) { console.log("Pas encore de résultats officiels dispos."); }
 }
