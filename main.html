@@ -1,61 +1,122 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-<meta charset="UTF-8">
-<title>Paris MotoGP</title>
-<link rel="stylesheet" href="style.css">
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Paris MotoGP</title>
+    <link rel="stylesheet" href="style.css">
 </head>
-
 <body>
+    <div class="background"></div>
 
-<div class="background"></div>
-<div class="content">
-
-<h1>Paris MotoGP</h1>
-
-<h2>Prochaine course</h2>
-<p><strong>GP :</strong> <span id="race-name"></span></p>
-
-<h2>Classement</h2>
-<table>
-<thead>
-<tr><th>Joueur</th><th>Points</th></tr>
-</thead>
-<tbody id="score-table"></tbody>
-</table>
-
-<div class="container">
-    <h2 style="color: white; background: #dc054672; padding: 10px; border-radius: 5px;">Pronostics MotoGP</h2>
-
-    <div class="pilotes-section">
-            <h3 id="current-title">Choisissez pour le SPRINT</h3>
-            <div class="pilotes-list" id="pilotes-list"></div>
-    </div>
-
-    <div class="podiums-wrapper">
-        <div id="section-sprint" class="podium-box">
-            <h3 class="course-title">SPRINT</h3>
-            <div class="podium">
-                <div class="step rank-2" data-rank="2e">2e</div>
-                <div class="step rank-1" data-rank="1er">1er</div>
-                <div class="step rank-3" data-rank="3e">3e</div>
-            </div>
-            <button class="btn-valider" onclick="validerCourse('Sprint')">Valider le Sprint</button>
-        </div>
-
-        <div id="section-race" class="podium-box hidden">
-            <h3 class="course-title">GRAND PRIX</h3>
-            <div class="podium">
-                <div class="step rank-2" data-rank="2e">2e</div>
-                <div class="step rank-1" data-rank="1er">1er</div>
-                <div class="step rank-3" data-rank="3e">3e</div>
-            </div>
-            <button class="btn-valider" onclick="validerCourse('Race')">Valider le Grand Prix</button>
+    <div id="login-screen" class="auth-container">
+        <h1>Paris MotoGP</h1>
+        <div class="login-box">
+            <h3>Entrez votre nom de pilote</h3>
+            <input type="text" id="pseudo-input" placeholder="Pseudo..." maxlength="15">
+            <button class="btn-valider" onclick="commencerJeu()">Rejoindre le Paddock</button>
         </div>
     </div>
-</div>
 
+    <div id="game-screen" class="hidden">
+        <div class="content">
+            <h1 id="welcome-title">Bienvenue</h1>
 
-<script src="script.js"></script>
+            <div id="next-race-container">
+                <h2>Prochaine course</h2>
+                <p><strong>GP :</strong> <span id="race-name"></span></p>
+                <p><strong>Circuit :</strong> <span id="race-circuit"></span></p>
+                <p><strong>Date :</strong> <span id="race-date"></span></p>
+                <hr>
+                <div id="countdown">
+                    <span id="timer" style="font-size: 1.5em; font-weight: bold; color: #e10600;"></span>
+                </div>
+            </div>
+
+            <div class="stats-flex-container">
+                <div class="stats-column">
+                    <h2>🏁 Résultats Officiels</h2>
+                    <div class="results-box">
+                        <div class="sub-zone">
+                            <h4>Sprint (Départ)</h4>
+                            <div id="timer-sprint" class="timer-live">Calcul...</div>
+                        </div>
+                        <div class="sub-zone">
+                            <h4>Grand Prix (Départ)</h4>
+                            <div id="timer-race" class="timer-live">Calcul...</div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="stats-column">
+                    <h2>🎫 Tes Pronostics</h2>
+                    <div class="predictions-box">
+                        <div class="sub-zone">
+                            <h4>Ton Sprint</h4>
+                            <div id="recap-sprint" class="mini-list">Pas encore validé</div>
+                            <div id="btn-edit-sprint-container"></div> </div>
+                        </div>
+                        <div class="sub-zone">
+                            <h4>Ton Grand Prix</h4>
+                            <div id="recap-race" class="mini-list">Pas encore validé</div>
+                            <div id="btn-edit-race-container"></div> </div>
+                        </div>
+                    </div>
+                </div>
+            </div>
+
+            <div class="container">
+                <h2 class="section-banner">Pronostics MotoGP</h2>
+
+                <div class="pilotes-section">
+                    <h3 id="current-title">Choisissez pour le SPRINT</h3>
+                    <div class="pilotes-list" id="pilotes-list"></div>
+                </div>
+
+                <div class="podiums-wrapper">
+                    <div id="section-sprint" class="podium-box">
+                        <h3 class="course-title">SPRINT</h3>
+                        <div class="pronostic-flex-row">
+                            <div class="podium">
+                                <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small></div>
+                                <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small></div>
+                                <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small></div>
+                            </div>
+                            <div class="crash-bet-container">
+                                <h4 class="crash-title">Pari Chute</h4>
+                                <div class="step crash-zone" data-rank="Chute" id="crash-zone-sprint">Glisser ici</div>
+                            </div>
+                        </div>
+                        <button class="btn-valider" onclick="validerCourse('Sprint')">Valider le Sprint</button>
+                    </div>
+
+                    <div id="section-race" class="podium-box hidden">
+                        <h3 class="course-title">GRAND PRIX</h3>
+                        <div class="pronostic-flex-row">
+                            <div class="podium">
+                                <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small></div>
+                                <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small></div>
+                                <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small></div>
+                            </div>
+                            <div class="crash-bet-container">
+                                <h4 class="crash-title">Pari Chute</h4>
+                                <div class="step crash-zone" data-rank="Chute" id="crash-zone-race">Glisser ici</div>
+                            </div>
+                        </div>
+                        <button class="btn-valider" onclick="validerCourse('Race')">Valider le Grand Prix</button>
+                    </div>
+                </div>
+
+                <div id="recap-container" class="hidden">
+                    <div class="ticket">
+                        <h3>🎟️ Ton Ticket de Pari</h3>
+                        <div id="recap-content"></div>
+                        <button class="btn-valider" onclick="fermerRecap()">Continuer</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>

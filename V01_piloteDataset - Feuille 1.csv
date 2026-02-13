@@ -3,9 +3,7 @@ Num_pilote,Name,Country,Team
 7,Toprak Razgatlioglu,Turquie,Prima Pramac Yamaha MotoGP
 10,Luca Marini,Italie,Honda HRC Castrol 
 11,Diogo Moreira,Brésil,Honda LCR
-12,"Maverick Vañales
-
-",Espagne,Red Bull KTM Tech3
+12,Maverick Vañales,Espagne,Red Bull KTM Tech3
 20,Fabio Quartararo,France,Monster Energy Yamaha MotoGp
 21,Franco Morbidelli,Italie,Pertamina Enduro VR46 Racing Team
 23,Enea Bastianini,Italie,Red Bull KTM Tech3
@@ -20,6 +18,6 @@ Num_pilote,Name,Country,Team
 63,Francesco Bagnaia,Italie,Ducati Lenovo team
 72,Marco Bezzechi,Italie,Aprilia Racing
 72,Alex Marquez,Espagne ,BK8 Gresini Racing MotoGp
-79,Ai Ogura ,Japon ,Trackhouse MotoGP Team
-89,jorge Martin ,Espagne ,Aprilia Racing
-93,Marc Marquez ,Espagne,Ducati Lenovo team
+79,Ai Ogura,Japon ,Trackhouse MotoGP Team
+89,jorge Martin,Espagne ,Aprilia Racing
+93,Marc Marquez,Espagne,Ducati Lenovo team
