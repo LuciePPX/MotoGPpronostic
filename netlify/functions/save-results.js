@@ -8,7 +8,7 @@ exports.handler = async (event) => {
     const { csvLine, fileName } = JSON.parse(event.body);
     const token = process.env.GITHUB_TOKEN;
     const repoOwner = "LuciePPX"; 
-    const repoName = "MotoGPpronosti"; 
+    const repoName = "MotoGPpronostic"; 
 
     const url = `https://api.github.com/repos/${repoOwner}/${repoName}/contents/${fileName}`;
 
