@@ -358,28 +358,40 @@ function majBoutonModification(cible, type) {
         container.innerHTML = `<button class="btn-modifier" onclick="modifierCourse('${type}')">✏️ Modifier mon pari</button>`;
     }
 }
-
 async function sauvegarderResultatsOfficiels(type, res) {
-    // On transforme l'objet en ligne CSV
-    // Format : type,1er,2e,3e,chute
-    const csvLine = `${type},${res["1er"]},${res["2e"]},${res["3e"]},${res["Chute"]}`;
+    // 1. Récupération du nom du GP (assure-toi que l'ID existe bien dans ton HTML)
+    const raceNameElement = document.getElementById('race-name');
+    const nomGP = raceNameElement ? raceNameElement.textContent.trim() : "GP Inconnu";
 
     try {
+        // 2. Envoi des données structurées à la fonction Netlify
         const response = await fetch('/.netlify/functions/save-results', {
             method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
             body: JSON.stringify({ 
-                csvLine: csvLine,
-                fileName: 'v01_results_dataset.csv' // Le nom de ton fichier de résultats
+                nomGP: nomGP,
+                type: type, // "Sprint" ou "Race"
+                p1: res["1er"],
+                p2: res["2e"],
+                p3: res["3e"],
+                chute: res["Chute"],
+                fileName: 'v01_results_dataset.csv'
             })
         });
 
         if (response.ok) {
-            alert("✅ Résultat OFFICIEL enregistré sur GitHub ! Le site va se mettre à jour.");
+            alert(`✅ Résultat OFFICIEL pour le ${nomGP} (${type}) enregistré !`);
+            // Optionnel : recharger la page après 2 secondes pour voir le résultat
+            setTimeout(() => location.reload(), 2000);
         } else {
-            alert("❌ Erreur lors de la sauvegarde.");
+            const errorData = await response.json();
+            alert(`❌ Erreur : ${errorData.error || 'Problème lors de la sauvegarde'}`);
         }
     } catch (err) {
         console.error("Erreur API:", err);
+        alert("❌ Impossible de contacter le serveur de sauvegarde.");
     }
 }
 
