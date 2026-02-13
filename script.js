@@ -6,7 +6,7 @@ const listContainer = document.getElementById('pilotes-list');
 // --- 1. GESTION DU CALENDRIER & TIMERS ---
 async function chargerCalendrier() {
     try {
-        const response = await fetch('V01-RaceDataset.csv');
+        const response = await fetch('v01_race_dataset.csv');
         const csvText = await response.text();
         const lignes = csvText.trim().split('\n').slice(1);
         const maintenant = new Date();
@@ -69,7 +69,7 @@ async function genererPilotes() {
     listContainer.innerHTML = '';
     pilotesUtilises = [];
     try {
-        const resp = await fetch('V01-piloteDataset.csv');
+        const resp = await fetch('v01_pilote_dataset.csv');
         const text = await resp.text();
         const lignes = text.trim().split('\n').slice(1);
 
