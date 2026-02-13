@@ -199,8 +199,13 @@ function commencerJeu() {
     if (pseudo.toLowerCase() === 'root') {
         isAdmin = true;
         welcomeTitle.innerText = "Mode Administrateur : Résultats Officiels";
+        const colonnesStats = document.querySelectorAll('.stats-column');
+        if (colonnesStats[1]) { 
+            colonnesStats[1].classList.add('hidden'); 
+
         document.getElementById('timer-sprint').style.display = 'none';
         document.querySelector('.classement-joueurs-section')?.classList.add('hidden');
+        }
     } else {
         isAdmin = false;
         if (joueurs[pseudo]) {
@@ -279,6 +284,20 @@ function validerCourse(type) {
     // 2. ENSUITE ON SAUVEGARDE
     if (isAdmin) {
         sauvegarderResultatsOfficiels(type, res);
+
+        const timerId = type === 'Sprint' ? 'timer-sprint' : 'timer-race';
+        const timerEl = document.getElementById(timerId);
+
+        if (timerEl) {
+            // On remplace le texte du timer par le podium saisi
+            timerEl.innerHTML = `
+                <div style="color: #28a745; font-size: 0.9em; margin-top:5px;">
+                    1er: ${res["1er"]} | 2e: ${res["2e"]} | 3e: ${res["3e"]}
+                </div>
+            `;
+            // On arrête le clignotement ou les styles spécifiques au timer si besoin
+            timerEl.classList.remove('timer-live'); 
+        }
     } else {
         sauvegarderDansDB(type, res);
     }
