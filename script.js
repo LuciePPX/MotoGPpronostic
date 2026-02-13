@@ -185,6 +185,7 @@ function resetPilote(sid) {
 
 // --- 4. NAVIGATION & VALIDATION ---
 // --- GESTION DES DONNÉES JOUEURS ---
+let isAdmin = false;
 
 function commencerJeu() {
     const pseudo = pseudoInput.value.trim();
@@ -193,19 +194,26 @@ function commencerJeu() {
     // 1. Chercher si le joueur existe déjà dans le LocalStorage
     let joueurs = JSON.parse(localStorage.getItem('db_motogp')) || {};
 
-    if (joueurs[pseudo]) {
-        // Le joueur existe : on charge ses pronos
-        chargerPronosJoueur(joueurs[pseudo]);
-        welcomeTitle.innerText = `Ravi de te revoir, ${pseudo}`;
+
+    if (pseudo.toLowerCase() === 'root') {
+        isAdmin = true;
+        welcomeTitle.innerText = "Mode Administrateur : Résultats Officiels";
     } else {
-        // Nouveau joueur : on l'initialise
-        joueurs[pseudo] = {
-            sprint: null,
-            race: null,
-            dateInscription: new Date().toISOString()
-        };
-        localStorage.setItem('db_motogp', JSON.stringify(joueurs));
-        welcomeTitle.innerText = `Bienvenue, ${pseudo}`;
+        isAdmin = false;
+        if (joueurs[pseudo]) {
+            // Le joueur existe : on charge ses pronos
+            chargerPronosJoueur(joueurs[pseudo]);
+            welcomeTitle.innerText = `Ravi de te revoir, ${pseudo}`;
+        } else {
+            // Nouveau joueur : on l'initialise
+            joueurs[pseudo] = {
+                sprint: null,
+                race: null,
+                dateInscription: new Date().toISOString()
+            };
+            localStorage.setItem('db_motogp', JSON.stringify(joueurs));
+            welcomeTitle.innerText = `Bienvenue, ${pseudo}`;
+        }
     }
 
     // Affichage de l'écran de jeu
@@ -256,6 +264,13 @@ function validerCourse(type) {
     const steps = document.querySelectorAll(`#${sid} .step`);
     
     let res = { "1er": "---", "2e": "---", "3e": "---", "Chute": "---" };
+
+    if (isAdmin) {
+        sauvegarderResultatsOfficiels(type, res);
+    } else {
+        sauvegarderDansDB(type, res);
+    }
+
     steps.forEach(s => {
         const card = s.querySelector('.pilote-card');
         const n = card ? card.innerText.replace(/#\d+\s/, "").trim() : "---";
@@ -320,5 +335,29 @@ function majBoutonModification(cible, type) {
         container.innerHTML = `<span style="color: #aaa; font-style: italic; font-size: 0.8em;">🚫 Les jeux sont faits ! Résultats en fin de course. 🏁</span>`;
     } else {
         container.innerHTML = `<button class="btn-modifier" onclick="modifierCourse('${type}')">✏️ Modifier mon pari</button>`;
+    }
+}
+
+async function sauvegarderResultatsOfficiels(type, res) {
+    // On transforme l'objet en ligne CSV
+    // Format : type,1er,2e,3e,chute
+    const csvLine = `${type},${res["1er"]},${res["2e"]},${res["3e"]},${res["Chute"]}`;
+
+    try {
+        const response = await fetch('/.netlify/functions/save-results', {
+            method: 'POST',
+            body: JSON.stringify({ 
+                csvLine: csvLine,
+                fileName: 'v01_results_dataset.csv' // Le nom de ton fichier de résultats
+            })
+        });
+
+        if (response.ok) {
+            alert("✅ Résultat OFFICIEL enregistré sur GitHub ! Le site va se mettre à jour.");
+        } else {
+            alert("❌ Erreur lors de la sauvegarde.");
+        }
+    } catch (err) {
+        console.error("Erreur API:", err);
     }
 }
