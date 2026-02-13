@@ -20,21 +20,19 @@ exports.handler = async (event) => {
             const getFile = await axios.get(url, {
                 headers: { Authorization: `token ${token}` }
             });
-            sha = getFile.data.sha;
+            sha = getFile.data.sha; // On récupère l'ID de la version actuelle
             existingContent = Buffer.from(getFile.data.content, 'base64').toString();
         } catch (e) {
-            // Si le fichier n'existe pas encore, on commence avec une entête
-            existingContent = "type,1er,2e,3e,chute";
+            // Si le fichier n'existe pas, on ignore l'erreur
         }
 
-        // 2. Ajouter la nouvelle ligne
-        const newContent = existingContent + "\n" + csvLine;
-        
-        // 3. Envoyer vers GitHub
+        // Nettoyage pour éviter les sauts de ligne inutiles
+        const newContent = existingContent.trim() + "\n" + csvLine;
+
         await axios.put(url, {
-            message: `Mise à jour résultats officiels : ${csvLine.split(',')[0]}`,
+            message: `Update ${fileName}`,
             content: Buffer.from(newContent).toString('base64'),
-            sha: sha || undefined
+            sha: sha // On renvoie l'ID à GitHub
         }, {
             headers: { Authorization: `token ${token}` }
         });
