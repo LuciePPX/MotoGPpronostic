@@ -404,3 +404,27 @@ async function verifierResultatsOfficiels() {
         }
     } catch (e) { console.log("Pas encore de résultats officiels dispos."); }
 }
+
+function afficherPodiumOfficiel(lignes) {
+    // On prend la dernière ligne du CSV (le résultat le plus récent)
+    const dernierResultat = lignes[lignes.length - 1].split(',');
+    if (dernierResultat.length < 5) return;
+
+    const [type, p1, p2, p3, chute] = dernierResultat;
+
+    const zonePodium = document.getElementById('podium-officiel-container');
+    if (zonePodium) {
+        zonePodium.innerHTML = `
+            <div class="podium-final">
+                <h3>🏆 Résultats Officiels - ${type}</h3>
+                <div class="marches">
+                    <div class="marche p2"><span>2</span><br>${p2}</div>
+                    <div class="marche p1"><span>1</span><br>${p1}</div>
+                    <div class="marche p3"><span>3</span><br>${p3}</div>
+                </div>
+                <p class="chute-info">⚠️ Abandon/Chute : ${chute}</p>
+            </div>
+        `;
+        zonePodium.classList.remove('hidden');
+    }
+}
