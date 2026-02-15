@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paris MotoGP</title>
+    <title>Paris MotoGP - Firebase</title>
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
@@ -14,7 +14,7 @@
         <div class="login-box">
             <h3>Entrez votre nom de pilote</h3>
             <input type="text" id="pseudo-input" placeholder="Pseudo..." maxlength="15">
-            <button class="btn-valider" onclick="commencerJeu()">Rejoindre le Paddock</button>
+            <button class="btn-valider" id="btn-rejoindre">Rejoindre le Paddock</button>
         </div>
     </div>
 
@@ -27,10 +27,9 @@
                 <p><strong>GP :</strong> <span id="race-name">---</span></p>
                 <p><strong>Circuit :</strong> <span id="race-circuit">---</span></p>
                 <p><strong>Date :</strong> <span id="race-date">---</span></p>
-                <div id="podium-officiel-container" class="hidden"></div>
                 <hr>
                 <div id="countdown">
-                    <span id="timer-sprint" class="timer-live"></span>
+                    <span id="timer-sprint-val" class="timer-live"></span>
                 </div>
             </div>
 
@@ -40,11 +39,11 @@
                     <div class="results-box">
                         <div class="sub-zone">
                             <h4>Sprint</h4>
-                            <div id="timer-sprint-val" class="timer-live">Calcul...</div>
+                            <div id="timer-sprint-val-label" class="timer-live">Calcul...</div>
                         </div>
                         <div class="sub-zone">
                             <h4>Grand Prix</h4>
-                            <div id="timer-race-val" class="timer-live">Calcul...</div>
+                            <div id="timer-race-val-label" class="timer-live">Calcul...</div>
                         </div>
                     </div>
                 </div>
@@ -67,7 +66,7 @@
             </div>
 
             <div class="container">
-                <h2 class="section-banner">Pronostics MotoGP</h2>
+                <h2 class="section-banner" id="main-banner">Pronostics MotoGP</h2>
                 <div class="pilotes-section">
                     <h3 id="current-title">Choisissez pour le SPRINT</h3>
                     <div class="pilotes-list" id="pilotes-list"></div>
@@ -87,7 +86,7 @@
                                 <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
                             </div>
                         </div>
-                        <button class="btn-valider" onclick="validerCourse('Sprint')">Valider le Sprint</button>
+                        <button class="btn-valider" id="btn-valider-sprint">Valider le Sprint</button>
                     </div>
 
                     <div id="section-race" class="podium-box hidden">
@@ -103,7 +102,7 @@
                                 <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
                             </div>
                         </div>
-                        <button class="btn-valider" onclick="validerCourse('Race')">Valider le Grand Prix</button>
+                        <button class="btn-valider" id="btn-valider-race">Valider le Grand Prix</button>
                     </div>
                 </div>
             </div>
