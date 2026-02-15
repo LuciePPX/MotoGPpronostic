@@ -1,14 +1,13 @@
-// Import the functions you need from the SDKs you need
-import { initializeApp } from "firebase/app";
-import { getAnalytics } from "firebase/analytics";
-// TODO: Add SDKs for Firebase products that you want to use
-// https://firebase.google.com/docs/web/setup#available-libraries
+// 1. UTILISE LES LIENS COMPLETS (CDN) POUR LE NAVIGATEUR
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
-// Your web app's Firebase configuration
-// For Firebase JS SDK v7.20.0 and later, measurementId is optional
+// 2. TA CONFIGURATION (Elle est correcte !)
 const firebaseConfig = {
   apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
   authDomain: "motogppronostic.firebaseapp.com",
+  // Ajoute cette ligne databaseURL pour que le script sache où envoyer les données
+  databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
   projectId: "motogppronostic",
   storageBucket: "motogppronostic.firebasestorage.app",
   messagingSenderId: "1093723718276",
@@ -16,9 +15,11 @@ const firebaseConfig = {
   measurementId: "G-D9M06ECP07"
 };
 
-// Initialize Firebase
+// 3. INITIALISATION
 const app = initializeApp(firebaseConfig);
-const analytics = getAnalytics(app);
+const db = getDatabase(app);
+
+// --- LA SUITE DE TON CODE (DATA_PILOTES, fonctions, etc.) ---
 
 // --- DONNÉES ---
 const DATA_PILOTES = [
