@@ -1,0 +1,75 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Admin - Résultats MotoGP</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .admin-box { max-width: 500px; margin: 50px auto; padding: 20px; background: rgba(0,0,0,0.8); border-radius: 10px; color: white; }
+        input, select { width: 100%; padding: 10px; margin: 10px 0; border-radius: 5px; border: none; }
+        .grid-admin { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+    </style>
+</head>
+<body>
+    <div class="admin-box">
+        <h1>🏆 Entrer les Résultats</h1>
+        
+        <input type="password" id="admin-pass" placeholder="Mot de passe admin">
+        <hr>
+        
+        <h3>Session :</h3>
+        <select id="type-session">
+            <option value="Sprint">Sprint</option>
+            <option value="Race">Grand Prix</option>
+        </select>
+
+        <div class="grid-admin">
+            <input type="text" id="res-1" placeholder="Vainqueur (Nom)">
+            <input type="text" id="res-2" placeholder="2ème (Nom)">
+            <input type="text" id="res-3" placeholder="3ème (Nom)">
+            <input type="text" id="res-chute" placeholder="Pilote tombé">
+        </div>
+
+        <button class="btn-valider" id="btn-publier">Publier les résultats</button>
+        <p id="status-msg"></p>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
+            authDomain: "motogppronostic.firebaseapp.com",
+            databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "motogppronostic"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        document.getElementById('btn-publier').onclick = () => {
+            const pass = document.getElementById('admin-pass').value;
+            const session = document.getElementById('type-session').value;
+            
+            // Remplace "ton-code-secret" par le mot de passe de ton choix
+            if (pass !== "1234") return alert("Accès refusé");
+
+            const results = {
+                "1er": document.getElementById('res-1').value,
+                "2e": document.getElementById('res-2').value,
+                "3e": document.getElementById('res-3').value,
+                "Chute": document.getElementById('res-chute').value,
+                "timestamp": new Date().toISOString()
+            };
+
+            set(ref(db, 'resultats/' + session), results)
+                .then(() => {
+                    document.getElementById('status-msg').innerText = "✅ Résultats publiés !";
+                    document.getElementById('status-msg').style.color = "lime";
+                })
+                .catch((e) => alert("Erreur : " + e.message));
+        };
+    </script>
+</body>
+</html>
