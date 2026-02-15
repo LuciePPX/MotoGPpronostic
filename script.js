@@ -180,3 +180,43 @@ function majBoutonModification(cible, type) {
     const estClos = (cible - new Date()) <= 0;
     container.innerHTML = estClos ? `<small>🔒 Clos</small>` : `<button class="btn-modifier" onclick="location.reload()">✏️ Reset</button>`;
 }
+
+// Ajoute ceci tout en haut de ton script.js
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+// COLLE ICI TA CONFIG FIREBASE (celle de l'étape A.5)
+const firebaseConfig = {
+  apiKey: "TON_API_KEY",
+  authDomain: "TON_PROJET.firebaseapp.com",
+  databaseURL: "https://TON_PROJET.firebaseio.com",
+  projectId: "TON_PROJET",
+  storageBucket: "TON_PROJET.appspot.com",
+  messagingSenderId: "...",
+  appId: "..."
+};
+
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
+
+// Modifie la fonction de sauvegarde
+function sauvegarderDansDB(type, resultats) {
+    const pseudo = document.getElementById('pseudo-input').value.trim();
+    
+    // Sauvegarde locale (pour l'affichage immédiat)
+    let joueurs = JSON.parse(localStorage.getItem('db_motogp')) || {};
+    if (!joueurs[pseudo]) joueurs[pseudo] = {};
+    if (type === 'Sprint') joueurs[pseudo].sprint = resultats;
+    else joueurs[pseudo].race = resultats;
+    localStorage.setItem('db_motogp', JSON.stringify(joueurs));
+
+    // SYNCHRO FIREBASE : On envoie les données vers le cloud
+    set(ref(db, 'paris/' + pseudo + '/' + type), {
+        pilotes: resultats,
+        date: new Date().toISOString()
+    }).then(() => {
+        console.log("Synchronisé avec succès !");
+    }).catch((error) => {
+        console.error("Erreur de synchro :", error);
+    });
+}
