@@ -156,3 +156,24 @@ function validerCourse(type) {
         }
     });
 }
+// --- LIAISON DES BOUTONS ---
+document.addEventListener('DOMContentLoaded', () => {
+    
+    // Bouton pour entrer dans le jeu
+    const btnRejoindre = document.getElementById('btn-rejoindre');
+    if(btnRejoindre) {
+        btnRejoindre.addEventListener('click', commencerJeu);
+    }
+
+    // Bouton pour valider le Sprint
+    const btnSprint = document.getElementById('btn-valider-sprint');
+    if(btnSprint) {
+        btnSprint.addEventListener('click', () => validerCourse('Sprint'));
+    }
+
+    // Bouton pour valider la Course
+    const btnRace = document.getElementById('btn-valider-race');
+    if(btnRace) {
+        btnRace.addEventListener('click', () => validerCourse('Race'));
+    }
+});
