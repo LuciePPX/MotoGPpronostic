@@ -24,31 +24,32 @@
 
             <div id="next-race-container">
                 <h2>Prochaine course</h2>
-                <p><strong>GP :</strong> <span id="race-name"></span></p>
-                <p><strong>Circuit :</strong> <span id="race-circuit"></span></p>
-                <p><strong>Date :</strong> <span id="race-date"></span></p>
+                <p><strong>GP :</strong> <span id="race-name">---</span></p>
+                <p><strong>Circuit :</strong> <span id="race-circuit">---</span></p>
+                <p><strong>Date :</strong> <span id="race-date">---</span></p>
+                <div id="podium-officiel-container" class="hidden"></div>
                 <hr>
                 <div id="countdown">
-                    <span id="timer" style="font-size: 1.5em; font-weight: bold; color: #e10600;"></span>
+                    <span id="timer-sprint" class="timer-live"></span>
                 </div>
             </div>
 
             <div class="stats-flex-container">
                 <div class="stats-column">
-                    <h2>🏁 Résultats Officiels</h2>
+                    <h2>🏁 Statut Sessions</h2>
                     <div class="results-box">
                         <div class="sub-zone">
-                            <h4>Sprint (Départ)</h4>
-                            <div id="timer-sprint" class="timer-live">Calcul...</div>
+                            <h4>Sprint</h4>
+                            <div id="timer-sprint-val" class="timer-live">Calcul...</div>
                         </div>
                         <div class="sub-zone">
-                            <h4>Grand Prix (Départ)</h4>
-                            <div id="timer-race" class="timer-live">Calcul...</div>
+                            <h4>Grand Prix</h4>
+                            <div id="timer-race-val" class="timer-live">Calcul...</div>
                         </div>
                     </div>
                 </div>
 
-                <div class="stats-column">
+                <div class="stats-column" id="user-stats-col">
                     <h2>🎫 Tes Pronostics</h2>
                     <div class="predictions-box">
                         <div class="sub-zone">
@@ -67,7 +68,6 @@
 
             <div class="container">
                 <h2 class="section-banner">Pronostics MotoGP</h2>
-
                 <div class="pilotes-section">
                     <h3 id="current-title">Choisissez pour le SPRINT</h3>
                     <div class="pilotes-list" id="pilotes-list"></div>
@@ -84,7 +84,7 @@
                             </div>
                             <div class="crash-bet-container">
                                 <h4 class="crash-title">Pari Chute</h4>
-                                <div class="step crash-zone" data-rank="Chute" id="crash-zone-sprint">Glisser ici</div>
+                                <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
                             </div>
                         </div>
                         <button class="btn-valider" onclick="validerCourse('Sprint')">Valider le Sprint</button>
@@ -100,12 +100,15 @@
                             </div>
                             <div class="crash-bet-container">
                                 <h4 class="crash-title">Pari Chute</h4>
-                                <div class="step crash-zone" data-rank="Chute" id="crash-zone-race">Glisser ici</div>
+                                <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
                             </div>
                         </div>
                         <button class="btn-valider" onclick="validerCourse('Race')">Valider le Grand Prix</button>
                     </div>
                 </div>
-            </div> </div> </div> <script src="script.js"></script>
+            </div>
+        </div>
+    </div>
+    <script src="script.js"></script>
 </body>
 </html>
