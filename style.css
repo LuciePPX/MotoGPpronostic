@@ -1,4 +1,176 @@
-/* ... Tes styles précédents ... */
+/* ===== GLOBAL & POLICE ===== */
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&display=swap');
+
+:root {
+    --red: #e10600;
+    --green: #28a745;
+    --dark: #1a1a1a;
+    --card: rgba(45, 45, 45, 0.9);
+}
+
+body {
+    font-family: 'Oswald', sans-serif;
+    background-color: var(--dark);
+    color: #fff;
+    margin: 0; padding: 20px;
+}
+
+.background {
+    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
+    background: linear-gradient(rgba(0,0,0,0.7), rgba(0,0,0,0.7)), url("fond.jpg") center/cover;
+    filter: blur(5px); z-index: -1;
+}
+
+.hidden { display: none !important; }
+h1, h2, h3 { text-transform: uppercase; color: var(--red); }
+
+/* ===== CONNEXION ===== */
+.auth-container { height: 100vh; display: flex; flex-direction: column; align-items: center; justify-content: center; }
+.login-box { background: var(--card); padding: 30px; border-radius: 12px; border: 2px solid var(--red); text-align: center; }
+#pseudo-input { padding: 10px; border-radius: 5px; border: none; width: 200px; margin-bottom: 10px; }
+
+/* ===== DASHBOARD ===== */
+#next-race-container { background: var(--card); padding: 20px; border-radius: 10px; border-left: 5px solid var(--red); margin-bottom: 20px; }
+.stats-flex-container { display: flex; gap: 20px; flex-wrap: wrap; margin-bottom: 20px; }
+.stats-column { flex: 1; min-width: 280px; background: rgba(45,45,45,0.8); padding: 15px; border-radius: 10px; border: 1px solid #444; }
+.sub-zone { background: rgba(255,255,255,0.05); padding: 10px; border-radius: 5px; border-left: 3px solid var(--red); margin-bottom: 10px; }
+.timer-live { color: var(--red); font-weight: bold; }
+
+/* ===== ZONE DE JEU (PILOTES) ===== */
+.section-banner { 
+    background: #e107007c; 
+    padding: 15px; 
+    border-radius: 5px; 
+    color: white; 
+    text-align: center;
+    transition: background 0.5s ease, transform 0.3s ease;
+    margin-top: 20px;
+}
+
+.pilotes-section { margin-top: 20px; }
+.pilotes-list { display: flex; flex-wrap: wrap; gap: 8px; background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+
+.pilote-card { 
+    padding: 8px 12px; 
+    background: #222; 
+    border-radius: 5px; 
+    cursor: grab; 
+    border: 1px solid #444; 
+    transition: transform 0.2s, background 0.2s; 
+}
+.pilote-card:hover { background: #333; transform: translateY(-2px); }
+.pilote-card.used { opacity: 0.2; pointer-events: none; filter: grayscale(1); }
+.num { color: var(--red); font-weight: bold; margin-right: 5px; }
+
+/* ===== PODIUMS & MARCHE ===== */
+.pronostic-flex-row { display: flex; justify-content: center; align-items: flex-end; gap: 20px; flex-wrap: wrap; margin-top: 20px; }
+.podium { display: flex; align-items: flex-end; gap: 10px; height: 220px; }
+
+.step { 
+    width: 120px; 
+    background: #333; 
+    border: 2px solid #444; 
+    border-radius: 8px 8px 0 0; 
+    text-align: center; 
+    padding: 10px; 
+    display: flex; 
+    flex-direction: column; 
+    justify-content: flex-start; 
+    align-items: center; 
+    box-sizing: border-box; 
+    transition: all 0.3s;
+}
+
+.step span { display: block; font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }
+.target-area { display: flex; justify-content: center; align-items: center; width: 100%; flex-grow: 1; }
+.step small { opacity: 0.6; font-size: 0.7em; line-height: 1.2; }
+
+/* Style de la carte quand elle est déposée sur une marche */
+.step .pilote-card {
+    font-size: 0.85em;
+    padding: 5px 10px;
+    white-space: nowrap;
+    box-shadow: 0 4px 8px rgba(0,0,0,0.3);
+    border-color: var(--red);
+}
+
+.rank-1 { height: 180px; border-top: 5px solid var(--red); }
+.rank-2 { height: 140px; border-top: 5px solid var(--red); }
+.rank-3 { height: 110px; border-top: 5px solid var(--red); }
+
+/* ===== CRASH ZONE ===== */
+.crash-bet-container { display: flex; flex-direction: column; align-items: center; text-align: center; margin-top: 20px; }
+.crash-title { color: var(--red); margin: 0 0 10px 0; font-size: 1em; text-transform: uppercase; font-weight: bold; }
+
+.crash-zone {
+    width: 140px;
+    height: 100px;
+    border: 2px dashed var(--red);
+    background: rgba(225, 6, 0, 0.1);
+    border-radius: 10px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    transition: all 0.3s;
+}
+
+.crash-zone .pilote-card { transform: scale(1.05); }
+.used-crash { background: rgba(225,6,0,0.3); border-style: solid; }
+
+/* ===== BOUTONS MODIFIER / VALIDER ===== */
+.btn-valider { 
+    background: var(--red); 
+    color: #fff; 
+    border: none; 
+    padding: 12px 25px; 
+    border-radius: 5px; 
+    cursor: pointer; 
+    text-transform: uppercase; 
+    font-weight: bold; 
+    margin-top: 15px;
+    transition: opacity 0.2s;
+}
+.btn-valider:hover { opacity: 0.9; }
+
+.btn-modifier {
+    background: transparent;
+    border: 1px solid var(--red);
+    color: var(--red);
+    padding: 5px 10px;
+    border-radius: 4px;
+    cursor: pointer;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.8em;
+    text-transform: uppercase;
+    margin-top: 10px;
+    transition: all 0.2s;
+}
+.btn-modifier:hover {
+    background: var(--red);
+    color: #fff;
+}
+
+#btn-edit-sprint-container, #btn-edit-race-container {
+    margin-top: 8px;
+    min-height: 25px;
+}
+
+/* ===== RESPONSIVE ===== */
+@media (max-width: 600px) {
+    .podium { height: 180px; gap: 5px; }
+    .step { width: 95px; padding: 5px; }
+    .rank-1 { height: 150px; }
+    .rank-2 { height: 120px; }
+    .rank-3 { height: 100px; }
+    .stats-column { min-width: 100%; }
+    .crash-zone { width: 120px; height: 80px; }
+}
+
+.timer-live div {
+    line-height: 1.4;
+    border-top: 1px solid rgba(255,255,255,0.1);
+    padding-top: 5px;
+}
 
 .pilote-card.used {
     opacity: 0.3;
