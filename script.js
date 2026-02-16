@@ -1,11 +1,9 @@
-// 1. UTILISE LES LIENS COMPLETS (CDN) POUR LE NAVIGATEUR
+// 1. IMPORTS (TOUJOURS EN HAUT)
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-// --- DONNÉES ---
 import { DATA_PILOTES, DATA_CALENDRIER } from "./config.js";
 
-// 2. TA CONFIGURATION
+// 2. CONFIGURATION FIREBASE
 const firebaseConfig = {
     apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
     authDomain: "motogppronostic.firebaseapp.com",
@@ -21,12 +19,10 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-
-
 let pilotesUtilises = [];
 let pseudoGlobal = "";
 
-// --- 1. GESTION DU JEU ET MÉMOIRE ---
+// --- 1. GESTION DU JEU ---
 async function commencerJeu() {
     const pseudo = document.getElementById('pseudo-input').value.trim();
     if (!pseudo) return alert("Pseudo requis !");
@@ -36,7 +32,6 @@ async function commencerJeu() {
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
     
-    // MÉMOIRE : Charger les pronos existants depuis Firebase
     const snapshot = await get(ref(db, 'pronos/' + pseudo));
     if (snapshot.exists()) {
         const data = snapshot.val();
@@ -50,62 +45,63 @@ async function commencerJeu() {
     chargerResultatsOfficiels();
 }
 
-// --- 2. CALENDRIER ET TIMERS (AVEC VERROUILLAGE) ---
+// --- 2. CALENDRIER ET TIMER ---
 function chargerCalendrier() {
     const maintenant = new Date();
     const futureRace = DATA_CALENDRIER.find(r => new Date(r.race) > maintenant);
 
     if (futureRace) {
-        document.getElementById('race-name').textContent = futureRace.gp;
-        document.getElementById('race-circuit').textContent = futureRace.circuit;
-        
-        // Format date longue
-        const options = { day: 'numeric', month: 'long', year: 'numeric' };
-        const dateObj = new Date(futureRace.race);
-        document.getElementById('race-date-formatted').textContent = dateObj.toLocaleDateString('fr-FR', options);
+        const raceNameEl = document.getElementById('race-name');
+        const raceCircuitEl = document.getElementById('race-circuit');
+        const raceDateEl = document.getElementById('race-date-formatted');
 
-        // Stats 2025
-        if (futureRace.stats2025) {
-            document.getElementById('stats-content').innerHTML = `
+        if(raceNameEl) raceNameEl.textContent = futureRace.gp;
+        if(raceCircuitEl) raceCircuitEl.textContent = futureRace.circuit;
+        
+        if(raceDateEl) {
+            const options = { day: 'numeric', month: 'long', year: 'numeric' };
+            const dateObj = new Date(futureRace.race);
+            raceDateEl.textContent = dateObj.toLocaleDateString('fr-FR', options);
+        }
+
+        const statsContent = document.getElementById('stats-content');
+        if (statsContent && futureRace.stats2025) {
+            statsContent.innerHTML = `
                 <strong>Stats 2025 :</strong><br>
                 Pole : ${futureRace.stats2025.pole}<br>
                 Vainqueur : ${futureRace.stats2025.vainqueurGP}
             `;
         }
 
-        // Timer unique (Cible le Sprint pour le verrouillage)
         demarrerTimer(new Date(futureRace.sprint), 'timer-race-val');
     }
 }
-function demarrerTimer(cible, id, type) {
+
+function demarrerTimer(cible, id) {
     const el = document.getElementById(id);
+    if (!el) return;
     
     const updateTimer = () => {
         const maintenant = new Date();
         const diff = cible - maintenant;
-
         if (diff <= 0) {
             el.innerHTML = `<span style="color: #ff4444;">🏁 SESSION EN COURS</span>`;
             return;
         }
-
-        // Calcul Jours, Heures, Minutes, Secondes
         const j = Math.floor(diff / (1000 * 60 * 60 * 24));
         const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
         const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
         const s = Math.floor((diff % (1000 * 60)) / 1000);
-
-        // Affichage formaté
         el.textContent = `${j}j ${h}h ${m}m ${s}s`;
     };
-
-    updateTimer(); // Appel immédiat pour éviter le délai d'une seconde
+    updateTimer();
     setInterval(updateTimer, 1000);
 }
 
-// --- 3. DRAG & DROP AVANCÉ ---
+// --- 3. DRAG & DROP ---
 function genererPilotes() {
     const list = document.getElementById('pilotes-list');
+    if (!list) return;
     list.innerHTML = '';
     DATA_PILOTES.forEach(p => {
         const div = document.createElement('div');
@@ -113,9 +109,7 @@ function genererPilotes() {
         div.id = `p-${p.num}`;
         div.draggable = true;
         div.innerHTML = `<span class="num">#${p.num}</span> ${p.nom}`;
-        
         if (pilotesUtilises.includes(p.nom)) div.classList.add('used');
-
         div.addEventListener('dragstart', e => {
             e.dataTransfer.setData('nom', p.nom);
             e.dataTransfer.setData('sid', div.id);
@@ -126,7 +120,6 @@ function genererPilotes() {
 }
 
 function initDragAndDrop() {
-    // Permet de supprimer en lâchant hors des zones
     document.body.addEventListener('dragover', e => e.preventDefault());
     document.body.addEventListener('drop', e => {
         if (e.dataTransfer.getData('fromPodium') === 'true') {
@@ -141,14 +134,11 @@ function initDragAndDrop() {
             const nom = e.dataTransfer.getData('nom');
             const sid = e.dataTransfer.getData('sid');
             const fromPodium = e.dataTransfer.getData('fromPodium') === 'true';
-
             if (!fromPodium && pilotesUtilises.includes(nom)) return;
-
             if (fromPodium) {
                 const sourceStep = document.querySelector(`[data-cid="${sid}"]`);
                 if (sourceStep && sourceStep !== step) viderZone(sourceStep);
             }
-
             const oldCard = step.querySelector('.pilote-card');
             if (oldCard) {
                 const oldNom = oldCard.innerText.replace(/#\d+\s/, "").trim();
@@ -156,7 +146,6 @@ function initDragAndDrop() {
                 const oldId = step.dataset.cid;
                 if(document.getElementById(oldId)) document.getElementById(oldId).classList.remove('used');
             }
-
             placerPilote(step, nom, sid);
         });
     });
@@ -167,14 +156,11 @@ function placerPilote(step, nom, sid) {
     const originalCard = document.getElementById(sid);
     if (originalCard) originalCard.classList.add('used');
     step.dataset.cid = sid;
-
     const rank = step.dataset.rank;
     const numStr = originalCard ? originalCard.querySelector('.num').innerText : "#??";
     const cardHTML = `<div class="pilote-card" draggable="true"><span class="num">${numStr}</span> ${nom}</div>`;
-
     step.innerHTML = (rank === "Chute") ? cardHTML : `<span>${rank}</span><div class="target-area">${cardHTML}</div>`;
     if (rank === "Chute") step.classList.add('used-crash');
-
     const dragCard = step.querySelector('.pilote-card');
     dragCard.addEventListener('dragstart', e => {
         e.dataTransfer.setData('nom', nom);
@@ -198,113 +184,99 @@ function resetPilote(sid) {
             const nom = nomElement.innerText.replace(/#\d+\s/, "").trim();
             pilotesUtilises = pilotesUtilises.filter(n => n !== nom);
         }
-        if(document.getElementById(sid)) document.getElementById(sid).classList.remove('used');
+        const original = document.getElementById(sid);
+        if(original) original.classList.remove('used');
         viderZone(step);
     }
 }
 
-// --- 4. VALIDATION ET MODIFICATION ---
+// --- 4. VALIDATION ---
 function validerCourse(type) {
     const containerId = type === 'Sprint' ? 'section-sprint' : 'section-race';
     const steps = document.querySelectorAll(`#${containerId} .step`);
-    
     let res = {};
     steps.forEach(s => {
         const card = s.querySelector('.pilote-card');
         res[s.dataset.rank] = card ? card.innerText.replace(/#\d+\s/, "").trim() : "---";
     });
-
     if (res["1er"] === "---") return alert("Podium incomplet !");
-
     set(ref(db, 'pronos/' + pseudoGlobal + '/' + type), {
         choix: res,
         timestamp: new Date().toISOString()
     }).then(() => {
         afficherRecapVisuel(`recap-${type.toLowerCase()}`, res);
         document.getElementById(containerId).classList.add('hidden');
-        
         if (type === 'Sprint') {
             document.getElementById('section-race').classList.remove('hidden');
             document.getElementById('current-title').innerText = "Choisissez pour le GRAND PRIX";
             pilotesUtilises = [];
             genererPilotes();
         } else {
-            document.querySelector('.pilotes-section').classList.add('hidden');
+            const sectionPilotes = document.querySelector('.pilotes-section');
+            if(sectionPilotes) sectionPilotes.classList.add('hidden');
             document.getElementById('main-banner').innerText = "✅ Pronostics enregistrés !";
         }
     });
 }
 
-function majBoutonModification(cible, type) {
-    const container = document.getElementById(`btn-edit-${type.toLowerCase()}-container`);
-    const recapEl = document.getElementById(`recap-${type.toLowerCase()}`);
-    if (!recapEl || recapEl.innerText === "Pas encore validé") return;
-
-    if (new Date() > cible) {
-        container.innerHTML = `<small style="color:gray">🔒 Verrouillé</small>`;
-    } else {
-        container.innerHTML = `<button class="btn-modifier" id="btn-mod-${type}">✏️ Modifier</button>`;
-        document.getElementById(`btn-mod-${type}`).onclick = () => {
-            document.getElementById(`section-${type.toLowerCase()}`).classList.remove('hidden');
-            document.querySelector('.pilotes-section').classList.remove('hidden');
-            if(type === 'Race') document.getElementById('section-sprint').classList.add('hidden');
-        };
-    }
-}
-
 function afficherRecapVisuel(id, choix) {
-    document.getElementById(id).innerHTML = `🥇 ${choix["1er"]} | 🥈 ${choix["2e"]} | 🥉 ${choix["3e"]} | ⚠️ ${choix["Chute"]}`;
+    const el = document.getElementById(id);
+    if(el) el.innerHTML = `🥇 ${choix["1er"]} | 🥈 ${choix["2e"]} | 🥉 ${choix["3e"]} | ⚠️ ${choix["Chute"]}`;
 }
 
 function chargerResultatsOfficiels() {
-    const resRef = ref(db, 'resultats/');
-    
-    // onValue permet de mettre à jour la page INSTANTANÉMENT si tu changes le résultat
-    onValue(resRef, (snapshot) => {
+    onValue(ref(db, 'resultats/'), (snapshot) => {
         if (snapshot.exists()) {
             const data = snapshot.val();
-            if (data.Sprint) {
-                document.getElementById('official-sprint').innerHTML = 
-                    `🥇 ${data.Sprint["1er"]} | 🥈 ${data.Sprint["2e"]} | 🥉 ${data.Sprint["3e"]} | ⚠️ ${data.Sprint["Chute"]}`;
-            }
-            if (data.Race) {
-                document.getElementById('official-race').innerHTML = 
-                    `🥇 ${data.Race["1er"]} | 🥈 ${data.Race["2e"]} | 🥉 ${data.Race["3e"]} | ⚠️ ${data.Race["Chute"]}`;
-            }
+            const offSprint = document.getElementById('official-sprint');
+            const offRace = document.getElementById('official-race');
+            if (data.Sprint && offSprint) offSprint.innerHTML = `🥇 ${data.Sprint["1er"]} | 🥈 ${data.Sprint["2e"]} | 🥉 ${data.Sprint["3e"]} | ⚠️ ${data.Sprint["Chute"]}`;
+            if (data.Race && offRace) offRace.innerHTML = `🥇 ${data.Race["1er"]} | 🥈 ${data.Race["2e"]} | 🥉 ${data.Race["3e"]} | ⚠️ ${data.Race["Chute"]}`;
         }
     });
 }
 
-// 2. Fonction pour remplir les menus déroulants
+// --- 5. ADMIN SÉCURISÉ ---
 function remplirListesPilotes() {
     const selects = ["res-1", "res-2", "res-3", "res-chute"];
-    
-    // Si on n'est pas sur la page admin, on arrête tout de suite
-    if (!document.getElementById(selects[0])) return;
+    const testEl = document.getElementById(selects[0]);
+    if (!testEl) return; // Sécurité : On quitte si les éléments n'existent pas
 
     const pilotesTries = [...DATA_PILOTES].sort((a, b) => a.nom.localeCompare(b.nom));
-
     selects.forEach(id => {
         const selectEl = document.getElementById(id);
-        if (!selectEl) return; // Sécurité supplémentaire
-
-        pilotesTries.forEach(p => {
-            const option = document.createElement('option');
-            option.value = p.nom;
-            option.textContent = `#${p.num} - ${p.nom}`;
-            selectEl.appendChild(option);
-        });
+        if (selectEl) {
+            selectEl.innerHTML = '<option value="">-- Choisir un pilote --</option>';
+            pilotesTries.forEach(p => {
+                const option = document.createElement('option');
+                option.value = p.nom;
+                option.textContent = `#${p.num} - ${p.nom}`;
+                selectEl.appendChild(option);
+            });
+        }
     });
 }
 
-if (document.getElementById('res-1')) {
-    remplirListesPilotes();
-}
-
-
-// --- LIAISON DES BOUTONS ---
+// --- 6. INITIALISATION ---
 document.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('btn-rejoindre').onclick = commencerJeu;
-    document.getElementById('btn-valider-sprint').onclick = () => validerCourse('Sprint');
-    document.getElementById('btn-valider-race').onclick = () => validerCourse('Race');
+    // Boutons de la page Jeu
+    const btnRejoindre = document.getElementById('btn-rejoindre');
+    if (btnRejoindre) btnRejoindre.onclick = commencerJeu;
+
+    const btnValSprint = document.getElementById('btn-valider-sprint');
+    if (btnValSprint) btnValSprint.onclick = () => validerCourse('Sprint');
+
+    const btnValRace = document.getElementById('btn-valider-race');
+    if (btnValRace) btnValRace.onclick = () => validerCourse('Race');
+
+    // On lance les fonctions globales seulement si on est sur la page Jeu
+    if (document.getElementById('game-screen')) {
+        chargerCalendrier();
+        chargerResultatsOfficiels();
+    }
+
+    // On lance la fonction Admin seulement si on détecte un élément Admin
+    if (document.getElementById('res-1')) {
+        remplirListesPilotes();
+    }
 });
