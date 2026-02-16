@@ -51,33 +51,56 @@ async function commencerJeu() {
 // --- 2. CALENDRIER ET TIMERS (AVEC VERROUILLAGE) ---
 function chargerCalendrier() {
     const maintenant = new Date();
+    // On cherche la prochaine course
     const futureRace = DATA_CALENDRIER.find(r => new Date(r.race) > maintenant);
 
     if (futureRace) {
         document.getElementById('race-name').textContent = futureRace.gp;
         document.getElementById('race-circuit').textContent = futureRace.circuit;
-        document.getElementById('race-date').textContent = new Date(futureRace.sprint).toLocaleDateString();
         
-        demarrerTimer(new Date(futureRace.sprint), 'timer-sprint-val', 'Sprint');
-        demarrerTimer(new Date(futureRace.race), 'timer-race-val', 'Race');
+        // --- FORMATAGE DE LA DATE (Jour Mois Année) ---
+        const options = { day: 'numeric', month: 'long', year: 'numeric' };
+        const dateObj = new Date(futureRace.race);
+        document.getElementById('race-date-formatted').textContent = dateObj.toLocaleDateString('fr-FR', options);
+
+        // --- AFFICHAGE DES STATS 2025 ---
+        if (futureRace.stats2025) {
+            document.getElementById('stats-content').innerHTML = `
+                <strong>Stats 2025 :</strong><br>
+                Pole : ${futureRace.stats2025.pole}<br>
+                Vainqueur : ${futureRace.stats2025.vainqueurGP}
+            `;
+        }
+
+        // --- LANCEMENT DU TIMER (Cible : Sprint ou Race) ---
+        // On cible le départ du Sprint pour verrouiller, ou la Race
+        demarrerTimer(new Date(futureRace.sprint), 'timer-race-val', 'Sprint');
     }
 }
-
 function demarrerTimer(cible, id, type) {
     const el = document.getElementById(id);
-    setInterval(() => {
+    
+    const updateTimer = () => {
         const maintenant = new Date();
         const diff = cible - maintenant;
 
-        // Gérer l'affichage du bouton modifier selon l'heure
-        majBoutonModification(cible, type);
+        if (diff <= 0) {
+            el.innerHTML = `<span style="color: #ff4444;">🏁 SESSION EN COURS</span>`;
+            return;
+        }
 
-        if (diff <= 0) return el.textContent = "🏁 SESSION LANCÉE";
-        const h = Math.floor(diff / 3600000);
-        const m = Math.floor((diff % 3600000) / 60000);
-        const s = Math.floor((diff % 60000) / 1000);
-        el.textContent = `${h}h ${m}m ${s}s`;
-    }, 1000);
+        // Calcul Jours, Heures, Minutes, Secondes
+        const j = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const h = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const m = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const s = Math.floor((diff % (1000 * 60)) / 1000);
+
+        // Affichage formaté
+        el.textContent = `${j}j ${h}h ${m}m ${s}s`;
+    };
+
+    updateTimer(); // Appel immédiat pour éviter le délai d'une seconde
+    setInterval(updateTimer, 1000);
 }
 
 // --- 3. DRAG & DROP AVANCÉ ---
@@ -251,6 +274,27 @@ function chargerResultatsOfficiels() {
         }
     });
 }
+
+// 2. Fonction pour remplir les menus déroulants
+function remplirListesPilotes() {
+    const selects = ["res-1", "res-2", "res-3", "res-chute"];
+    
+    // Trier les pilotes par nom alphabétique (optionnel mais plus ergonomique)
+    const pilotesTries = [...DATA_PILOTES].sort((a, b) => a.nom.localeCompare(b.nom));
+
+    selects.forEach(id => {
+        const selectEl = document.getElementById(id);
+        pilotesTries.forEach(p => {
+            const option = document.createElement('option');
+            option.value = p.nom;
+            option.textContent = `#${p.num} - ${p.nom}`;
+            selectEl.appendChild(option);
+        });
+    });
+}
+
+// 3. Appeler la fonction au chargement
+remplirListesPilotes();
 
 
 // --- LIAISON DES BOUTONS ---

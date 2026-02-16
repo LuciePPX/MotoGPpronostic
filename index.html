@@ -24,18 +24,23 @@
 
             <div id="next-race-container">
                 <h2>Prochaine course</h2>
-                <p><strong>GP :</strong> <span id="race-name">---</span></p>
-                <p><strong>Circuit :</strong> <span id="race-circuit">---</span></p>
-                <p><strong>Date :</strong> <span id="race-date">---</span></p>
-                <hr>
-                <div id="countdown">
-                    <span id="timer-sprint-val" class="timer-live"></span>
+                <p><span id="race-name" style="font-size: 1.5em; font-weight: bold;">---</span></p>
+                <p>📍 <span id="race-circuit">---</span></p>
+                <p>📅 <span id="race-date-formatted">---</span></p>
+                
+                <div id="stats-prec-box" style="font-size: 0.85em; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin-top: 10px; border-left: 3px solid #ff0000;">
+                    <div id="stats-content">Chargement des stats 2025...</div>
                 </div>
             </div>
 
             <div class="stats-flex-container">
                 <div id="official-results-container" class="results-box">
                     <h2>🏆 Résultats Officiels</h2>
+                    <div id="timer-display" style="background: #222; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #444;">
+                        <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Temps restant avant clôture :</div>
+                        <div id="timer-race-val" style="font-family: monospace; font-size: 1.2em; color: #00ff00;">--j --h --m --s</div>
+                    </div>
+
                     <div class="sub-zone">
                         <h4>Sprint</h4>
                         <div id="official-sprint">En attente...</div>
