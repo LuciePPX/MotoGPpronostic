@@ -2,6 +2,9 @@
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
+// --- DONNÉES ---
+import { DATA_PILOTES, DATA_CALENDRIER } from "./config.js";
+
 // 2. TA CONFIGURATION
 const firebaseConfig = {
     apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
@@ -18,8 +21,7 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db = getDatabase(app);
 
-// --- DONNÉES ---
-import { DATA_PILOTES, DATA_CALENDRIER } from "./config.js";
+
 
 let pilotesUtilises = [];
 let pseudoGlobal = "";
@@ -51,19 +53,18 @@ async function commencerJeu() {
 // --- 2. CALENDRIER ET TIMERS (AVEC VERROUILLAGE) ---
 function chargerCalendrier() {
     const maintenant = new Date();
-    // On cherche la prochaine course
     const futureRace = DATA_CALENDRIER.find(r => new Date(r.race) > maintenant);
 
     if (futureRace) {
         document.getElementById('race-name').textContent = futureRace.gp;
         document.getElementById('race-circuit').textContent = futureRace.circuit;
         
-        // --- FORMATAGE DE LA DATE (Jour Mois Année) ---
+        // Format date longue
         const options = { day: 'numeric', month: 'long', year: 'numeric' };
         const dateObj = new Date(futureRace.race);
         document.getElementById('race-date-formatted').textContent = dateObj.toLocaleDateString('fr-FR', options);
 
-        // --- AFFICHAGE DES STATS 2025 ---
+        // Stats 2025
         if (futureRace.stats2025) {
             document.getElementById('stats-content').innerHTML = `
                 <strong>Stats 2025 :</strong><br>
@@ -72,9 +73,8 @@ function chargerCalendrier() {
             `;
         }
 
-        // --- LANCEMENT DU TIMER (Cible : Sprint ou Race) ---
-        // On cible le départ du Sprint pour verrouiller, ou la Race
-        demarrerTimer(new Date(futureRace.sprint), 'timer-race-val', 'Sprint');
+        // Timer unique (Cible le Sprint pour le verrouillage)
+        demarrerTimer(new Date(futureRace.sprint), 'timer-race-val');
     }
 }
 function demarrerTimer(cible, id, type) {
@@ -279,11 +279,15 @@ function chargerResultatsOfficiels() {
 function remplirListesPilotes() {
     const selects = ["res-1", "res-2", "res-3", "res-chute"];
     
-    // Trier les pilotes par nom alphabétique (optionnel mais plus ergonomique)
+    // Si on n'est pas sur la page admin, on arrête tout de suite
+    if (!document.getElementById(selects[0])) return;
+
     const pilotesTries = [...DATA_PILOTES].sort((a, b) => a.nom.localeCompare(b.nom));
 
     selects.forEach(id => {
         const selectEl = document.getElementById(id);
+        if (!selectEl) return; // Sécurité supplémentaire
+
         pilotesTries.forEach(p => {
             const option = document.createElement('option');
             option.value = p.nom;
@@ -293,8 +297,9 @@ function remplirListesPilotes() {
     });
 }
 
-// 3. Appeler la fonction au chargement
-remplirListesPilotes();
+if (document.getElementById('res-1')) {
+    remplirListesPilotes();
+}
 
 
 // --- LIAISON DES BOUTONS ---
