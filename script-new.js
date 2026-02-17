@@ -1,9 +1,5 @@
 import { DATA_PILOTES, DATA_CALENDRIER } from './config.js';
 
-// ===== FIREBASE SDK IMPORTS =====
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
     apiKey: "AIzaSyBYjWjsY5eHOjrQOD2nJhXh0lZuQLwM6YQ",
@@ -15,9 +11,9 @@ const firebaseConfig = {
     appId: "1:1082916850330:web:dbf5d1c7d8e47d86f01b75"
 };
 
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+// Initialize Firebase (using global firebase from CDN)
+firebase.initializeApp(firebaseConfig);
+const database = firebase.database();
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
@@ -27,11 +23,6 @@ let sprintResults = {};
 let raceResults = {};
 let currentScores = {};
 let scoresHistory = {};
-let pilotesUtilises = [];
-let pseudoGlobal = "";
-let currentRaceTime = null;
-let isEditingMode = false;
-let editingType = null;
 
 // ===== ÉCRAN D'AUTH =====
 document.addEventListener('DOMContentLoaded', () => {
@@ -86,8 +77,8 @@ function initialiserJeu() {
 
 // ===== FUNCTION: CHARGER DONNÉES FIREBASE =====
 function chargerDonneesFirebase() {
-    const dbRef = ref(db, 'pronostics/' + pseudo);
-    onValue(dbRef, (snapshot) => {
+    const dbRef = database.ref('pronostics/' + pseudo);
+    dbRef.on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
             sprintPredictions = data.sprint || {};
@@ -371,7 +362,7 @@ function handleDrop(e) {
     }
 
     // Sauvegarder en Firebase
-    set(ref(db, `pronostics/${pseudo}/${type}`), predictions);
+    database.ref(`pronostics/${pseudo}/${type}`).set(predictions);
     mettreAJourAffichagePronostics();
 }
 
@@ -407,7 +398,7 @@ function demarrerTimer(type, sectionId) {
     timerElement.style.background = 'linear-gradient(135deg, rgba(225, 6, 0, 0.2) 0%, rgba(225, 6, 0, 0.05) 100%)';
 
     // Écouter les résultats officiels en Firebase
-    const resultsRef = ref(db, `resultats/${type}`);
+    const resultsRef = database.ref(`resultats/${type}`);
     resultsRef.on('value', (snapshot) => {
         const data = snapshot.val();
         if (data) {
@@ -469,14 +460,14 @@ function chargerResultatsOfficiels() {
 // ===== FUNCTION: METTRE À JOUR SCORE CARD =====
 function mettreAJourScoreCard() {
     // Récupérer scores depuis Firebase
-    get(ref(db, 'scores/' + pseudo)).then((snapshot) => {
+    database.ref('scores/' + pseudo).once('value', (snapshot) => {
         const score = snapshot.val() || 0;
         currentScores[pseudo] = score;
         afficherScore();
     });
 
     // Récupérer historique depuis Firebase
-    get(ref(db, 'historique/' + pseudo)).then((snapshot) => {
+    database.ref('historique/' + pseudo).once('value', (snapshot) => {
         const historique = snapshot.val() || [];
         scoresHistory[pseudo] = historique;
         afficherScore();
@@ -493,10 +484,10 @@ function editerPronostic(type) {
     // Vider les prédictions du type
     if (type === 'sprint') {
         sprintPredictions = {};
-        set(ref(db, `pronostics/${pseudo}/sprint`), null);
+        database.ref(`pronostics/${pseudo}/sprint`).remove();
     } else {
         racePredictions = {};
-        set(ref(db, `pronostics/${pseudo}/race`), null);
+        database.ref(`pronostics/${pseudo}/race`).remove();
     }
 
     // Regenerer la liste des pilotes

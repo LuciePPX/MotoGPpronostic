@@ -117,42 +117,50 @@
 
             <div class="container">
                 <h2 class="section-banner" id="main-banner">Pronostics MotoGP</h2>
-                <div class="pilotes-section">
-                    <h3 id="current-title">Choisissez pour le SPRINT</h3>
-                    <div class="pilotes-list" id="pilotes-list"></div>
-                </div>
-
-                <div class="podiums-wrapper">
-                    <div id="section-sprint" class="podium-box">
-                        <h3 class="course-title">SPRINT</h3>
-                        <div class="pronostic-flex-row">
-                            <div class="podium">
-                                <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small></div>
-                                <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small></div>
-                                <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small></div>
-                            </div>
-                            <div class="crash-bet-container">
-                                <h4 class="crash-title">Pari Chute</h4>
-                                <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
-                            </div>
-                        </div>
-                        <button class="btn-valider" id="btn-valider-sprint">Valider le Sprint</button>
+                
+                <div class="pronostics-layout">
+                    <!-- COLONNE GAUCHE: PILOTES -->
+                    <div class="pilotes-column">
+                        <h3 id="current-title">Choisissez pour le SPRINT</h3>
+                        <input type="text" id="search-pilotes" class="search-input" placeholder="🔍 Chercher un pilote...">
+                        <div class="pilotes-list" id="pilotes-list"></div>
                     </div>
 
-                    <div id="section-race" class="podium-box hidden">
-                        <h3 class="course-title">GRAND PRIX</h3>
-                        <div class="pronostic-flex-row">
-                            <div class="podium">
-                                <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small></div>
-                                <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small></div>
-                                <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small></div>
+                    <!-- COLONNE DROITE: PODIUM -->
+                    <div class="podium-column">
+                        <div class="podiums-wrapper">
+                            <div id="section-sprint" class="podium-box">
+                                <h3 class="course-title">SPRINT</h3>
+                                <div class="pronostic-flex-row">
+                                    <div class="podium">
+                                        <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small></div>
+                                        <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small></div>
+                                        <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small></div>
+                                    </div>
+                                    <div class="crash-bet-container">
+                                        <h4 class="crash-title">Pari Chute</h4>
+                                        <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
+                                    </div>
+                                </div>
+                                <button class="btn-valider" id="btn-valider-sprint">Valider le Sprint</button>
                             </div>
-                            <div class="crash-bet-container">
-                                <h4 class="crash-title">Pari Chute</h4>
-                                <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
+
+                            <div id="section-race" class="podium-box hidden">
+                                <h3 class="course-title">GRAND PRIX</h3>
+                                <div class="pronostic-flex-row">
+                                    <div class="podium">
+                                        <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small></div>
+                                        <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small></div>
+                                        <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small></div>
+                                    </div>
+                                    <div class="crash-bet-container">
+                                        <h4 class="crash-title">Pari Chute</h4>
+                                        <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
+                                    </div>
+                                </div>
+                                <button class="btn-valider" id="btn-valider-race">Valider le Grand Prix</button>
                             </div>
                         </div>
-                        <button class="btn-valider" id="btn-valider-race">Valider le Grand Prix</button>
                     </div>
                 </div>
             </div>

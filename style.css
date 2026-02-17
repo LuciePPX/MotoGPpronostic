@@ -300,95 +300,66 @@ button {
     display: flex;
     align-items: center;
     justify-content: center;
-    box-shadow: inset 0 0 15px rgba(0, 0, 0, 0.3);
 }
 
 .circuit-image {
     width: 100%;
     height: 100%;
-    object-fit: contain;
-    filter: brightness(0.95) contrast(1.15);
-    padding: 12px;
+    object-fit: cover;
 }
 
 /* ===== SCORE CARD ===== */
 .score-card-container {
+    flex: 0 0 auto;
     background: linear-gradient(135deg, var(--dark-card) 0%, var(--dark-bg) 100%);
-    border-radius: 12px;
     padding: 20px;
-    box-shadow: var(--shadow-md);
-    min-width: 280px;
+    border-radius: 12px;
     border: 2px solid var(--border-red);
+    box-shadow: var(--shadow-md);
+    text-align: center;
+    min-width: 180px;
 }
 
 .score-card-header {
     display: flex;
     justify-content: space-between;
     align-items: center;
-    margin-bottom: 15px;
+    gap: 10px;
 }
 
 .score-main {
-    font-size: 3.5em;
+    font-size: 2.5em;
+    color: var(--red);
     font-weight: 700;
-    color: var(--text-main);
-    text-shadow: 0 0 15px rgba(225, 6, 0, 0.5);
-    flex: 1;
-    text-align: center;
+}
+
+.history-icon {
+    font-size: 1.8em;
+    cursor: pointer;
+    transition: transform 0.2s;
+}
+
+.history-icon:hover {
+    transform: scale(1.2);
 }
 
 .score-gp-name {
     font-size: 0.9em;
-    color: var(--gray-light);
-    text-align: center;
-    text-transform: uppercase;
-    letter-spacing: 1px;
-    margin-bottom: 15px;
+    color: var(--text-secondary);
+    margin: 10px 0;
 }
 
 .score-last-three {
-    display: flex;
-    gap: 10px;
-    justify-content: center;
-}
-
-.score-small {
-    background: rgba(255, 255, 255, 0.1);
-    border-radius: 6px;
-    padding: 10px 12px;
-    font-size: 0.9em;
-    color: var(--text-secondary);
-    text-align: center;
-    min-width: 60px;
-}
-
-.score-small div:first-child {
-    font-weight: 700;
-    font-size: 1.2em;
-}
-
-.score-small-label {
-    font-size: 0.7em;
+    font-size: 0.85em;
     color: var(--gray-light);
-    margin-top: 3px;
 }
 
-.history-icon {
-    cursor: pointer;
-    font-size: 1.8em;
-    transition: transform 0.2s ease;
-}
-
-.history-icon:hover {
-    transform: scale(1.15);
-}
-
-/* ===== RÉSULTATS ET PRONOSTICS ===== */
+/* ===== STATS FLEX CONTAINER ===== */
 .stats-flex-container {
     display: flex;
     gap: 25px;
-    flex-wrap: wrap;
     margin-bottom: 30px;
+    flex-wrap: wrap;
 }
 
 .results-box,
@@ -419,6 +390,18 @@ button {
     border-radius: 6px;
     border-left: 3px solid var(--red);
     transition: all 0.2s ease;
+}
+
+.results-box .sub-zone {
+    background: transparent;
+    border: none;
+    padding: 12px 0;
+    border-radius: 0;
+}
+
+.results-box .sub-zone:hover {
+    background: transparent;
+    transform: none;
 }
 
 .sub-zone:hover {
@@ -489,23 +472,85 @@ button {
     text-transform: uppercase;
 }
 
-.pilotes-section {
-    margin-bottom: 30px;
+/* ===== LAYOUT DEUX COLONNES ===== */
+.pronostics-layout {
+    display: grid;
+    grid-template-columns: 1fr 2fr;
+    gap: 25px;
+    align-items: start;
+    width: 100%;
 }
 
-.pilotes-section h3 {
-    margin-bottom: 15px;
-    text-align: center;
+.pilotes-column {
+    display: flex;
+    flex-direction: column;
+    gap: 15px;
+    min-width: 0;
+}
+
+.pilotes-column h3 {
+    margin: 0;
+    text-align: left;
+}
+
+.search-input {
+    width: 100%;
+    padding: 12px 15px;
+    border: 2px solid var(--border-red);
+    border-radius: 8px;
+    background: rgba(255, 255, 255, 0.08);
+    color: var(--text-main);
+    font-size: 0.95em;
+    transition: all 0.2s ease;
+}
+
+.search-input::placeholder {
+    color: var(--gray-light);
+}
+
+.search-input:focus {
+    outline: none;
+    border-color: var(--red);
+    background: rgba(225, 6, 0, 0.1);
+    box-shadow: 0 0 10px rgba(225, 6, 0, 0.2);
 }
 
 .pilotes-list {
     display: flex;
     flex-wrap: wrap;
     gap: 10px;
-    background: rgba(255, 255, 255, 0.05);
-    padding: 20px;
+    background: rgba(255, 255, 255, 0.03);
+    padding: 15px;
     border-radius: 12px;
-    margin-bottom: 25px;
+    border: 1px solid rgba(225, 6, 0, 0.1);
+    box-shadow: inset 0 0 10px rgba(0, 0, 0, 0.3);
+    max-height: 500px;
+    overflow-y: auto;
+}
+
+.pilotes-list::-webkit-scrollbar {
+    width: 8px;
+}
+
+.pilotes-list::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 4px;
+}
+
+.pilotes-list::-webkit-scrollbar-thumb {
+    background: var(--red);
+    border-radius: 4px;
+}
+
+.pilotes-list::-webkit-scrollbar-thumb:hover {
+    background: #ff6b6b;
+}
+
+.podium-column {
+    display: flex;
+    flex-direction: column;
+    gap: 25px;
+    min-width: 0;
 }
 
 .pilote-card {
@@ -541,11 +586,12 @@ button {
     display: flex;
     flex-direction: column;
     gap: 25px;
+    width: 100%;
 }
 
 .podium-box {
     background: linear-gradient(135deg, var(--dark-card) 0%, var(--dark-bg) 100%);
-    padding: 25px;
+    padding: 30px;
     border-radius: 12px;
     border: 1px solid var(--border-red);
     box-shadow: var(--shadow-md);
@@ -561,7 +607,7 @@ button {
     display: flex;
     justify-content: center;
     align-items: flex-end;
-    gap: 25px;
+    gap: 40px;
     flex-wrap: wrap;
     margin-bottom: 25px;
 }
@@ -570,25 +616,31 @@ button {
     display: flex;
     align-items: flex-end;
     gap: 12px;
-    height: 220px;
+    height: 300px;
 }
 
 .step {
-    width: 120px;
-    background: linear-gradient(135deg, rgba(45, 45, 45, 0.8) 0%, rgba(30, 30, 30, 0.8) 100%);
-    border: 2px solid rgba(225, 6, 0, 0.2);
-    border-radius: 8px 8px 0 0;
+    width: 140px;
+    background: linear-gradient(135deg, #3a3a3a 0%, #2a2a2a 100%);
+    border: 3px solid var(--red);
+    border-radius: 12px;
     text-align: center;
-    padding: 12px;
+    padding: 12px 8px;
     display: flex;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
     transition: all 0.3s ease;
-    box-shadow: var(--shadow-sm);
+    box-shadow: 0 4px 15px rgba(0, 0, 0, 0.4), inset 0 0 5px rgba(225, 6, 0, 0.1);
+    position: relative;
+    min-height: 160px;
 }
 
 .step:hover {
-    border-color: var(--red);
-    box-shadow: var(--shadow-md);
+    background: linear-gradient(135deg, #4a4a4a 0%, #3a3a3a 100%);
+    box-shadow: 0 6px 25px rgba(225, 6, 0, 0.4), inset 0 0 10px rgba(225, 6, 0, 0.2);
+    transform: translateY(-3px);
+    border-color: #ff6b6b;
 }
 
 .step.locked {
@@ -612,6 +664,7 @@ button {
     align-items: center;
     width: 100%;
     flex-grow: 1;
+    min-height: 60px;
 }
 
 .step small {
@@ -621,27 +674,48 @@ button {
 }
 
 .rank-1 {
-    height: 180px;
-    border-top: 5px solid var(--red);
+    min-height: 240px;
+    background: linear-gradient(135deg, #404040 0%, #2a2a2a 100%);
 }
 
 .rank-2 {
-    height: 140px;
-    border-top: 5px solid var(--red);
+    min-height: 180px;
+    background: linear-gradient(135deg, #3a3a3a 0%, #252525 100%);
 }
 
 .rank-3 {
-    height: 110px;
-    border-top: 5px solid var(--red);
+    min-height: 140px;
+    background: linear-gradient(135deg, #343434 0%, #1f1f1f 100%);
 }
 
-.step .pilote-card {
+.rank-1 .pilote-card {
     font-size: 0.85em;
-    padding: 6px 10px;
-    white-space: nowrap;
-    box-shadow: var(--shadow-sm);
-    border-color: var(--red);
-    background: rgba(225, 6, 0, 0.1);
+    padding: 8px 10px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    line-height: 1.2;
+}
+
+.rank-2 .pilote-card {
+    font-size: 0.8em;
+    padding: 6px 8px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    line-height: 1.2;
+}
+
+.rank-3 .pilote-card {
+    font-size: 0.75em;
+    padding: 5px 6px;
+    border: none;
+    background: transparent;
+    box-shadow: none;
+    border-radius: 0;
+    line-height: 1.2;
 }
 
 /* ===== CRASH ZONE ===== */
@@ -660,8 +734,8 @@ button {
 }
 
 .crash-zone {
-    width: 140px;
-    height: 100px;
+    width: 120px;
+    height: 110px;
     border: 2px dashed var(--red);
     background: rgba(225, 6, 0, 0.1);
     border-radius: 8px;
@@ -680,6 +754,22 @@ button {
 .used-crash {
     background: rgba(225, 6, 0, 0.2);
     border-style: solid;
+}
+
+.crash-zone .pilote-card {
+    border: none !important;
+    background: transparent !important;
+    cursor: grab;
+    padding: 5px 6px !important;
+    font-size: 0.75em !important;
+    line-height: 1.2 !important;
+}
+
+.crash-zone .pilote-card:hover {
+    background: rgba(225, 6, 0, 0.15) !important;
+    border-style: dotted !important;
+    border-color: var(--red) !important;
+    box-shadow: 0 0 8px rgba(225, 6, 0, 0.3) !important;
 }
 
 /* ===== MODAL HISTORIQUE ===== */
@@ -791,7 +881,21 @@ button {
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
+@media (max-width: 1200px) {
+    .pronostics-layout {
+        grid-template-columns: 1fr 1.5fr;
+    }
+}
+
 @media (max-width: 1000px) {
+    .pronostics-layout {
+        grid-template-columns: 1fr;
+    }
+
+    .pilotes-list {
+        max-height: 400px;
+    }
+
     .race-content-wrapper {
         flex-direction: column;
         gap: 18px;
@@ -837,22 +941,26 @@ button {
     }
 
     .podium {
-        height: 180px;
+        height: 250px;
         gap: 8px;
     }
 
     .step {
-        width: 95px;
+        width: 110px;
         padding: 8px;
     }
 
-    .rank-1 { height: 150px; }
-    .rank-2 { height: 120px; }
-    .rank-3 { height: 100px; }
+    .rank-1 { min-height: 190px; }
+    .rank-2 { min-height: 150px; }
+    .rank-3 { min-height: 120px; }
 
     .crash-zone {
-        width: 120px;
-        height: 80px;
+        width: 100px;
+        height: 90px;
+    }
+
+    .pronostic-flex-row {
+        gap: 30px;
     }
 
     .modal-content {
@@ -880,7 +988,7 @@ button {
     }
 
     .pilotes-list {
-        padding: 12px;
+        padding: 10px;
         gap: 8px;
     }
 
@@ -890,24 +998,25 @@ button {
     }
 
     .pronostic-flex-row {
-        gap: 15px;
+        gap: 20px;
     }
 
     .podium {
+        height: 200px;
         gap: 6px;
     }
 
     .step {
+        width: 85px;
+        padding: 6px;
+    }
+
+    .rank-1 { min-height: 150px; }
+    .rank-2 { min-height: 120px; }
+    .rank-3 { min-height: 90px; }
+
+    .crash-zone {
         width: 80px;
-    }
-
-    #timer-sprint,
-    #timer-race {
-        font-size: 1.2em;
-        padding: 12px;
-    }
-
-    .score-main {
-        font-size: 2.5em;
+        height: 70px;
     }
 }
