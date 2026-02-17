@@ -159,7 +159,7 @@
                 await set(ref(db, 'resultats/' + session), results);
 
                 // Calculer et enregistrer les points pour TOUS les joueurs
-                const pronosSnapshot = await get(ref(db, 'pronos/'));
+                const pronosSnapshot = await get(ref(db, 'pronostics/'));
                 if (pronosSnapshot.exists()) {
                     const allPronos = pronosSnapshot.val();
                     

@@ -35,8 +35,8 @@ let editingType = null;
 
 // ===== ÉCRAN D'AUTH =====
 document.addEventListener('DOMContentLoaded', () => {
-    const authContainer = document.getElementById('auth-container');
-    const gameContainer = document.getElementById('game-container');
+    const authContainer = document.getElementById('login-screen');
+    const gameContainer = document.getElementById('game-screen');
     const pseudoInput = document.getElementById('pseudo-input');
     const btnValider = document.getElementById('btn-valider');
     const btnClassement = document.getElementById('btn-classement');
@@ -67,8 +67,8 @@ function commencerJeu() {
     }
 
     // Login normal: cacher auth-container, afficher game-container
-    document.getElementById('auth-container').classList.add('hidden');
-    document.getElementById('game-container').classList.remove('hidden');
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
 
     initialiserJeu();
 }
