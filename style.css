@@ -66,6 +66,26 @@ h1, h2, h3 { text-transform: uppercase; color: var(--red); }
     color: #fff;
 }
 
+.btn-classement {
+    background: transparent;
+    border: 2px solid var(--red);
+    color: var(--red);
+    padding: 10px 20px;
+    border-radius: 5px;
+    cursor: pointer;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: bold;
+    font-family: 'Oswald', sans-serif;
+    transition: all 0.2s;
+    display: inline-block;
+}
+
+.btn-classement:hover {
+    background: var(--red);
+    color: #fff;
+}
+
 /* ===== 3. CONNEXION ===== */
 .auth-container { 
     height: 100vh; 
@@ -181,6 +201,13 @@ h1, h2, h3 { text-transform: uppercase; color: var(--red); }
     display: flex; 
     flex-direction: column; 
     transition: all 0.3s;
+}
+
+.step.locked {
+    background: #4a4a4a;
+    border-color: #666;
+    opacity: 0.6;
+    cursor: not-allowed;
 }
 
 .step span { display: block; font-weight: bold; font-size: 1.1em; margin-bottom: 5px; }

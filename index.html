@@ -20,7 +20,10 @@
 
     <div id="game-screen" class="hidden">
         <div class="content">
-            <h1 id="welcome-title">Bienvenue</h1>
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+                <h1 id="welcome-title">Bienvenue</h1>
+                <a href="classement.html" class="btn-classement">🏆 Classement</a>
+            </div>
 
             <div id="next-race-container">
                 <h2>Prochaine course</h2>
@@ -63,6 +66,11 @@
                             <h4>Ton Grand Prix</h4>
                             <div id="recap-race" class="mini-list">Pas encore validé</div>
                             <div id="btn-edit-race-container"></div>
+                        </div>
+                        <div class="sub-zone" style="background: rgba(0, 255, 0, 0.1); border-left-color: #00ff00;">
+                            <h4>📊 Ton Score</h4>
+                            <div id="user-score" style="font-size: 1.5em; font-weight: bold; color: #00ff00; text-align: center;">-- pts</div>
+                            <div id="score-details" style="font-size: 0.85em; text-align: center; margin-top: 10px; color: #aaa;">--</div>
                         </div>
                     </div>
                 </div>

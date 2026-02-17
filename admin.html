@@ -58,7 +58,7 @@
 
     <script type="module">
         import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
         import { DATA_PILOTES } from "./config.js";
 
         const firebaseConfig = {
@@ -70,6 +70,47 @@
 
         const app = initializeApp(firebaseConfig);
         const db = getDatabase(app);
+
+        // Fonction pour calculer les points
+        function calculerPoints(prono, resultat) {
+            let points = 0;
+
+            if (prono["Chute"] === resultat["Chute"]) {
+                points += 1;
+            }
+
+            if (prono["1er"] === resultat["1er"]) {
+                points += 3;
+            } else if (prono["1er"] !== "---") {
+                if (prono["1er"] === resultat["2e"] || prono["1er"] === resultat["3e"]) {
+                    points += 1;
+                } else if (![resultat["1er"], resultat["2e"], resultat["3e"]].includes(prono["1er"])) {
+                    points += 3;
+                }
+            }
+
+            if (prono["2e"] === resultat["2e"]) {
+                points += 2;
+            } else if (prono["2e"] !== "---") {
+                if (prono["2e"] === resultat["1er"] || prono["2e"] === resultat["3e"]) {
+                    points += 1;
+                } else if (![resultat["1er"], resultat["2e"], resultat["3e"]].includes(prono["2e"])) {
+                    points += 3;
+                }
+            }
+
+            if (prono["3e"] === resultat["3e"]) {
+                points += 1;
+            } else if (prono["3e"] !== "---") {
+                if (prono["3e"] === resultat["1er"] || prono["3e"] === resultat["2e"]) {
+                    points += 1;
+                } else if (![resultat["1er"], resultat["2e"], resultat["3e"]].includes(prono["3e"])) {
+                    points += 3;
+                }
+            }
+
+            return points;
+        }
 
         // Remplir les menus au chargement
         function remplirMenusAdmin() {
@@ -94,7 +135,7 @@
 
         remplirMenusAdmin();
 
-        document.getElementById('btn-publier').onclick = () => {
+        document.getElementById('btn-publier').onclick = async () => {
             const pass = document.getElementById('admin-pass').value;
             const session = document.getElementById('type-session').value;
             
@@ -110,13 +151,51 @@
 
             if(!results["1er"]) return alert("Sélectionne au moins le vainqueur !");
 
-            set(ref(db, 'resultats/' + session), results)
-                .then(() => {
-                    const msg = document.getElementById('status-msg');
-                    msg.innerText = "✅ Résultats publiés !";
-                    msg.style.color = "lime";
-                })
-                .catch((e) => alert("Erreur Firebase : " + e.message));
+            try {
+                // Publier les résultats
+                await set(ref(db, 'resultats/' + session), results);
+
+                // Calculer et enregistrer les points pour TOUS les joueurs
+                const pronosSnapshot = await get(ref(db, 'pronos/'));
+                if (pronosSnapshot.exists()) {
+                    const allPronos = pronosSnapshot.val();
+                    
+                    for (const pseudo in allPronos) {
+                        if (allPronos[pseudo][session]) {
+                            const prono = allPronos[pseudo][session].choix;
+                            const points = calculerPoints(prono, results);
+
+                            // Récupérer les scores existants
+                            const scoresSnapshot = await get(ref(db, 'scores/' + pseudo));
+                            let totalScore = 0;
+                            let courseScores = {};
+
+                            if (scoresSnapshot.exists()) {
+                                const scoresData = scoresSnapshot.val();
+                                totalScore = scoresData.total || 0;
+                                courseScores = scoresData.courses || {};
+                            }
+
+                            // Ajouter les nouveaux points
+                            courseScores[session] = points;
+                            totalScore += points;
+
+                            // Sauvegarder les scores
+                            await set(ref(db, 'scores/' + pseudo), {
+                                total: totalScore,
+                                courses: courseScores,
+                                lastUpdated: new Date().toISOString()
+                            });
+                        }
+                    }
+                }
+
+                const msg = document.getElementById('status-msg');
+                msg.innerText = "✅ Résultats publiés et points calculés !";
+                msg.style.color = "lime";
+            } catch (e) {
+                alert("Erreur Firebase : " + e.message);
+            }
         };
     </script>
 </body>

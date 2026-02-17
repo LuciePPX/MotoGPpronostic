@@ -1,0 +1,274 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Classement MotoGP</title>
+    <link rel="stylesheet" href="style.css">
+    <style>
+        .classement-container {
+            max-width: 1000px;
+            margin: 0 auto;
+            background: rgba(45, 45, 45, 0.95);
+            padding: 30px;
+            border-radius: 15px;
+            border: 2px solid #e10600;
+        }
+
+        .classement-container h1 {
+            text-align: center;
+            margin-bottom: 30px;
+        }
+
+        .classement-table {
+            width: 100%;
+            border-collapse: collapse;
+            overflow: auto;
+        }
+
+        .classement-table thead {
+            background: rgba(225, 6, 0, 0.3);
+        }
+
+        .classement-table th {
+            padding: 15px;
+            text-align: left;
+            border-bottom: 2px solid #e10600;
+            text-transform: uppercase;
+            font-size: 0.9em;
+        }
+
+        .classement-table td {
+            padding: 12px 15px;
+            border-bottom: 1px solid #444;
+        }
+
+        .classement-table tbody tr:hover {
+            background: rgba(225, 6, 0, 0.1);
+        }
+
+        .rank-col {
+            font-weight: bold;
+            color: #e10600;
+            font-size: 1.2em;
+            min-width: 40px;
+        }
+
+        .pseudo-col {
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+        .points-col {
+            text-align: center;
+            min-width: 60px;
+        }
+
+        .total-col {
+            font-weight: bold;
+            color: #00ff00;
+            text-align: center;
+            -webkit-text-stroke: 0.5px #fff;
+            font-size: 1.1em;
+            min-width: 70px;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 20px;
+            color: #aaa;
+        }
+
+        .empty {
+            text-align: center;
+            padding: 40px;
+            color: #aaa;
+            font-size: 1.2em;
+        }
+
+        .btn-retour {
+            background: transparent;
+            border: 2px solid #e10600;
+            color: #e10600;
+            padding: 12px 25px;
+            border-radius: 5px;
+            cursor: pointer;
+            text-transform: uppercase;
+            font-weight: bold;
+            font-size: 1em;
+            margin-top: 20px;
+            transition: all 0.2s;
+            font-family: 'Oswald', sans-serif;
+        }
+
+        .btn-retour:hover {
+            background: #e10600;
+            color: #fff;
+        }
+
+        .legend {
+            display: flex;
+            gap: 20px;
+            flex-wrap: wrap;
+            margin-top: 20px;
+            padding: 15px;
+            background: rgba(255,255,255,0.05);
+            border-radius: 8px;
+            font-size: 0.9em;
+        }
+
+        .legend-item {
+            display: flex;
+            align-items: center;
+            gap: 5px;
+        }
+
+        .medal {
+            font-size: 1.3em;
+        }
+
+        @media (max-width: 768px) {
+            .classement-container {
+                padding: 15px;
+            }
+
+            .classement-table th,
+            .classement-table td {
+                padding: 10px 8px;
+                font-size: 0.85em;
+            }
+
+            .points-col,
+            .total-col {
+                min-width: 50px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="background"></div>
+
+    <div class="classement-container">
+        <h1>🏆 CLASSEMENT GÉNÉRAL</h1>
+        
+        <div id="loading" class="loading">
+            ⏳ Chargement des scores...
+        </div>
+
+        <table id="classement-table" class="classement-table" style="display: none;">
+            <thead>
+                <tr>
+                    <th class="rank-col">🏁 Rang</th>
+                    <th class="pseudo-col">Pilote</th>
+                    <th class="points-col">Sprint</th>
+                    <th class="points-col">Race</th>
+                    <th class="total-col">📊 Total</th>
+                </tr>
+            </thead>
+            <tbody id="classement-tbody">
+            </tbody>
+        </table>
+
+        <div id="empty" class="empty" style="display: none;">
+            📭 Aucun score enregistré pour le moment
+        </div>
+
+        <div class="legend">
+            <div class="legend-item">
+                <span class="medal">🥇</span>
+                <span>1er : 1ère place exacte (+3 pts)</span>
+            </div>
+            <div class="legend-item">
+                <span class="medal">🥈</span>
+                <span>2e : 2ème place exacte (+2 pts)</span>
+            </div>
+            <div class="legend-item">
+                <span class="medal">🥉</span>
+                <span>3e : 3ème place exacte (+1 pt)</span>
+            </div>
+            <div class="legend-item">
+                <span class="medal">⚡</span>
+                <span>Bon pilote, mauvaise place (+1 pt)</span>
+            </div>
+            <div class="legend-item">
+                <span class="medal">⚠️</span>
+                <span>Chute correcte (+1 pt)</span>
+            </div>
+        </div>
+
+        <button class="btn-retour" onclick="window.location.href='index.html';">← Retour au jeu</button>
+    </div>
+
+    <script type="module">
+        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+        import { getDatabase, ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+        const firebaseConfig = {
+            apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
+            authDomain: "motogppronostic.firebaseapp.com",
+            databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
+            projectId: "motogppronostic"
+        };
+
+        const app = initializeApp(firebaseConfig);
+        const db = getDatabase(app);
+
+        async function chargerClassement() {
+            try {
+                const snapshot = await get(ref(db, 'scores/'));
+                const loadingEl = document.getElementById('loading');
+                const tableEl = document.getElementById('classement-table');
+                const emptyEl = document.getElementById('empty');
+                const tbody = document.getElementById('classement-tbody');
+
+                if (snapshot.exists()) {
+                    const data = snapshot.val();
+                    const joueurs = Object.entries(data).map(([pseudo, scores]) => ({
+                        pseudo,
+                        sprint: scores.courses?.Sprint || 0,
+                        race: scores.courses?.Race || 0,
+                        total: scores.total || 0
+                    }));
+
+                    // Trier par score décroissant
+                    joueurs.sort((a, b) => b.total - a.total);
+
+                    // Remplir le tableau
+                    tbody.innerHTML = '';
+                    joueurs.forEach((joueur, index) => {
+                        const tr = document.createElement('tr');
+                        let medal = '🏅';
+                        if (index === 0) medal = '🥇';
+                        else if (index === 1) medal = '🥈';
+                        else if (index === 2) medal = '🥉';
+
+                        tr.innerHTML = `
+                            <td class="rank-col">${medal} ${index + 1}</td>
+                            <td class="pseudo-col">${joueur.pseudo}</td>
+                            <td class="points-col">${joueur.sprint > 0 ? '+' : ''}${joueur.sprint}</td>
+                            <td class="points-col">${joueur.race > 0 ? '+' : ''}${joueur.race}</td>
+                            <td class="total-col">${joueur.total > 0 ? '+' : ''}${joueur.total}</td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    loadingEl.style.display = 'none';
+                    tableEl.style.display = 'table';
+                } else {
+                    loadingEl.style.display = 'none';
+                    emptyEl.style.display = 'block';
+                }
+            } catch (e) {
+                console.error("Erreur lors du chargement du classement:", e);
+                document.getElementById('loading').innerHTML = '❌ Erreur lors du chargement';
+            }
+        }
+
+        // Charger le classement au démarrage
+        chargerClassement();
+
+        // Mettre à jour toutes les 5 secondes
+        setInterval(chargerClassement, 5000);
+    </script>
+</body>
+</html>
