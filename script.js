@@ -22,6 +22,95 @@ const db = getDatabase(app);
 let pilotesUtilises = [];
 let pseudoGlobal = "";
 let currentRaceTime = null; // Heure de clôture actuelle
+let isEditingMode = false; // Mode édition
+let editingType = null; // Sprint ou Race
+
+// --- SCORE CARD & HISTORIQUE ---
+async function mettreAJourScoreCard() {
+    if (!pseudoGlobal) return;
+    
+    const snapshot = await get(ref(db, 'scores/' + pseudoGlobal));
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        const total = data.total || 0;
+        
+        // Afficher le score principal
+        const mainScoreEl = document.getElementById('main-score-display');
+        if (mainScoreEl) {
+            mainScoreEl.innerText = total > 0 ? `+${total}` : total;
+        }
+    }
+    
+    // Charger le nom du GP actuel
+    const maintenant = new Date();
+    const futureRace = DATA_CALENDRIER.find(r => new Date(r.race) > maintenant);
+    if (futureRace) {
+        const gpNameEl = document.getElementById('current-gp-name');
+        if (gpNameEl) {
+            gpNameEl.innerText = futureRace.gp;
+        }
+    }
+    
+    // Charger les 3 derniers GPs
+    await afficherDerniersScores();
+}
+
+async function afficherDerniersScores() {
+    if (!pseudoGlobal) return;
+    
+    const snapshot = await get(ref(db, 'historique/' + pseudoGlobal));
+    let courses = [];
+    
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        courses = Object.entries(data).map(([gp, score]) => ({ gp, score }));
+    }
+    
+    // Prendre les 3 derniers
+    const derniers = courses.slice(-3).reverse();
+    
+    const container = document.getElementById('last-three-scores');
+    if (container) {
+        container.innerHTML = '';
+        derniers.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'score-small';
+            div.innerHTML = `<div>${item.score > 0 ? '+' : ''}${item.score}</div><div class="score-small-label">${item.gp.substring(0, 3)}</div>`;
+            container.appendChild(div);
+        });
+    }
+}
+
+async function chargerHistoriqueScores() {
+    if (!pseudoGlobal) return;
+    
+    const snapshot = await get(ref(db, 'historique/' + pseudoGlobal));
+    let courses = [];
+    
+    if (snapshot.exists()) {
+        const data = snapshot.val();
+        courses = Object.entries(data).map(([gp, score]) => ({ gp, score }));
+    }
+    
+    const container = document.getElementById('history-items');
+    if (container) {
+        container.innerHTML = '';
+        if (courses.length === 0) {
+            container.innerText = 'Aucun résultat enregistré';
+            return;
+        }
+        
+        courses.forEach(item => {
+            const div = document.createElement('div');
+            div.className = 'history-item';
+            div.innerHTML = `
+                <span class="history-item-name">${item.gp}</span>
+                <span class="history-item-score">${item.score > 0 ? '+' : ''}${item.score}</span>
+            `;
+            container.appendChild(div);
+        });
+    }
+}
 
 // --- 0. SYSTÈME DE POINTS ---
 function calculerPoints(prono, resultat) {
@@ -135,7 +224,115 @@ function verifierEtatCourse() {
     }
 }
 
+// Fonction pour afficher/masquer les boutons d'édition et gérer la visibilité des sections
+async function mettreAJourAffichagePronostics() {
+    const sprintContainer = document.getElementById('btn-edit-sprint-container');
+    const raceContainer = document.getElementById('btn-edit-race-container');
+    
+    if (!pseudoGlobal) return;
+    
+    const pronosSnapshot = await get(ref(db, 'pronos/' + pseudoGlobal));
+    const sprintFait = pronosSnapshot.exists() && pronosSnapshot.val().Sprint;
+    const raceFait = pronosSnapshot.exists() && pronosSnapshot.val().Race;
+    
+    // Déterminer si on peut modifier (timer pas dépassé)
+    const peutModifier = currentRaceTime && !estCourseBloqueee(currentRaceTime);
+    
+    // Afficher/masquer les boutons d'édition
+    if (sprintContainer) {
+        if (sprintFait && peutModifier) {
+            sprintContainer.innerHTML = '<button class="btn-modifier" id="btn-edit-sprint">📝 Modifier</button>';
+            document.getElementById('btn-edit-sprint').onclick = () => editerPronostic('Sprint');
+        } else {
+            sprintContainer.innerHTML = '';
+        }
+    }
+    
+    if (raceContainer) {
+        if (raceFait && peutModifier) {
+            raceContainer.innerHTML = '<button class="btn-modifier" id="btn-edit-race">📝 Modifier</button>';
+            document.getElementById('btn-edit-race').onclick = () => editerPronostic('Race');
+        } else {
+            raceContainer.innerHTML = '';
+        }
+    }
+    
+    // Cacher la section pronostics si les deux sont faits
+    const pilotesSection = document.querySelector('.pilotes-section');
+    const mainBanner = document.getElementById('main-banner');
+    const podiumsWrapper = document.querySelector('.podiums-wrapper');
+    
+    if (sprintFait && raceFait && !isEditingMode) {
+        if (pilotesSection) pilotesSection.classList.add('hidden');
+        if (podiumsWrapper) podiumsWrapper.classList.add('hidden');
+        if (mainBanner) mainBanner.classList.add('hidden');
+    } else if (!isEditingMode) {
+        if (pilotesSection) pilotesSection.classList.remove('hidden');
+        if (mainBanner) mainBanner.classList.remove('hidden');
+    }
+}
+
 // --- 1. GESTION DU JEU ---
+
+// Fonction pour éditer un pronostic existant
+async function editerPronostic(type) {
+    isEditingMode = true;
+    editingType = type;
+    
+    const pronosSnapshot = await get(ref(db, 'pronos/' + pseudoGlobal + '/' + type));
+    if (!pronosSnapshot.exists()) return alert("Pronostic non trouvé !");
+    
+    const choix = pronosSnapshot.val().choix;
+    
+    // Afficher la section correspondante
+    const containerId = type === 'Sprint' ? 'section-sprint' : 'section-race';
+    const container = document.getElementById(containerId);
+    if (container) container.classList.remove('hidden');
+    
+    // Cacher l'autre section si elle existe
+    const otherContainerId = type === 'Sprint' ? 'section-race' : 'section-sprint';
+    const otherContainer = document.getElementById(otherContainerId);
+    if (otherContainer) otherContainer.classList.add('hidden');
+    
+    // Réinitialiser les listes de pilotes
+    pilotesUtilises = [];
+    
+    // Vider toutes les zones de la section
+    const steps = document.querySelectorAll(`#${containerId} .step`);
+    steps.forEach(step => {
+        viderZone(step);
+    });
+    
+    // Régénérer la liste des pilotes
+    genererPilotes();
+    
+    // Charger les anciens choix dans les zones de drag & drop
+    steps.forEach(step => {
+        const rank = step.dataset.rank;
+        if (choix[rank] && choix[rank] !== "---") {
+            // Trouver le pilote correspondant
+            const pilote = DATA_PILOTES.find(p => p.nom === choix[rank]);
+            if (pilote) {
+                const sid = `p-${pilote.num}`;
+                placerPilote(step, choix[rank], sid);
+            }
+        }
+    });
+    
+    // Afficher la bannière appropriée
+    const currentTitle = document.getElementById('current-title');
+    if (currentTitle) {
+        currentTitle.innerText = type === 'Sprint' ? "Modifier votre SPRINT" : "Modifier votre GRAND PRIX";
+    }
+    
+    // Afficher la section de drag and drop et les pilotes
+    const pilotesSection = document.querySelector('.pilotes-section');
+    if (pilotesSection) pilotesSection.classList.remove('hidden');
+    
+    const podiumsWrapper = document.querySelector('.podiums-wrapper');
+    if (podiumsWrapper) podiumsWrapper.classList.remove('hidden');
+}
+
 async function commencerJeu() {
     const pseudo = document.getElementById('pseudo-input').value.trim();
     if (!pseudo) return alert("Pseudo requis !");
@@ -157,6 +354,7 @@ async function commencerJeu() {
     initDragAndDrop();
     chargerResultatsOfficiels();
     chargerScorePersonnel();
+    mettreAJourAffichagePronostics();
 }
 
 // --- 2. CALENDRIER ET TIMER ---
@@ -168,6 +366,7 @@ function chargerCalendrier() {
         const raceNameEl = document.getElementById('race-name');
         const raceCircuitEl = document.getElementById('race-circuit');
         const raceDateEl = document.getElementById('race-date-formatted');
+        const circuitImageEl = document.getElementById('circuit-image');
 
         if(raceNameEl) raceNameEl.textContent = futureRace.gp;
         if(raceCircuitEl) raceCircuitEl.textContent = futureRace.circuit;
@@ -176,6 +375,18 @@ function chargerCalendrier() {
             const options = { day: 'numeric', month: 'long', year: 'numeric' };
             const dateObj = new Date(futureRace.race);
             raceDateEl.textContent = dateObj.toLocaleDateString('fr-FR', options);
+        }
+
+        // Charger l'image du circuit
+        if (circuitImageEl && futureRace.image) {
+            circuitImageEl.src = futureRace.image;
+            circuitImageEl.alt = futureRace.circuit;
+        }
+
+        // Afficher le nom du GP dans le score card
+        const gpNameEl = document.getElementById('current-gp-name');
+        if (gpNameEl) {
+            gpNameEl.innerText = futureRace.gp;
         }
 
         const statsContent = document.getElementById('stats-content');
@@ -189,7 +400,10 @@ function chargerCalendrier() {
 
         // Définir l'heure de clôture du Sprint
         currentRaceTime = new Date(futureRace.sprint);
-        demarrerTimer(currentRaceTime, 'timer-race-val');
+        
+        // Lancer les deux timers
+        demarrerTimer(new Date(futureRace.sprint), 'timer-sprint');
+        demarrerTimer(new Date(futureRace.race), 'timer-race');
         verifierEtatCourse();
     }
 }
@@ -198,11 +412,18 @@ function demarrerTimer(cible, id) {
     const el = document.getElementById(id);
     if (!el) return;
     
+    let hasStarted = false; // Pour déterminer quand la session commence
+    
     const updateTimer = () => {
         const maintenant = new Date();
         const diff = cible - maintenant;
         if (diff <= 0) {
             el.innerHTML = `<span style="color: #ff4444;">🏁 SESSION EN COURS</span>`;
+            // Quand le timer passe 0, mettre à jour l'affichage des boutons
+            if (!hasStarted) {
+                hasStarted = true;
+                mettreAJourAffichagePronostics();
+            }
             return;
         }
         const j = Math.floor(diff / (1000 * 60 * 60 * 24));
@@ -323,15 +544,27 @@ function validerCourse(type) {
     }).then(() => {
         afficherRecapVisuel(`recap-${type.toLowerCase()}`, res);
         document.getElementById(containerId).classList.add('hidden');
-        if (type === 'Sprint') {
-            document.getElementById('section-race').classList.remove('hidden');
-            document.getElementById('current-title').innerText = "Choisissez pour le GRAND PRIX";
-            pilotesUtilises = [];
-            genererPilotes();
+        
+        // Si on était en mode édition
+        if (isEditingMode && editingType === type) {
+            isEditingMode = false;
+            editingType = null;
+            // Réafficher les sections appropriées
+            mettreAJourAffichagePronostics();
         } else {
-            const sectionPilotes = document.querySelector('.pilotes-section');
-            if(sectionPilotes) sectionPilotes.classList.add('hidden');
-            document.getElementById('main-banner').innerText = "✅ Pronostics enregistrés !";
+            // Mode création normal
+            if (type === 'Sprint') {
+                document.getElementById('section-race').classList.remove('hidden');
+                document.getElementById('current-title').innerText = "Choisissez pour le GRAND PRIX";
+                pilotesUtilises = [];
+                genererPilotes();
+            } else {
+                const sectionPilotes = document.querySelector('.pilotes-section');
+                if(sectionPilotes) sectionPilotes.classList.add('hidden');
+                document.getElementById('main-banner').innerText = "✅ Pronostics enregistrés !";
+                // Mettre à jour l'affichage des boutons d'édition
+                mettreAJourAffichagePronostics();
+            }
         }
     });
 }
@@ -379,6 +612,7 @@ async function chargerScorePersonnel() {
     onValue(ref(db, 'scores/' + pseudoGlobal), (snapshot) => {
         const scoreEl = document.getElementById('user-score');
         const detailsEl = document.getElementById('score-details');
+        const mainScoreEl = document.getElementById('main-score-display');
         
         if (snapshot.exists()) {
             const data = snapshot.val();
@@ -387,9 +621,18 @@ async function chargerScorePersonnel() {
             
             scoreEl.innerHTML = `${total > 0 ? '+' : ''}${total} <span style="font-size: 0.6em;">pts</span>`;
             detailsEl.innerHTML = `Sprint: ${courses.Sprint || 0 > 0 ? '+' : ''}${courses.Sprint || 0} | Race: ${courses.Race || 0 > 0 ? '+' : ''}${courses.Race || 0}`;
+            
+            // Mettre à jour le score card principal
+            if (mainScoreEl) {
+                mainScoreEl.innerText = total > 0 ? `+${total}` : total;
+            }
+            
+            // Mettre à jour les 3 derniers scores
+            afficherDerniersScores();
         } else {
             scoreEl.innerHTML = '0 <span style="font-size: 0.6em;">pts</span>';
             detailsEl.innerHTML = 'En attente de résultats...';
+            if (mainScoreEl) mainScoreEl.innerText = '0';
         }
     });
 }
@@ -426,6 +669,32 @@ document.addEventListener('DOMContentLoaded', () => {
 
     const btnValRace = document.getElementById('btn-valider-race');
     if (btnValRace) btnValRace.onclick = () => validerCourse('Race');
+
+    // Gestion du modal d'historique
+    const openHistoryBtn = document.getElementById('open-history');
+    const closeHistoryBtn = document.getElementById('close-history');
+    const historyModal = document.getElementById('history-modal');
+    
+    if (openHistoryBtn) {
+        openHistoryBtn.addEventListener('click', () => {
+            chargerHistoriqueScores();
+            if (historyModal) historyModal.classList.add('active');
+        });
+    }
+    
+    if (closeHistoryBtn) {
+        closeHistoryBtn.addEventListener('click', () => {
+            if (historyModal) historyModal.classList.remove('active');
+        });
+    }
+    
+    if (historyModal) {
+        historyModal.addEventListener('click', (e) => {
+            if (e.target === historyModal) {
+                historyModal.classList.remove('active');
+            }
+        });
+    }
 
     // On lance les fonctions globales seulement si on est sur la page Jeu
     if (document.getElementById('game-screen')) {

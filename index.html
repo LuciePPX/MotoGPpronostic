@@ -20,36 +20,80 @@
 
     <div id="game-screen" class="hidden">
         <div class="content">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div class="game-header">
                 <h1 id="welcome-title">Bienvenue</h1>
                 <a href="classement.html" class="btn-classement">🏆 Classement</a>
             </div>
 
-            <div id="next-race-container">
-                <h2>Prochaine course</h2>
-                <p><span id="race-name" style="font-size: 1.5em; font-weight: bold;">---</span></p>
-                <p>📍 <span id="race-circuit">---</span></p>
-                <p>📅 <span id="race-date-formatted">---</span></p>
-                
-                <div id="stats-prec-box" style="font-size: 0.85em; background: rgba(255,255,255,0.1); padding: 8px; border-radius: 5px; margin-top: 10px; border-left: 3px solid #ff0000;">
-                    <div id="stats-content">Chargement des stats 2025...</div>
+            <div class="race-score-wrapper">
+                <div id="next-race-container">
+                    <div class="race-content-wrapper">
+                        <div class="race-info">
+                            <h2>Prochaine course</h2>
+                            <div class="race-gp-name">
+                                <span id="race-name">---</span>
+                            </div>
+                            <div class="race-details">
+                                <div class="detail-item">
+                                    <span class="detail-icon">📍</span>
+                                    <span id="race-circuit">---</span>
+                                </div>
+                                <div class="detail-item">
+                                    <span class="detail-icon">📅</span>
+                                    <span id="race-date-formatted">---</span>
+                                </div>
+                            </div>
+                            
+                            <div id="stats-prec-box" class="stats-box">
+                                <div id="stats-content">Chargement des stats 2025...</div>
+                            </div>
+                        </div>
+                        
+                        <div class="circuit-image-container">
+                            <img id="circuit-image" src="" alt="Circuit" class="circuit-image" />
+                        </div>
+                    </div>
+                </div>
+
+                <div class="score-card-container" id="score-card-main">
+                    <div class="score-card-header">
+                        <div class="score-main" id="main-score-display">0</div>
+                        <div class="history-icon" id="open-history">🔍</div>
+                    </div>
+                    <div class="score-gp-name" id="current-gp-name">---</div>
+                    <div class="score-last-three" id="last-three-scores"></div>
+                </div>
+            </div>
+
+            <div id="history-modal" class="modal">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h2>📊 Historique des Points</h2>
+                        <button class="close-modal" id="close-history">✕</button>
+                    </div>
+                    <div class="history-list" id="history-items"></div>
                 </div>
             </div>
 
             <div class="stats-flex-container">
-                <div id="official-results-container" class="results-box">
+                <div class="results-box" id="official-results-container">
                     <h2>🏆 Résultats Officiels</h2>
-                    <div id="timer-display" style="background: #222; padding: 10px; border-radius: 8px; margin-bottom: 15px; border: 1px solid #444;">
-                        <div style="font-size: 0.7em; color: #aaa; text-transform: uppercase;">Temps restant avant clôture :</div>
-                        <div id="timer-race-val" style="font-family: monospace; font-size: 1.2em; color: #00ff00;">--j --h --m --s</div>
+                    
+                    <div class="sub-zone">
+                        <h4>⏱️ Sprint</h4>
+                        <div id="timer-sprint">En attente...</div>
+                    </div>
+                    <div class="sub-zone">
+                        <h4>Résultat Sprint</h4>
+                        <div id="official-sprint">En attente...</div>
                     </div>
 
                     <div class="sub-zone">
-                        <h4>Sprint</h4>
-                        <div id="official-sprint">En attente...</div>
+                        <h4>⏱️ Grand Prix</h4>
+                        <div id="timer-race">En attente...</div>
                     </div>
                     <div class="sub-zone">
-                        <h4>Grand Prix</h4>
+                        <h4>Résultat Grand Prix</h4>
                         <div id="official-race">En attente...</div>
                     </div>
                 </div>
@@ -66,11 +110,6 @@
                             <h4>Ton Grand Prix</h4>
                             <div id="recap-race" class="mini-list">Pas encore validé</div>
                             <div id="btn-edit-race-container"></div>
-                        </div>
-                        <div class="sub-zone" style="background: rgba(0, 255, 0, 0.1); border-left-color: #00ff00;">
-                            <h4>📊 Ton Score</h4>
-                            <div id="user-score" style="font-size: 1.5em; font-weight: bold; color: #00ff00; text-align: center;">-- pts</div>
-                            <div id="score-details" style="font-size: 0.85em; text-align: center; margin-top: 10px; color: #aaa;">--</div>
                         </div>
                     </div>
                 </div>
