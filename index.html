@@ -4,7 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paris MotoGP - Firebase</title>
-    <link rel="stylesheet" href="style.css">
+    <link rel="stylesheet" href="./style.css">
 </head>
 <body>
     <div class="background"></div>
@@ -81,20 +81,20 @@
                     
                     <div class="sub-zone">
                         <h4>⏱️ Sprint</h4>
-                        <div id="timer-sprint">En attente...</div>
+                        <div id="timer-sprint"></div>
                     </div>
                     <div class="sub-zone">
                         <h4>Résultat Sprint</h4>
-                        <div id="official-sprint">En attente...</div>
+                        <div id="official-sprint"></div>
                     </div>
 
                     <div class="sub-zone">
                         <h4>⏱️ Grand Prix</h4>
-                        <div id="timer-race">En attente...</div>
+                        <div id="timer-race"></div>
                     </div>
                     <div class="sub-zone">
                         <h4>Résultat Grand Prix</h4>
-                        <div id="official-race">En attente...</div>
+                        <div id="official-race"></div>
                     </div>
                 </div>
 
@@ -133,13 +133,13 @@
                                 <h3 class="course-title">SPRINT</h3>
                                 <div class="pronostic-flex-row">
                                     <div class="podium">
-                                        <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small></div>
-                                        <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small></div>
-                                        <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small></div>
+                                        <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small><div class="target-area"></div></div>
+                                        <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small><div class="target-area"></div></div>
+                                        <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small><div class="target-area"></div></div>
                                     </div>
                                     <div class="crash-bet-container">
                                         <h4 class="crash-title">Pari Chute</h4>
-                                        <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
+                                        <div class="step crash-zone" data-rank="Chute"><span>Chute</span><div class="target-area">Glisser ici</div></div>
                                     </div>
                                 </div>
                                 <button class="btn-valider" id="btn-valider-sprint">Valider le Sprint</button>
@@ -149,13 +149,13 @@
                                 <h3 class="course-title">GRAND PRIX</h3>
                                 <div class="pronostic-flex-row">
                                     <div class="podium">
-                                        <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small></div>
-                                        <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small></div>
-                                        <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small></div>
+                                        <div class="step rank-2" data-rank="2e"><span>2e</span><small>Glisser ici</small><div class="target-area"></div></div>
+                                        <div class="step rank-1" data-rank="1er"><span>1er</span><small>Glisser ici</small><div class="target-area"></div></div>
+                                        <div class="step rank-3" data-rank="3e"><span>3e</span><small>Glisser ici</small><div class="target-area"></div></div>
                                     </div>
                                     <div class="crash-bet-container">
                                         <h4 class="crash-title">Pari Chute</h4>
-                                        <div class="step crash-zone" data-rank="Chute">Glisser ici</div>
+                                        <div class="step crash-zone" data-rank="Chute"><span>Chute</span><div class="target-area">Glisser ici</div></div>
                                     </div>
                                 </div>
                                 <button class="btn-valider" id="btn-valider-race">Valider le Grand Prix</button>

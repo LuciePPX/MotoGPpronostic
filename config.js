@@ -24,51 +24,51 @@ export const DATA_PILOTES = [
 ]
 export const DATA_CALENDRIER = [
   {
-    "gp": "Grand Prix du Qatar",
-    "circuit": "Lusail International Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Lusail_International_Circuit_2023.svg",
-    "sprint": "2026-03-07T17:00:00",
-    "race": "2026-03-08T18:00:00",
+    "gp": "Grand Prix de Thaïlande",
+    "circuit": "Chang International Circuit",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/7/79/Buriram_circuit_map.svg",
+    "sprint": "2026-02-28T10:00:00",
+    "race": "2026-03-01T09:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Jorge Martín",
-        "pole": "Jorge Martín"
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Marc Márquez"
     }
   },
   {
-    "gp": "Grand Prix du Portugal",
-    "circuit": "Autódromo Internacional do Algarve",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Aut%C3%B3dromo_do_Algarve_moto.svg",
-    "sprint": "2026-03-21T16:00:00",
-    "race": "2026-03-22T15:00:00",
+    "gp": "Grand Prix du Brésil",
+    "circuit": "Autódromo Internacional Ayrton Senna",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/2/20/Goiania_International_Circuit.png",
+    "sprint": "2026-03-21T18:00:00",
+    "race": "2026-03-22T17:00:00",
     "stats2025": {
-        "vainqueurGP": "Jorge Martín",
-        "vainqueurSprint": "Maverick Viñales",
-        "pole": "Enea Bastianini"
-    }
-  },
-  {
-    "gp": "Grand Prix d'Argentine",
-    "circuit": "Termas de Río Hondo",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/8/82/Aut%C3%B3dromo_de_Termas_de_R%C3%ADo_Hondo.svg",
-    "sprint": "2026-04-04T19:00:00",
-    "race": "2026-04-05T19:00:00",
-    "stats2025": {
-        "vainqueurGP": "Marco Bezzecchi",
-        "vainqueurSprint": "Brad Binder",
-        "pole": "Alex Márquez"
+        "vainqueurGP": "N/A", // Non présent au calendrier 2025
+        "vainqueurSprint": "N/A",
+        "pole": "N/A"
     }
   },
   {
     "gp": "Grand Prix des Amériques",
     "circuit": "Circuit of The Americas",
     "image": "https://upload.wikimedia.org/wikipedia/commons/f/fb/COTA_NASCAR_Layout.png",
-    "sprint": "2026-04-11T22:00:00",
-    "race": "2026-04-12T21:00:00",
+    "sprint": "2026-03-28T22:00:00",
+    "race": "2026-03-29T21:00:00",
     "stats2025": {
-        "vainqueurGP": "Maverick Viñales",
-        "vainqueurSprint": "Maverick Viñales",
-        "pole": "Maverick Viñales"
+        "vainqueurGP": "Francesco Bagnaia",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Marc Márquez"
+    }
+  },
+  {
+    "gp": "Grand Prix du Qatar",
+    "circuit": "Lusail International Circuit",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Lusail_International_Circuit_2023.svg",
+    "sprint": "2026-04-11T17:00:00",
+    "race": "2026-04-12T18:00:00",
+    "stats2025": {
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Marc Márquez"
     }
   },
   {
@@ -78,9 +78,9 @@ export const DATA_CALENDRIER = [
     "sprint": "2026-04-25T15:00:00",
     "race": "2026-04-26T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Jorge Martín",
-        "pole": "Marc Márquez"
+        "vainqueurGP": "Álex Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Fabio Quartararo"
     }
   },
   {
@@ -90,21 +90,21 @@ export const DATA_CALENDRIER = [
     "sprint": "2026-05-09T15:00:00",
     "race": "2026-05-10T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Jorge Martín",
-        "vainqueurSprint": "Jorge Martín",
-        "pole": "Jorge Martín"
+        "vainqueurGP": "Johann Zarco",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Fabio Quartararo"
     }
   },
   {
     "gp": "Grand Prix de Catalogne",
     "circuit": "Circuit de Barcelona-Catalunya",
     "image": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Circuit_Barcelona-Catalunya_map.svg",
-    "sprint": "2026-05-23T15:00:00",
-    "race": "2026-05-24T14:00:00",
+    "sprint": "2026-05-16T15:00:00",
+    "race": "2026-05-17T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Aleix Espargaró",
-        "pole": "Aleix Espargaró"
+        "vainqueurGP": "Álex Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Álex Márquez"
     }
   },
   {
@@ -114,9 +114,33 @@ export const DATA_CALENDRIER = [
     "sprint": "2026-05-30T15:00:00",
     "race": "2026-05-31T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Pecco Bagnaia",
-        "pole": "Jorge Martín"
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Marc Márquez"
+    }
+  },
+  {
+    "gp": "Grand-Prix de Hongrie",
+    "circuit": "Balaton Park Circuit",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/5/52/Balaton_Park_Circuit.svg",
+    "sprint": "2026-06-06T15:00:00",
+    "race": "2026-06-07T14:00:00",
+    "stats2025": {
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Marc Márquez"
+    }
+  },
+  {
+    "gp": "Grand Prix de Tchéquie",
+    "circuit": "Automotodrom Brno Masaryk",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Brno_Circuit.svg",
+    "sprint": "2026-06-20T15:00:00",
+    "race": "2026-06-21T14:00:00",
+    "stats2025": {
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Francesco Bagnaia"
     }
   },
   {
@@ -126,9 +150,9 @@ export const DATA_CALENDRIER = [
     "sprint": "2026-06-27T15:00:00",
     "race": "2026-06-28T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Pecco Bagnaia",
-        "pole": "Pecco Bagnaia"
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Fabio Quartararo"
     }
   },
   {
@@ -138,33 +162,21 @@ export const DATA_CALENDRIER = [
     "sprint": "2026-07-11T15:00:00",
     "race": "2026-07-12T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Jorge Martín",
-        "pole": "Jorge Martín"
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Marc Márquez"
     }
   },
   {
     "gp": "Grand Prix de Grande-Bretagne",
     "circuit": "Silverstone Circuit",
     "image": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Silverstone_Circuit_2017.svg",
-    "sprint": "2026-08-01T16:00:00",
-    "race": "2026-08-02T14:00:00",
+    "sprint": "2026-08-08T16:00:00",
+    "race": "2026-08-09T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Enea Bastianini",
-        "vainqueurSprint": "Enea Bastianini",
-        "pole": "Aleix Espargaró"
-    }
-  },
-  {
-    "gp": "Grand Prix d'Autriche",
-    "circuit": "Red Bull Ring",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Red_Bull_Ring_map.svg",
-    "sprint": "2026-08-15T15:00:00",
-    "race": "2026-08-16T14:00:00",
-    "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Pecco Bagnaia",
-        "pole": "Jorge Martín"
+        "vainqueurGP": "Marco Bezzecchi",
+        "vainqueurSprint": "Álex Márquez",
+        "pole": "Fabio Quartararo"
     }
   },
   {
@@ -187,20 +199,20 @@ export const DATA_CALENDRIER = [
     "race": "2026-09-13T14:00:00",
     "stats2025": {
         "vainqueurGP": "Marc Márquez",
-        "vainqueurSprint": "Jorge Martín",
-        "pole": "Pecco Bagnaia"
+        "vainqueurSprint": "Marco Bezzecchi",
+        "pole": "Marco Bezzecchi"
     }
   },
   {
-    "gp": "Grand Prix d'Indonésie",
-    "circuit": "Mandalika International Street Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/8/87/Mandalika_Circuit_map.svg",
-    "sprint": "2026-09-26T09:00:00",
-    "race": "2026-09-27T09:00:00",
+    "gp": "Grand Prix d'Autriche",
+    "circuit": "Red Bull Ring",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Red_Bull_Ring_map.svg",
+    "sprint": "2026-09-19T15:00:00",
+    "race": "2026-09-20T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Jorge Martín",
-        "vainqueurSprint": "Pecco Bagnaia",
-        "pole": "Jorge Martín"
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Marco Bezzecchi"
     }
   },
   {
@@ -210,33 +222,33 @@ export const DATA_CALENDRIER = [
     "sprint": "2026-10-03T08:00:00",
     "race": "2026-10-04T07:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Pecco Bagnaia",
-        "pole": "Pedro Acosta"
+        "vainqueurGP": "Francesco Bagnaia",
+        "vainqueurSprint": "Francesco Bagnaia",
+        "pole": "Francesco Bagnaia"
+    }
+  },
+  {
+    "gp": "Grand Prix d'Indonésie",
+    "circuit": "Mandalika International Street Circuit",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/8/87/Mandalika_Circuit_map.svg",
+    "sprint": "2026-10-10T09:00:00",
+    "race": "2026-10-11T09:00:00",
+    "stats2025": {
+        "vainqueurGP": "Fermín Aldeguer",
+        "vainqueurSprint": "Marco Bezzecchi",
+        "pole": "Marco Bezzecchi"
     }
   },
   {
     "gp": "Grand Prix d'Australie",
     "circuit": "Phillip Island Circuit",
     "image": "https://upload.wikimedia.org/wikipedia/commons/5/59/Phillip_Island_GP_Circuit_map.svg",
-    "sprint": "2026-10-17T06:00:00",
-    "race": "2026-10-18T05:00:00",
+    "sprint": "2026-10-24T06:00:00",
+    "race": "2026-10-25T05:00:00",
     "stats2025": {
-        "vainqueurGP": "Marc Márquez",
-        "vainqueurSprint": "Jorge Martín",
-        "pole": "Jorge Martín"
-    }
-  },
-  {
-    "gp": "Grand Prix de Thaïlande",
-    "circuit": "Chang International Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/d/d7/Chang_International_Circuit_map.svg",
-    "sprint": "2026-10-24T10:00:00",
-    "race": "2026-10-25T09:00:00",
-    "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Enea Bastianini",
-        "pole": "Pecco Bagnaia"
+        "vainqueurGP": "Raúl Fernández",
+        "vainqueurSprint": "Marco Bezzecchi",
+        "pole": "Fabio Quartararo"
     }
   },
   {
@@ -246,21 +258,33 @@ export const DATA_CALENDRIER = [
     "sprint": "2026-10-31T08:00:00",
     "race": "2026-11-01T08:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Jorge Martín",
-        "pole": "Pecco Bagnaia"
+        "vainqueurGP": "Álex Márquez",
+        "vainqueurSprint": "Francesco Bagnaia",
+        "pole": "Francesco Bagnaia"
+    }
+  },
+  {
+    "gp": "Grand Prix du Portugal",
+    "circuit": "Autódromo Internacional do Algarve",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Aut%C3%B3dromo_do_Algarve_moto.svg",
+    "sprint": "2026-11-14T16:00:00",
+    "race": "2026-11-15T15:00:00",
+    "stats2025": {
+        "vainqueurGP": "Marco Bezzecchi",
+        "vainqueurSprint": "Álex Márquez",
+        "pole": "Marco Bezzecchi"
     }
   },
   {
     "gp": "Grand Prix de Valence",
     "circuit": "Circuit Ricardo Tormo",
     "image": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Circuit_Ricardo_Tormo_map.svg",
-    "sprint": "2026-11-14T15:00:00",
-    "race": "2026-11-15T14:00:00",
+    "sprint": "2026-11-21T15:00:00",
+    "race": "2026-11-22T14:00:00",
     "stats2025": {
-        "vainqueurGP": "Pecco Bagnaia",
-        "vainqueurSprint": "Jorge Martín",
-        "pole": "Jorge Martín"
+        "vainqueurGP": "Marco Bezzecchi",
+        "vainqueurSprint": "Álex Márquez",
+        "pole": "Marco Bezzecchi"
     }
   }
 ];
