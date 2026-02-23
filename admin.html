@@ -1,205 +1,123 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Admin - Résultats MotoGP</title>
-    <link rel="stylesheet" href="style.css">
-    <style>
-        /* Styles spécifiques pour l'admin pour éviter la page blanche visuelle */
-        body { font-family: 'Oswald', sans-serif; background: #1a1a1a; color: white; display: flex; justify-content: center; align-items: center; min-height: 100vh; margin: 0; }
-        .admin-box { width: 100%; max-width: 500px; padding: 30px; background: rgba(0,0,0,0.9); border-radius: 15px; border: 2px solid #e10600; box-shadow: 0 0 20px rgba(225, 6, 0, 0.3); }
-        h1 { color: #e10600; text-align: center; text-transform: uppercase; }
-        input, select { width: 100%; padding: 12px; margin: 10px 0; border-radius: 5px; border: 1px solid #444; background: #222; color: white; font-size: 1em; }
-        .grid-admin { display: grid; grid-template-columns: 1fr 1fr; gap: 15px; margin-top: 20px; }
-        .btn-valider { width: 100%; background: #e10600; color: white; border: none; padding: 15px; border-radius: 5px; font-weight: bold; cursor: pointer; text-transform: uppercase; margin-top: 20px; }
-        #status-msg { text-align: center; margin-top: 15px; font-weight: bold; }
-        hr { border: 0; border-top: 1px solid #444; margin: 20px 0; }
-    </style>
+<meta charset="UTF-8">
+<title>Admin - Résultats MotoGP</title>
+<link rel="stylesheet" href="./style.css">
+<style>
+body { font-family: 'Oswald', sans-serif; background:#1a1a1a; color:white; display:flex; justify-content:center; align-items:center; min-height:100vh; }
+.admin-box { width:100%; max-width:500px; padding:30px; background:rgba(0,0,0,0.9); border-radius:15px; border:2px solid #e10600; }
+input, select, button { width:100%; padding:10px; margin-top:5px; }
+.grid-admin { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.btn-valider { background:#e10600; color:white; border:none; cursor:pointer; margin-top:15px; }
+</style>
 </head>
+
 <body>
+<div class="admin-box">
+<h1>🏆 Résultats</h1>
 
-    <div class="admin-box">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
-            <h1>🏆 Entrer les Résultats</h1>
-            <a href="index.html" style="color: #e10600; text-decoration: none; font-size: 1.2em; font-weight: bold;">← Retour</a>
-        </div>
-        
-        <label>Code d'accès :</label>
-        <input type="password" id="admin-pass" placeholder="Mot de passe admin">
-        
-        <hr>
-        
-        <label>Type de Session :</label>
-        <select id="type-session">
-            <option value="Sprint">Sprint (Samedi)</option>
-            <option value="Race">Grand Prix (Dimanche)</option>
-        </select>
+<label>Mot de passe</label>
+<input type="password" id="admin-pass">
 
-        <div class="grid-admin">
-            <div>
-                <label>🥇 1er</label>
-                <select id="res-1"><option value="">Chargement...</option></select>
-            </div>
-            <div>
-                <label>🥈 2ème</label>
-                <select id="res-2"><option value="">Chargement...</option></select>
-            </div>
-            <div>
-                <label>🥉 3ème</label>
-                <select id="res-3"><option value="">Chargement...</option></select>
-            </div>
-            <div>
-                <label>⚠️ Chute</label>
-                <select id="res-chute"><option value="">Chargement...</option></select>
-            </div>
-        </div>
+<label>Session</label>
+<select id="type-session">
+<option value="Sprint">Sprint</option>
+<option value="Race">Race</option>
+</select>
 
-        <button class="btn-valider" id="btn-publier">Publier sur Firebase</button>
-        <p id="status-msg"></p>
-    </div>
+<div class="grid-admin">
+<div>
+<label>🥇 1er</label>
+<select id="res-1"></select>
+</div>
+<div>
+<label>🥈 2e</label>
+<select id="res-2"></select>
+</div>
+<div>
+<label>🥉 3e</label>
+<select id="res-3"></select>
+</div>
+<div>
+<label>⚠️ Chute(s)</label>
+<div id="crash-selects-container">
+<select class="res-chute"></select>
+</div>
+<button id="add-crash" type="button">+ Ajouter une chute</button>
+</div>
+</div>
 
-    <script type="module">
-        import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-        import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-        import { DATA_PILOTES } from "./config.js";
+<button id="btn-publier" class="btn-valider">Publier</button>
+<p id="status-msg"></p>
+</div>
 
-        const firebaseConfig = {
-            apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
-            authDomain: "motogppronostic.firebaseapp.com",
-            databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
-            projectId: "motogppronostic"
-        };
+<script type="module">
+import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
+import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { DATA_PILOTES } from "./config.js";
 
-        const app = initializeApp(firebaseConfig);
-        const db = getDatabase(app);
+const firebaseConfig = {
+ apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
+ authDomain: "motogppronostic.firebaseapp.com",
+ databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
+ projectId: "motogppronostic"
+};
 
-        // Fonction pour calculer les points
-        function calculerPoints(prono, resultat) {
-            let points = 0;
+const app = initializeApp(firebaseConfig);
+const db = getDatabase(app);
 
-            if (prono["Chute"] === resultat["Chute"]) {
-                points += 1;
-            }
+// ===== Remplir menus =====
+function remplirSelect(select) {
+ select.innerHTML = `<option value="">-- Choisir --</option>`;
+ const pilotes = [...DATA_PILOTES].sort((a,b)=>a.nom.localeCompare(b.nom));
+ pilotes.forEach(p=>{
+  const opt=document.createElement("option");
+  opt.value=p.num;
+  opt.textContent=`#${p.num} - ${p.nom}`;
+  select.appendChild(opt);
+ });
+}
 
-            if (prono["1er"] === resultat["1er"]) {
-                points += 3;
-            } else if (prono["1er"] !== "---") {
-                if (prono["1er"] === resultat["2e"] || prono["1er"] === resultat["3e"]) {
-                    points += 1;
-                } else if (![resultat["1er"], resultat["2e"], resultat["3e"]].includes(prono["1er"])) {
-                    points += 3;
-                }
-            }
+["res-1","res-2","res-3"].forEach(id=>{
+ remplirSelect(document.getElementById(id));
+});
+remplirSelect(document.querySelector(".res-chute"));
 
-            if (prono["2e"] === resultat["2e"]) {
-                points += 2;
-            } else if (prono["2e"] !== "---") {
-                if (prono["2e"] === resultat["1er"] || prono["2e"] === resultat["3e"]) {
-                    points += 1;
-                } else if (![resultat["1er"], resultat["2e"], resultat["3e"]].includes(prono["2e"])) {
-                    points += 3;
-                }
-            }
+// ===== Ajouter chute =====
+document.getElementById("add-crash").onclick=()=>{
+ const sel=document.createElement("select");
+ sel.className="res-chute";
+ remplirSelect(sel);
+ document.getElementById("crash-selects-container").appendChild(sel);
+};
 
-            if (prono["3e"] === resultat["3e"]) {
-                points += 1;
-            } else if (prono["3e"] !== "---") {
-                if (prono["3e"] === resultat["1er"] || prono["3e"] === resultat["2e"]) {
-                    points += 1;
-                } else if (![resultat["1er"], resultat["2e"], resultat["3e"]].includes(prono["3e"])) {
-                    points += 3;
-                }
-            }
+// ===== Publier =====
+document.getElementById("btn-publier").onclick=async()=>{
+ const pass=document.getElementById("admin-pass").value;
+ if(pass!=="1234") return alert("Mot de passe incorrect");
 
-            return points;
-        }
+ const session=document.getElementById("type-session").value;
 
-        // Remplir les menus au chargement
-        function remplirMenusAdmin() {
-            const selects = ["res-1", "res-2", "res-3", "res-chute"];
-            if (!DATA_PILOTES) return console.error("Données pilotes introuvables !");
-            
-            const pilotesTries = [...DATA_PILOTES].sort((a, b) => a.nom.localeCompare(b.nom));
+ const chutes=[...document.querySelectorAll(".res-chute")]
+   .map(s=>parseInt(s.value))
+   .filter(v=>!isNaN(v));
 
-            selects.forEach(id => {
-                const selectEl = document.getElementById(id);
-                if (selectEl) {
-                    selectEl.innerHTML = `<option value="">-- Choisir --</option>`;
-                    pilotesTries.forEach(p => {
-                        const option = document.createElement('option');
-                        option.value = p.nom;
-                        option.textContent = `#${p.num} - ${p.nom}`;
-                        selectEl.appendChild(option);
-                    });
-                }
-            });
-        }
+ const results={
+  "1er":parseInt(document.getElementById("res-1").value),
+  "2e":parseInt(document.getElementById("res-2").value),
+  "3e":parseInt(document.getElementById("res-3").value),
+  "Chute":chutes,
+  "timestamp":new Date().toISOString()
+ };
 
-        remplirMenusAdmin();
+ if(!results["1er"]) return alert("Choisis au moins le vainqueur");
 
-        document.getElementById('btn-publier').onclick = async () => {
-            const pass = document.getElementById('admin-pass').value;
-            const session = document.getElementById('type-session').value;
-            
-            if (pass !== "1234") return alert("Accès refusé");
+ const raceName="currentRace"; // à adapter plus tard avec ton calendrier
+ await set(ref(db,`resultats/${session}/${raceName}`),results);
 
-            const results = {
-                "1er": document.getElementById('res-1').value,
-                "2e": document.getElementById('res-2').value,
-                "3e": document.getElementById('res-3').value,
-                "Chute": document.getElementById('res-chute').value,
-                "timestamp": new Date().toISOString()
-            };
-
-            if(!results["1er"]) return alert("Sélectionne au moins le vainqueur !");
-
-            try {
-                // Publier les résultats
-                await set(ref(db, 'resultats/' + session), results);
-
-                // Calculer et enregistrer les points pour TOUS les joueurs
-                const pronosSnapshot = await get(ref(db, 'pronostics/'));
-                if (pronosSnapshot.exists()) {
-                    const allPronos = pronosSnapshot.val();
-                    
-                    for (const pseudo in allPronos) {
-                        if (allPronos[pseudo][session]) {
-                            const prono = allPronos[pseudo][session].choix;
-                            const points = calculerPoints(prono, results);
-
-                            // Récupérer les scores existants
-                            const scoresSnapshot = await get(ref(db, 'scores/' + pseudo));
-                            let totalScore = 0;
-                            let courseScores = {};
-
-                            if (scoresSnapshot.exists()) {
-                                const scoresData = scoresSnapshot.val();
-                                totalScore = scoresData.total || 0;
-                                courseScores = scoresData.courses || {};
-                            }
-
-                            // Ajouter les nouveaux points
-                            courseScores[session] = points;
-                            totalScore += points;
-
-                            // Sauvegarder les scores
-                            await set(ref(db, 'scores/' + pseudo), {
-                                total: totalScore,
-                                courses: courseScores,
-                                lastUpdated: new Date().toISOString()
-                            });
-                        }
-                    }
-                }
-
-                const msg = document.getElementById('status-msg');
-                msg.innerText = "✅ Résultats publiés et points calculés !";
-                msg.style.color = "lime";
-            } catch (e) {
-                alert("Erreur Firebase : " + e.message);
-            }
-        };
-    </script>
+ document.getElementById("status-msg").textContent="✅ Résultats publiés";
+};
+</script>
 </body>
 </html>

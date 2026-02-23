@@ -99,6 +99,8 @@ function initialiserJeu() {
     afficherScore();
     setupDropZones();
     setupButtons();
+    setupModals();
+
     
     // Vérifier les résultats toutes les 30 secondes
     setInterval(() => {
@@ -123,6 +125,48 @@ function initialiserJeu() {
     }, 30000);
 }
 
+function setupModals() {
+    // --- MODAL HISTORIQUE ---
+    const historyIcon = document.getElementById('open-history');
+    const modalHistorique = document.getElementById('history-modal');
+    const closeHistory = document.getElementById('close-history'); // Assure-toi d'avoir cet ID
+
+    if (historyIcon && modalHistorique) {
+        historyIcon.addEventListener('click', () => {
+            modalHistorique.classList.add('active');
+            if (typeof afficherHistorique === 'function') afficherHistorique();
+        });
+    }
+
+    // --- MODAL CLASSEMENT ---
+    const btnClassement = document.querySelector('.btn-classement'); // Ton bouton dans le header
+    const modalClassement = document.getElementById('classement-modal');
+    const closeClassement = document.getElementById('close-classement');
+
+    if (btnClassement && modalClassement) {
+        btnClassement.addEventListener('click', (e) => {
+            e.preventDefault(); // Empêche le changement de page si c'est un lien
+            modalClassement.classList.add('active');
+            if (typeof chargerClassementGlobal === 'function') chargerClassementGlobal();
+        });
+    }
+
+    // --- FERMETURE COMMUNE (Cliquer sur le X ou à côté de la modal) ---
+    const modals = document.querySelectorAll('.modal');
+    modals.forEach(modal => {
+        const closeBtn = modal.querySelector('.close-modal');
+        
+        // Fermer via le bouton X
+        if (closeBtn) {
+            closeBtn.addEventListener('click', () => modal.classList.remove('active'));
+        }
+
+        // Fermer en cliquant sur le fond noir
+        modal.addEventListener('click', (e) => {
+            if (e.target === modal) modal.classList.remove('active');
+        });
+    });
+}
 // ===== FUNCTION: CHARGER DONNÉES FIREBASE =====
 function chargerDonneesFirebase() {
     // Charger les pronostics
@@ -421,26 +465,15 @@ let draggedFromZone = null; // Permet de tracker si on drag d'une zone
 
 function handleDragStart(e) {
     draggedElement = e.target;
+    draggedFromZone = draggedElement.closest('.step');
     e.target.style.opacity = '0.5';
-    e.dataTransfer.effectAllowed = 'move';
-    
-    // Vérifier si l'élément est dans une zone de drop
-    const parentZone = draggedElement.closest('.step');
-    if (parentZone) {
-        draggedFromZone = parentZone;
-    } else {
-        draggedFromZone = null;
-    }
 }
 
 function handleDragEnd(e) {
-    if (e.target) {
-        e.target.style.opacity = '1';
-    }
+    if (e.target) e.target.style.opacity = '1';
     draggedElement = null;
     draggedFromZone = null;
 }
-
 // ===== FUNCTION: SETUP DROP ZONES =====
 function setupDropZones() {
     const dropZones = document.querySelectorAll('.step');
@@ -557,117 +590,92 @@ function afficherPiloteEnZone(pilote, rank) {
         `;
     }
 }
-
 function handleDrop(e) {
     e.preventDefault();
-
     const zone = e.currentTarget;
     if (!draggedElement) return;
 
-    // Déterminer le type de course et le rang
     const sectionId = zone.closest('[id^="section-"]')?.id;
     const type = sectionId === 'section-sprint' ? 'sprint' : 'race';
     const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
 
-    // Déterminer le rang/zone en utilisant data-rank
     const rank = zone.getAttribute('data-rank') || 'Chute';
 
-    // Récupérer le numéro du pilote qui est déplacé
     const num = parseInt(draggedElement.dataset.num);
     const nom = draggedElement.dataset.nom;
 
-    // Si la zone de destination contient déjà un pilote différent, le libérer
-    const existingCard = zone.querySelector('.target-area .pilote-card');
-    if (existingCard && existingCard !== draggedElement) {
-        const existingNum = parseInt(existingCard.dataset.num);
-        // supprimer l'ancienne valeur de la prédiction avant de l'écraser
-        delete predictions[rank];
-        // remettre le pilote existant dans la liste si il n'est plus utilisé
-        const pilotesCards = document.querySelectorAll('.pilotes-list .pilote-card');
-        pilotesCards.forEach((card) => {
-            if (parseInt(card.dataset.num) === existingNum) {
-                const stillUsed = estUtilise(existingNum);
-                if (!stillUsed) {
-                    card.classList.remove('used');
-                }
-            }
-        });
-    }
-
-    // Si on drag depuis une zone de drop, retirer de l'ancienne zone
+    // 🔴 enlever l'ancienne position si elle existe
     if (draggedFromZone && draggedFromZone !== zone) {
         const oldRank = draggedFromZone.getAttribute('data-rank');
         const oldSectionId = draggedFromZone.closest('[id^="section-"]')?.id;
         const oldType = oldSectionId === 'section-sprint' ? 'sprint' : 'race';
         const oldPredictions = oldType === 'sprint' ? sprintPredictions : racePredictions;
-        
-        // Retirer de l'ancienne position
+
         delete oldPredictions[oldRank];
-        const oldContent = draggedFromZone.querySelector('.target-area');
+
+        const oldContent = draggedFromZone.querySelector('.target-area, .crash-zone');
         if (oldContent) oldContent.innerHTML = '';
+
         const placeholder = draggedFromZone.querySelector('small');
         if (placeholder) placeholder.style.display = '';
+
         draggedFromZone.classList.remove('used-crash');
         draggedFromZone.style.background = '';
-        
-        // Mettre à jour la prédiction (localement) ; on n'envoie à Firebase que lors de la validation
-        // set(ref(db, `pronostics/${pseudo}/${oldType}`), oldPredictions);
-        
-        // Nettoyer la liste des pilotes à cette ancienne position
-        const pilotesCards = document.querySelectorAll('.pilotes-list .pilote-card');
-        const isStillUsed = estUtilise(num);
-        pilotesCards.forEach((card) => {
-            if (parseInt(card.dataset.num) === num && !isStillUsed) {
+    }
+
+    // 🔴 si un pilote était déjà dans cette zone → le libérer
+    const existingCard = zone.querySelector('.pilote-card');
+    if (existingCard) {
+        const existingNum = parseInt(existingCard.dataset.num);
+        delete predictions[rank];
+
+        document.querySelectorAll('.pilotes-list .pilote-card').forEach(card => {
+            if (parseInt(card.dataset.num) === existingNum) {
                 card.classList.remove('used');
             }
         });
     }
 
-    // Ajouter le pilote à la nouvelle zone
+    // 🟢 enregistrer la prédiction
     predictions[rank] = num;
 
-    // Insérer le pilote dans la zone cible sans effacer le rang
-    const contentArea = zone.querySelector('.target-area');
+    const contentArea = zone.querySelector('.target-area') || zone;
     const placeholder = zone.querySelector('small');
     if (placeholder) placeholder.style.display = 'none';
-    if (contentArea) {
-        contentArea.innerHTML = afficherPiloteEnZone({ num: num, nom: nom }, rank);
-        const newCard = contentArea.querySelector('.pilote-card');
-        attachDragListeners(newCard);
-    }
 
-    // Marquer comme used dans la liste
-    const pilotesCards = document.querySelectorAll('.pilotes-list .pilote-card');
-    pilotesCards.forEach((card) => {
+    contentArea.innerHTML = afficherPiloteEnZone({ num, nom }, rank);
+    attachDragListeners(contentArea.querySelector('.pilote-card'));
+
+    document.querySelectorAll('.pilotes-list .pilote-card').forEach(card => {
         if (parseInt(card.dataset.num) === num) {
             card.classList.add('used');
         }
     });
 
-    // Refresh zones
     zone.style.background = '';
-    if (zone.classList.contains('crash-zone')) {
-        zone.classList.add('used-crash');
-    }
+    if (zone.classList.contains('crash-zone')) zone.classList.add('used-crash');
 
-    // Ne pas envoyer immédiatement à Firebase lors du drag : la validation finale interviendra
-    // (cela évite la confusion où l'utilisateur ne voit rien se passer en cliquant sur "Valider" parce
-    // que les données ont déjà été écrites lors des déplacements).
     mettreAJourAffichagePronostics();
-    // ne pas mettre à jour le récap ici ; la validation est le moment où l'on affiche le pronostic dans la zone « tes pronostics »
 }
 
 // ===== FUNCTION: METTRE À JOUR AFFICHAGE PRONOSTICS =====
 function mettreAJourAffichagePronostics() {
-    const sprintComplete = sprintPredictions['1er'] && sprintPredictions['2e'] && sprintPredictions['3e'];
-    const raceComplete = racePredictions['1er'] && racePredictions['2e'] && racePredictions['3e'];
+    // On vérifie la présence des 3 places ET de la chute
+    const sprintComplete = sprintPredictions['1er'] && sprintPredictions['2e'] && sprintPredictions['3e'] && sprintPredictions['Chute'];
+    const raceComplete = racePredictions['1er'] && racePredictions['2e'] && racePredictions['3e'] && racePredictions['Chute'];
 
     const pilotesColumn = document.querySelector('.pilotes-column');
+    const podiumColumn = document.querySelector('.podium-column');
+
     if (pilotesColumn) {
         if (sprintComplete && raceComplete) {
+            // Cache la liste des pilotes et le podium de saisie
             pilotesColumn.style.display = 'none';
+            if (podiumColumn) podiumColumn.style.display = 'none';
         } else {
+            // Affiche tant que les deux ne sont pas finis
             pilotesColumn.style.display = 'flex';
+            if (podiumColumn) podiumColumn.style.display = 'flex';
         }
     }
 }
@@ -679,8 +687,7 @@ function updateSectionsVisibility() {
     const sectionRace = document.getElementById('section-race');
     const title = document.getElementById('current-title');
 
-    const sprintComplete = sprintPredictions['1er'] && sprintPredictions['2e'] && sprintPredictions['3e'];
-    if (sprintComplete || !canModify('sprint')) {
+    const sprintComplete = sprintPredictions['1er'] && sprintPredictions['2e'] && sprintPredictions['3e'] && sprintPredictions['Chute'];    if (sprintComplete || !canModify('sprint')) {
         sectionSprint?.classList.add('hidden');
         sectionRace?.classList.remove('hidden');
         if (title) title.textContent = 'Choisissez pour le GRAND PRIX';
@@ -710,10 +717,12 @@ function afficherRecap(type) {
             const p1 = DATA_PILOTES.find(p => parseInt(p.num) === predictions['1er']);
             const p2 = DATA_PILOTES.find(p => parseInt(p.num) === predictions['2e']);
             const p3 = DATA_PILOTES.find(p => parseInt(p.num) === predictions['3e']);
+            const pChute = DATA_PILOTES.find(p => parseInt(p.num) === predictions['Chute']);
             recapEl.innerHTML = `
-                <div>1️⃣ ${p1 ? p1.nom : 'TBD'}</div>
-                <div>2️⃣ ${p2 ? p2.nom : 'TBD'}</div>
-                <div>3️⃣ ${p3 ? p3.nom : 'TBD'}</div>
+                <div>🥇 ${p1 ? p1.nom : 'TBD'}</div>
+                <div>🥈 ${p2 ? p2.nom : 'TBD'}</div>
+                <div>🥉 ${p3 ? p3.nom : 'TBD'}</div>
+                <div class="recap-item recap-chute">💥 Chute: ${pChute ? pChute.nom : 'Aucun'}</div>
             `;
         } else {
             recapEl.innerHTML = 'Pas encore validé';
@@ -831,6 +840,7 @@ function demarrerTimer(type, sectionId) {
 }
 
 // ===== FUNCTION: AFFICHER RÉSULTATS =====
+
 function afficherResultats(type, sectionId) {
     const timerElement = document.getElementById(`timer-${type}`);
     if (!timerElement) return;
@@ -928,7 +938,10 @@ function calculerPointsUtilisateur(type) {
     // Sauvegarder les points dans firebase
     const raceId = raceCourante.gp.replace(/\s+/g, '_');
     const scoresRef = ref(db, `scores_details/${pseudo}/${raceId}/${type}`);
-    set(scoresRef, pointsGagnes);
+    get(scoresRef).then(snap => {
+        if (snap.exists()) return; // déjà calculé
+        set(scoresRef, pointsGagnes);
+    });
 
     // Mettre à jour le score total
     get(ref(db, 'scores/' + pseudo)).then((snapshot) => {
@@ -1038,8 +1051,8 @@ function validerPronostic(type) {
     const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
     
     // Vérifier que tous les podiums sont remplis
-    if (!predictions['1er'] || !predictions['2e'] || !predictions['3e']) {
-        alert('Veuillez compléter les 3 places du podium avant de valider');
+        if (!predictions['1er'] || !predictions['2e'] || !predictions['3e'] || !predictions['Chute']) {
+        alert('Veuillez compléter le podium ET le pari chute avant de valider');
         return;
     }
 
