@@ -52,72 +52,7 @@ input, select, button { width:100%; padding:10px; margin-top:5px; }
 <p id="status-msg"></p>
 </div>
 
-<script type="module">
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { DATA_PILOTES } from "./config.js";
-
-const firebaseConfig = {
- apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
- authDomain: "motogppronostic.firebaseapp.com",
- databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
- projectId: "motogppronostic"
-};
-
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
-
-// ===== Remplir menus =====
-function remplirSelect(select) {
- select.innerHTML = `<option value="">-- Choisir --</option>`;
- const pilotes = [...DATA_PILOTES].sort((a,b)=>a.nom.localeCompare(b.nom));
- pilotes.forEach(p=>{
-  const opt=document.createElement("option");
-  opt.value=p.num;
-  opt.textContent=`#${p.num} - ${p.nom}`;
-  select.appendChild(opt);
- });
-}
-
-["res-1","res-2","res-3"].forEach(id=>{
- remplirSelect(document.getElementById(id));
-});
-remplirSelect(document.querySelector(".res-chute"));
-
-// ===== Ajouter chute =====
-document.getElementById("add-crash").onclick=()=>{
- const sel=document.createElement("select");
- sel.className="res-chute";
- remplirSelect(sel);
- document.getElementById("crash-selects-container").appendChild(sel);
-};
-
-// ===== Publier =====
-document.getElementById("btn-publier").onclick=async()=>{
- const pass=document.getElementById("admin-pass").value;
- if(pass!=="1234") return alert("Mot de passe incorrect");
-
- const session=document.getElementById("type-session").value;
-
- const chutes=[...document.querySelectorAll(".res-chute")]
-   .map(s=>parseInt(s.value))
-   .filter(v=>!isNaN(v));
-
- const results={
-  "1er":parseInt(document.getElementById("res-1").value),
-  "2e":parseInt(document.getElementById("res-2").value),
-  "3e":parseInt(document.getElementById("res-3").value),
-  "Chute":chutes,
-  "timestamp":new Date().toISOString()
- };
-
- if(!results["1er"]) return alert("Choisis au moins le vainqueur");
-
- const raceName="currentRace"; // à adapter plus tard avec ton calendrier
- await set(ref(db,`resultats/${session}/${raceName}`),results);
-
- document.getElementById("status-msg").textContent="✅ Résultats publiés";
-};
-</script>
+<!-- On charge maintenant le JS séparé -->
+<script type="module" src="./admin.js"></script>
 </body>
 </html>

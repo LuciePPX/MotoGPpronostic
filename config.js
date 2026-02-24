@@ -27,7 +27,7 @@ export const DATA_CALENDRIER = [
     "gp": "Grand Prix de Thaïlande",
     "circuit": "Chang International Circuit",
     "image": "https://upload.wikimedia.org/wikipedia/commons/7/79/Buriram_circuit_map.svg",
-    "sprint": "2026-02-28T10:00:00",
+    "sprint": "2026-02-28T09:00:00",
     "race": "2026-03-01T09:00:00",
     "stats2025": {
         "vainqueurGP": "Marc Márquez",

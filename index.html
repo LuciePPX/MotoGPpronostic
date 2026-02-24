@@ -23,6 +23,7 @@
             <div class="game-header">
                 <h1 id="welcome-title">Bienvenue</h1>
                 <button type="button" class="btn-classement" id="btn-ouvrir-classement">🏆 Classement</button>
+                <button type="button" class="btn-classement" id="btn-regles">📋 Règles</button>
             </div>
 
             <div class="race-score-wrapper">
@@ -83,7 +84,7 @@
                         <h4>⏱️ Sprint</h4>
                         <div id="timer-sprint"></div>
                     </div>
-                    <div class="sub-zone">
+                    <div class="sub-zone"> 
                         <h4>Résultat Sprint</h4>
                         <div id="official-sprint"></div>
                     </div>
@@ -186,6 +187,40 @@
                 </thead>
                 <tbody id="classement-items"></tbody>
             </table>
+        </div>
+    </div>
+</div>
+<div id="regles-modal" class="modal">
+    <div class="modal-content">
+        <div class="modal-header">
+            <h2>📋 Règles du jeu</h2>
+            <button class="close-modal" id="close-regles">✕</button>
+        </div>
+
+        <div class="classement-body regles-body">
+            <p><strong>Chaque week-end :</strong></p>
+            <ul>
+                <li>2 courses sont disputées : <strong>Sprint</strong> & <strong>Race</strong></li>
+                <li>Le joueur doit parier sur :</li>
+                <ul>
+                    <li>🥇🥈🥉 Le podium de chaque course</li>
+                    <li>💥 La chute d’un pilote</li>
+                </ul>
+                <li>⏱️ Dernier délai : <strong>heure de la course</strong> (après, les cellules sont bloquées)</li>
+            </ul>
+
+            <h3>🎯 Attribution des points</h3>
+            <ul>
+                <li>💥 <strong>-1 point</strong> si la chute est bien prédite</li>
+                <li>🥇 <strong>-3 points</strong> → bon pilote, bonne place (1er)</li>
+                <li>🥈 <strong>-2 points</strong> → bon pilote, bonne place (2e)</li>
+                <li>🥉 <strong>-1 point</strong> → bon pilote, bonne place (3e)</li>
+                <li>🔄 <strong>+1 point</strong> → bon pilote, mauvaise place</li>
+                <li>❌ <strong>+3 points</strong> → pilote absent du podium</li>
+            </ul>
+
+            <h3>🏁 Fin de saison</h3>
+            <p>Le joueur avec le moins de points à la fin de la saison gagne le championnat !</p>
         </div>
     </div>
 </div>

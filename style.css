@@ -141,6 +141,28 @@ button {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
+.regles-body {
+    color: var(--text-secondary);
+    font-size: 0.95em;
+    line-height: 1.8;
+}
+
+.regles-body ul {
+    margin-left: 20px;
+    margin-bottom: 15px;
+}
+
+.regles-body li {
+    margin-bottom: 6px;
+}
+
+.regles-body h3 {
+    margin-top: 20px;
+    margin-bottom: 10px;
+    color: var(--red);
+    font-family: 'Oswald', sans-serif;
+    text-transform: uppercase;
+}
 
 /* ===== AUTH SCREEN ===== */
 .auth-container {
@@ -456,6 +478,9 @@ button {
     box-shadow: inset 0 0 15px rgba(225, 6, 0, 0.15), var(--shadow-md);
 }
 
+.hidden-timer {
+    display: none;
+}
 /* ===== PODIUMS & DRAG/DROP ===== */
 .container {
     background: transparent;

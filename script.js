@@ -35,7 +35,8 @@ let editingType = null;
 let currentRaceIndex = 0; // Index de la course actuelle dans le calendrier
 let timerIntervals = {}; // Stockage des intervalles de timer
 let firebaseListeners = {}; // Stockage des écouteurs Firebase
-
+let sprintValide = false;
+let raceValide = false;
 // ===== ÉCRAN D'AUTH =====
 document.addEventListener('DOMContentLoaded', () => {
     const authContainer = document.getElementById('login-screen');
@@ -168,98 +169,101 @@ function setupModals() {
     });
 }
 // ===== FUNCTION: CHARGER DONNÉES FIREBASE =====
+function getPronosticPath(type) {
+    const raceCourante = getRaceCourante();
+    if (!raceCourante) return null;
+
+    const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
+    return `pronostics/${pseudo}/${raceKey}/${type}`;
+}
+
 function chargerDonneesFirebase() {
-    // Charger les pronostics
-    const dbRef = ref(db, 'pronostics/' + pseudo);
+    // Récupérer la course courante une seule fois
+    const raceCourante = getRaceCourante();
+    if (!raceCourante) return;
+
+    // Générer la clé de course pour Firebase
+    const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
+
+    // ------------------ Charger les pronostics ------------------
+    const dbRef = ref(db, `pronostics/${pseudo}/${raceKey}`);
     const listenerKey = 'pronostics_' + pseudo;
-    
+
     if (firebaseListeners[listenerKey]) {
         firebaseListeners[listenerKey].unsubscribe?.();
     }
-    
+
     const unsubscribe = onValue(dbRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            sprintPredictions = data.sprint || {};
-            racePredictions = data.race || {};
-        }
+        const data = snapshot.val() || {};
+        sprintPredictions = data.sprint || {};
+        racePredictions = data.race || {};
+
         chargerPronosticsUtilisateur();
         chargerResultatsOfficiels();
     });
     firebaseListeners[listenerKey] = { unsubscribe };
 
-    // Charger les résultats officiels
-    const raceCourante = getRaceCourante();
-    if (raceCourante) {
-        const sprintName = raceCourante.gp.replace(/\s+/g, '_');
-        
-        // Écouter résultats Sprint
-        const sprintResultsRef = ref(db, `resultats/Sprint/${sprintName}`);
-        const sprintKey = 'sprint_results_' + sprintName;
-        
-        if (firebaseListeners[sprintKey]) {
-            firebaseListeners[sprintKey].unsubscribe?.();
-        }
-        
-        const unsubscribeSprint = onValue(sprintResultsRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                sprintResults = data;
-                afficherResultats('sprint', 'section-sprint');
-                calculerPointsUtilisateur('sprint');
-                mettreAJourScoreCard();
-            }
-        });
-        firebaseListeners[sprintKey] = { unsubscribe: unsubscribeSprint };
+    // ------------------ Charger les résultats officiels ------------------
+    const sprintKey = 'sprint_results_' + raceKey;
+    const raceResultsKey = 'race_results_' + raceKey;
 
-        // Écouter résultats Race
-        const raceResultsRef = ref(db, `resultats/Race/${sprintName}`);
-        const raceKey = 'race_results_' + sprintName;
-        
-        if (firebaseListeners[raceKey]) {
-            firebaseListeners[raceKey].unsubscribe?.();
+    // Écouter résultats Sprint
+    const sprintResultsRef = ref(db, `resultats/Sprint/${raceKey}`);
+    if (firebaseListeners[sprintKey]) firebaseListeners[sprintKey].unsubscribe?.();
+    const unsubscribeSprint = onValue(sprintResultsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            sprintResults = data;
+            afficherResultats('sprint', 'section-sprint');
+            calculerPointsUtilisateur('sprint');
+            mettreAJourScoreCard();
         }
-        
-        const unsubscribeRace = onValue(raceResultsRef, (snapshot) => {
-            const data = snapshot.val();
-            if (data) {
-                raceResults = data;
-                afficherResultats('race', 'section-race');
-                calculerPointsUtilisateur('race');
-                mettreAJourScoreCard();
-            }
-        });
-        firebaseListeners[raceKey] = { unsubscribe: unsubscribeRace };
-    }
+    });
+    firebaseListeners[sprintKey] = { unsubscribe: unsubscribeSprint };
 
-    // Charger les scores
+    // Écouter résultats Race
+    const raceResultsRef = ref(db, `resultats/Race/${raceKey}`);
+    if (firebaseListeners[raceResultsKey]) firebaseListeners[raceResultsKey].unsubscribe?.();
+    const unsubscribeRace = onValue(raceResultsRef, (snapshot) => {
+        const data = snapshot.val();
+        if (data) {
+            raceResults = data;
+            afficherResultats('race', 'section-race');
+            calculerPointsUtilisateur('race');
+            mettreAJourScoreCard();
+        }
+    });
+    firebaseListeners[raceResultsKey] = { unsubscribe: unsubscribeRace };
+
+    // ------------------ Charger les scores ------------------
     chargerScoresUtilisateur();
 }
 
 // ===== FUNCTION: OBTENIR LA RACE COURANTE =====
-function getRaceCourante() {
+export function getRaceCourante() {
     const maintenant = new Date();
-    
-    // Trouver la course dont la race n'est pas encore passée
+
     for (let i = 0; i < DATA_CALENDRIER.length; i++) {
         const race = DATA_CALENDRIER[i];
+        const dateSprint = new Date(race.sprint);
         const dateRace = new Date(race.race);
-        
-        // Ajouter 2 heures au temps réel (durée approximative d'une course)
+
+        // On considère que la course est terminée 2h après la fin
+        const finSprint = new Date(dateSprint.getTime() + 2 * 60 * 60 * 1000);
         const finRace = new Date(dateRace.getTime() + 2 * 60 * 60 * 1000);
-        
+
         if (maintenant < finRace) {
             currentRaceIndex = i;
-            return race;
+            return race; // Retourne l'objet complet
         }
     }
-    
+
     // Si toutes les courses sont passées, retourner la dernière
     if (DATA_CALENDRIER.length > 0) {
         currentRaceIndex = DATA_CALENDRIER.length - 1;
         return DATA_CALENDRIER[currentRaceIndex];
     }
-    
+
     return null;
 }
 
@@ -399,6 +403,8 @@ function chargerPronosticsUtilisateur() {
                     if (card) attachDragListeners(card);
                 }
             }
+            if (sprintPredictions['1er']) sprintValide = true;
+            if (racePredictions['1er']) raceValide = true;
         }
     });
 
@@ -660,23 +666,18 @@ function handleDrop(e) {
 
 // ===== FUNCTION: METTRE À JOUR AFFICHAGE PRONOSTICS =====
 function mettreAJourAffichagePronostics() {
-    // On vérifie la présence des 3 places ET de la chute
-    const sprintComplete = sprintPredictions['1er'] && sprintPredictions['2e'] && sprintPredictions['3e'] && sprintPredictions['Chute'];
-    const raceComplete = racePredictions['1er'] && racePredictions['2e'] && racePredictions['3e'] && racePredictions['Chute'];
-
     const pilotesColumn = document.querySelector('.pilotes-column');
     const podiumColumn = document.querySelector('.podium-column');
 
-    if (pilotesColumn) {
-        if (sprintComplete && raceComplete) {
-            // Cache la liste des pilotes et le podium de saisie
-            pilotesColumn.style.display = 'none';
-            if (podiumColumn) podiumColumn.style.display = 'none';
-        } else {
-            // Affiche tant que les deux ne sont pas finis
-            pilotesColumn.style.display = 'flex';
-            if (podiumColumn) podiumColumn.style.display = 'flex';
-        }
+    if (!pilotesColumn) return;
+
+    // ON CACHE UNIQUEMENT SI LES DEUX SONT VALIDÉS
+    if (sprintValide && raceValide) {
+        pilotesColumn.style.display = 'none';
+        if (podiumColumn) podiumColumn.style.display = 'none';
+    } else {
+        pilotesColumn.style.display = 'flex';
+        if (podiumColumn) podiumColumn.style.display = 'flex';
     }
 }
 
@@ -752,66 +753,43 @@ function afficherRecap(type) {
 
 // ===== FUNCTION: CRÉER TIMER COUNTDOWN =====
 function creerTimer(dateStr, timerKey, timerElement) {
-    // Arrêter le timer précédent s'il existe
-    if (timerIntervals[timerKey]) {
-        clearInterval(timerIntervals[timerKey]);
-    }
+    if (timerIntervals[timerKey]) clearInterval(timerIntervals[timerKey]);
 
-    function mettreAJourTimer() {
-        const maintenant = new Date().getTime();
-        const dateEvenement = new Date(dateStr).getTime();
-        const difference = dateEvenement - maintenant;
+    function updateTimer() {
+        const now = new Date().getTime();
+        const eventTime = new Date(dateStr).getTime();
+        const diff = eventTime - now;
 
-        if (difference <= 0) {
+        if (diff <= 0) {
             timerElement.innerHTML = '⏳ C\'est parti !';
             timerElement.style.color = '#00ff00';
             clearInterval(timerIntervals[timerKey]);
-
-            // lorsque le timer se termine, masquer les boutons modifier
+            delete timerIntervals[timerKey];
             afficherRecap('sprint');
             afficherRecap('race');
-
-            return false; // Arrêter le timer
+            return false;
         }
 
-        const jours = Math.floor(difference / (1000 * 60 * 60 * 24));
-        const heures = Math.floor((difference % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((difference % (1000 * 60 * 60)) / (1000 * 60));
-        const secondes = Math.floor((difference % (1000 * 60)) / 1000);
+        const jours = Math.floor(diff / (1000 * 60 * 60 * 24));
+        const heures = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
+        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
+        const secondes = Math.floor((diff % (1000 * 60)) / 1000);
 
         timerElement.innerHTML = `
-            <div style="display: flex; justify-content: space-around; gap: 10px; font-weight: bold;">
-                <div style="text-align: center;">
-                    <div style="font-size: 1.5em; color: #e10600;">${jours}</div>
-                    <div style="font-size: 0.8em; color: #cccccc;">jours</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 1.5em; color: #e10600;">${heures}</div>
-                    <div style="font-size: 0.8em; color: #cccccc;">heures</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 1.5em; color: #e10600;">${minutes}</div>
-                    <div style="font-size: 0.8em; color: #cccccc;">min</div>
-                </div>
-                <div style="text-align: center;">
-                    <div style="font-size: 1.5em; color: #e10600;">${secondes}</div>
-                    <div style="font-size: 0.8em; color: #cccccc;">sec</div>
-                </div>
+            <div style="display:flex;gap:10px;font-weight:bold">
+                <div style="text-align:center"><div style="font-size:1.5em;color:#e10600">${jours}</div><div style="font-size:0.8em;color:#ccc">jours</div></div>
+                <div style="text-align:center"><div style="font-size:1.5em;color:#e10600">${heures}</div><div style="font-size:0.8em;color:#ccc">heures</div></div>
+                <div style="text-align:center"><div style="font-size:1.5em;color:#e10600">${minutes}</div><div style="font-size:0.8em;color:#ccc">min</div></div>
+                <div style="text-align:center"><div style="font-size:1.5em;color:#e10600">${secondes}</div><div style="font-size:0.8em;color:#ccc">sec</div></div>
             </div>
         `;
-
         return true;
     }
 
-    // Mise à jour immédiate
-    if (!mettreAJourTimer()) return;
+    if (!updateTimer()) return;
 
-    // Mise à jour toutes les secondes
     timerIntervals[timerKey] = setInterval(() => {
-        if (!mettreAJourTimer()) {
-            clearInterval(timerIntervals[timerKey]);
-            delete timerIntervals[timerKey];
-        }
+        if (!updateTimer()) clearInterval(timerIntervals[timerKey]);
     }, 1000);
 }
 
@@ -823,20 +801,15 @@ function demarrerTimer(type, sectionId) {
     const raceCourante = getRaceCourante();
     if (!raceCourante) return;
 
-    // Vérifier si résultat existe déjà
     const results = type === 'sprint' ? sprintResults : raceResults;
-    if (Object.keys(results).length > 0) {
+    if (results && Object.keys(results).length > 0) {
         afficherResultats(type, sectionId);
         return;
     }
 
-    // Obtenir la date de l'événement
     const dateEvent = type === 'sprint' ? raceCourante.sprint : raceCourante.race;
-
-    // Créer le timer avec une clé unique
     const timerKey = `timer_${type}_${currentRaceIndex}`;
     creerTimer(dateEvent, timerKey, timerElement);
-    timerElement.style.background = 'linear-gradient(135deg, rgba(225, 6, 0, 0.2) 0%, rgba(225, 6, 0, 0.05) 100%)';
 }
 
 // ===== FUNCTION: AFFICHER RÉSULTATS =====
@@ -861,29 +834,36 @@ function afficherResultats(type, sectionId) {
 function chargerResultatsOfficiels() {
     // Afficher résultats du sprint
     const officialSprintEl = document.getElementById('official-sprint');
+    const timerSprintEl = document.getElementById('timer-sprint'); 
+
     if (officialSprintEl) {
         if (sprintResults && sprintResults['1er']) {
+            if (timerSprintEl) timerSprintEl.style.display = 'none';
+
             officialSprintEl.innerHTML = `
                 <div><strong>🥇 1er:</strong> ${sprintResults['1er'] || 'TBD'}</div>
                 <div><strong>🥈 2e:</strong> ${sprintResults['2e'] || 'TBD'}</div>
                 <div><strong>🥉 3e:</strong> ${sprintResults['3e'] || 'TBD'}</div>
             `;
         } else {
-            officialSprintEl.innerHTML = '';
+            if (timerSprintEl) timerSprintEl.classList.add('hidden-timer');
         }
     }
 
     // Afficher résultats de la race
     const officialRaceEl = document.getElementById('official-race');
+    const timerRaceEl = document.getElementById('timer-race');
+
     if (officialRaceEl) {
         if (raceResults && raceResults['1er']) {
+            if (timerRaceEl) timerRaceEl.style.display = 'none';
             officialRaceEl.innerHTML = `
                 <div><strong>🥇 1er:</strong> ${raceResults['1er'] || 'TBD'}</div>
                 <div><strong>🥈 2e:</strong> ${raceResults['2e'] || 'TBD'}</div>
                 <div><strong>🥉 3e:</strong> ${raceResults['3e'] || 'TBD'}</div>
             `;
         } else {
-            officialRaceEl.innerHTML = '';
+            if (timerRaceEl) timerRaceEl.classList.add('hidden-timer');
         }
     }
     
@@ -894,62 +874,97 @@ function chargerResultatsOfficiels() {
     updateSectionsVisibility();
 }
 
+// --- Écouteurs Firebase en temps réel ---
+onValue(sprintResultsRef, (snapshot) => {
+    const sprintResults = snapshot.val();
+    // On récupère aussi les résultats de race pour garder la fonction unique
+    getDatabase(database).ref('results/race').get().then(raceSnapshot => {
+        const raceResults = raceSnapshot.val();
+        updateOfficialResults(sprintResults, raceResults);
+    });
+});
+
+onValue(raceResultsRef, (snapshot) => {
+    const raceResults = snapshot.val();
+    // On récupère aussi les résultats de sprint pour garder la fonction unique
+    getDatabase(database).ref('results/sprint').get().then(sprintSnapshot => {
+        const sprintResults = sprintSnapshot.val();
+        updateOfficialResults(sprintResults, raceResults);
+    });
+});
+
 // ===== FUNCTION: CALCULER LES POINTS =====
 function calculerPointsUtilisateur(type) {
     const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
     const results = type === 'sprint' ? sprintResults : raceResults;
 
-    // Si pas de résultats, pas de calcul
-    if (!results || Object.keys(results).length === 0) return;
+    if (!results || !results['1er']) return;
 
     let pointsGagnes = 0;
     const raceCourante = getRaceCourante();
     if (!raceCourante) return;
 
-    // Système de points
-    const pointsParPosition = {
-        '1er': 10,
-        '2e': 5,
-        '3e': 3
-    };
+    const podiumReel = [
+        results['1er'],
+        results['2e'],
+        results['3e']
+    ];
 
-    // Vérifier chaque position
+    // --- PODIUM ---
     for (const [rank, predictedNum] of Object.entries(predictions)) {
-        if (rank === 'Chute') {
-            // Gérer le pari Chute
-            const pilotsActuels = Object.values(results);
-            const pilotePredicteur = DATA_PILOTES.find(p => parseInt(p.num) === predictedNum);
-            if (pilotePredicteur) {
-                // Si le pilote est dans les résultats = pas de chute
-                const estDedans = pilotsActuels.some(p => p === pilotePredicteur.nom);
-                if (!estDedans) {
-                    pointsGagnes += 2; // Bonne prédiction de chute
-                }
-            }
+        if (rank === 'Chute') continue;
+
+        const pilote = DATA_PILOTES.find(p => parseInt(p.num) === predictedNum);
+        if (!pilote) continue;
+
+        const nom = pilote.nom;
+        const indexReel = podiumReel.indexOf(nom);
+
+        if (indexReel === -1) {
+            // ❌ pas sur le podium
+            pointsGagnes += 3;
         } else {
-            // Vérifier si le pilote est à la bonne position
-            const pilotePredicteur = DATA_PILOTES.find(p => parseInt(p.num) === predictedNum);
-            if (pilotePredicteur && results[rank] === pilotePredicteur.nom) {
-                pointsGagnes += pointsParPosition[rank];
+            const placeReelle = ['1er', '2e', '3e'][indexReel];
+
+            if (placeReelle === rank) {
+                if (rank === '1er') pointsGagnes -= 3;
+                if (rank === '2e') pointsGagnes -= 2;
+                if (rank === '3e') pointsGagnes -= 1;
+            } else {
+                // 🔄 bon pilote, mauvaise place
+                pointsGagnes += 1;
             }
         }
     }
 
-    // Sauvegarder les points dans firebase
-    const raceId = raceCourante.gp.replace(/\s+/g, '_');
-    const scoresRef = ref(db, `scores_details/${pseudo}/${raceId}/${type}`);
-    get(scoresRef).then(snap => {
-        if (snap.exists()) return; // déjà calculé
-        set(scoresRef, pointsGagnes);
-    });
+    // --- CHUTE ---
+    if (predictions['Chute']) {
+        const piloteChute = DATA_PILOTES.find(p => parseInt(p.num) === predictions['Chute']);
+        if (piloteChute) {
+            const estSurPodium = podiumReel.includes(piloteChute.nom);
+            if (!estSurPodium) {
+                // 💥 chute bien prédite
+                pointsGagnes -= 1;
+            }
+        }
+    }
 
-    // Mettre à jour le score total
-    get(ref(db, 'scores/' + pseudo)).then((snapshot) => {
-        const scoreActuel = snapshot.val() || 0;
-        const nouveauScore = scoreActuel + pointsGagnes;
-        set(ref(db, 'scores/' + pseudo), nouveauScore);
-        currentScores[pseudo] = nouveauScore;
-        afficherScore();
+    // --- SAUVEGARDE FIREBASE ---
+    const raceId = raceCourante.gp.replace(/\s+/g, '_');
+    const scoreRef = ref(db, `scores_details/${pseudo}/${raceId}/${type}`);
+
+    get(scoreRef).then(snap => {
+        if (snap.exists()) return; // empêche double calcul
+
+        set(scoreRef, pointsGagnes);
+
+        get(ref(db, 'scores/' + pseudo)).then(snapshot => {
+            const scoreActuel = snapshot.val() || 0;
+            const nouveauScore = scoreActuel + pointsGagnes;
+            set(ref(db, 'scores/' + pseudo), nouveauScore);
+            currentScores[pseudo] = nouveauScore;
+            afficherScore();
+        });
     });
 }
 
@@ -972,37 +987,35 @@ function mettreAJourScoreCard() {
 
 // ===== FUNCTION: ÉDITER PRONOSTIC =====
 function editerPronostic(type) {
-    const pilotesColumn = document.querySelector('.pilotes-column');
-    if (pilotesColumn) {
-        pilotesColumn.style.display = 'flex';
-    }
+    const path = getPronosticPath(type);
+    if (!path) return;
 
     // Vider les prédictions du type
     if (type === 'sprint') {
         sprintPredictions = {};
-        set(ref(db, `pronostics/${pseudo}/sprint`), null);
+        sprintValide = false;
     } else {
         racePredictions = {};
-        set(ref(db, `pronostics/${pseudo}/race`), null);
+        raceValide = false;
     }
 
-    // Regenerer la liste des pilotes
+    set(ref(db, path), null); // supprime les pronostics Firebase
+
+    // Régénérer la liste des pilotes et vider les zones
     genererPilotes();
-    
-    // Vider les zones
+
     const section = document.getElementById(`section-${type}`);
     if (section) {
         section.querySelectorAll('.target-area, .crash-zone').forEach(zone => {
             zone.innerHTML = '';
             zone.classList.remove('used-crash');
-            if (!zone.classList.contains('crash-zone')) {
-                zone.style.background = '';
-            }
+            if (!zone.classList.contains('crash-zone')) zone.style.background = '';
         });
     }
-    // mettre à jour le récap et bouton
+
     afficherRecap(type);
     updateSectionsVisibility();
+    mettreAJourAffichagePronostics();
 }
 
 // ===== FUNCTION: SETUP BUTTONS =====
@@ -1044,36 +1057,60 @@ function setupButtons() {
             }
         });
     }
+    const btnRegles = document.getElementById('btn-regles');
+    const modalRegles = document.getElementById('regles-modal');
+    const closeRegles = document.getElementById('close-regles');
+
+    if (btnRegles && modalRegles) {
+        btnRegles.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalRegles.classList.add('active');
+        });
+    }
+
+    if (closeRegles && modalRegles) {
+        closeRegles.addEventListener('click', () => {
+            modalRegles.classList.remove('active');
+        });
+    }
+
+    if (modalRegles) {
+        modalRegles.addEventListener('click', (e) => {
+            if (e.target === modalRegles) {
+                modalRegles.classList.remove('active');
+            }
+        });
+    }
 }
 
 // ===== FUNCTION: VALIDER PRONOSTIC =====
 function validerPronostic(type) {
     const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
-    
-    // Vérifier que tous les podiums sont remplis
-        if (!predictions['1er'] || !predictions['2e'] || !predictions['3e'] || !predictions['Chute']) {
+
+    if (!predictions['1er'] || !predictions['2e'] || !predictions['3e'] || !predictions['Chute']) {
         alert('Veuillez compléter le podium ET le pari chute avant de valider');
         return;
     }
 
-    // Sauvegarder dans Firebase (même si la valeur est identique, on veut forcer l'UI à se mettre à jour)
-    set(ref(db, `pronostics/${pseudo}/${type}`), predictions).then(() => {
+    const path = getPronosticPath(type);
+    if (!path) return;
+
+    set(ref(db, path), predictions).then(() => {
         alert(`✅ Vos pronostics ${type === 'sprint' ? 'Sprint' : 'Race'} ont été sauvegardés!`);
+
+        if (type === 'sprint') sprintValide = true;
+        if (type === 'race') raceValide = true;
+
         mettreAJourAffichagePronostics();
-        chargerPronosticsUtilisateur();
         afficherRecap(type);
         updateSectionsVisibility();
-        
-        // Si les résultats sont déjà disponibles, calculer les points
+
         const results = type === 'sprint' ? sprintResults : raceResults;
         if (results && Object.keys(results).length > 0) {
             calculerPointsUtilisateur(type);
         }
-    }).catch((err) => {
-        alert('Erreur lors de la sauvegarde: ' + err.message);
     });
 }
-
 // ===== FUNCTION: AFFICHER HISTORIQUE =====
 function afficherHistorique() {
     const historyList = document.querySelector('.history-list');
