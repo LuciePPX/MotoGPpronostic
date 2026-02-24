@@ -1050,6 +1050,8 @@ button {
     .pilote-card {
         padding: 8px 12px;
         font-size: 0.85em;
+        touch-action: none; /* Empêche les gestes par défaut du navigateur sur les cartes */
+        user-select: none;  /* Évite de sélectionner le texte pendant le drag */
     }
 
     .pronostic-flex-row {

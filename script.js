@@ -27,20 +27,14 @@ let sprintResults = {};
 let raceResults = {};
 let currentScores = {};
 let scoresHistory = {};
-let pilotesUtilises = [];
-let pseudoGlobal = "";
-let currentRaceTime = null;
-let isEditingMode = false;
-let editingType = null;
 let currentRaceIndex = 0; // Index de la course actuelle dans le calendrier
 let timerIntervals = {}; // Stockage des intervalles de timer
 let firebaseListeners = {}; // Stockage des écouteurs Firebase
 let sprintValide = false;
 let raceValide = false;
+
 // ===== ÉCRAN D'AUTH =====
 document.addEventListener('DOMContentLoaded', () => {
-    const authContainer = document.getElementById('login-screen');
-    const gameContainer = document.getElementById('game-screen');
     const pseudoInput = document.getElementById('pseudo-input');
     const btnValider = document.getElementById('btn-valider');
     const btnClassement = document.getElementById('btn-classement');
@@ -103,34 +97,51 @@ function initialiserJeu() {
     setupModals();
 
     
+    // Démarrer/Charger timers 
+    demarrerTimer('sprint', 'section-sprint');
+    demarrerTimer('race', 'section-race');
+    
     // Vérifier les résultats toutes les 30 secondes
-    setInterval(() => {
-        const raceCourante = getRaceCourante();
-        if (raceCourante) {
-            const sprintName = raceCourante.gp.replace(/\s+/g, '_');
-            get(ref(db, `resultats/Sprint/${sprintName}`)).then(snapshot => {
-                if (snapshot.val()) {
-                    sprintResults = snapshot.val();
-                    afficherResultats('sprint', 'section-sprint');
-                    calculerPointsUtilisateur('sprint');
-                }
-            });
-            get(ref(db, `resultats/Race/${sprintName}`)).then(snapshot => {
-                if (snapshot.val()) {
-                    raceResults = snapshot.val();
-                    afficherResultats('race', 'section-race');
-                    calculerPointsUtilisateur('race');
-                }
-            });
-        }
-    }, 30000);
-}
+   // 1. On récupère la course une seule fois proprement
+    const raceCourante = getRaceCourante();
+
+    if (raceCourante) {
+        // 2. Création de la clé de la course
+        const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
+
+        // 3. Définition des références (Utilise bien la variable 'db' globale)
+        const sprintResultsRef = ref(db, `resultats/Sprint/${raceKey}`);
+        const raceResultsRef = ref(db, `resultats/Race/${raceKey}`);
+
+        // 4. Écouteur pour le SPRINT
+        onValue(sprintResultsRef, (snapshot) => {
+            sprintResults = snapshot.val() || {};
+            if (Object.keys(sprintResults).length > 0) {
+                // Si on a des résultats, on les affiche
+                chargerResultatsOfficiels();
+            } else {
+                // SINON, on lance le timer !
+                demarrerTimer('sprint', 'section-sprint');
+            }
+        });
+
+        // 5. Écouteur pour la RACE
+        onValue(raceResultsRef, (snapshot) => {
+            raceResults = snapshot.val() || {};
+            if (Object.keys(raceResults).length > 0) {
+                chargerResultatsOfficiels();
+            } else {
+                // SINON, on lance le timer !
+                demarrerTimer('race', 'section-race');
+            }
+        });
+    }
+
 
 function setupModals() {
     // --- MODAL HISTORIQUE ---
     const historyIcon = document.getElementById('open-history');
     const modalHistorique = document.getElementById('history-modal');
-    const closeHistory = document.getElementById('close-history'); // Assure-toi d'avoir cet ID
 
     if (historyIcon && modalHistorique) {
         historyIcon.addEventListener('click', () => {
@@ -140,9 +151,8 @@ function setupModals() {
     }
 
     // --- MODAL CLASSEMENT ---
-    const btnClassement = document.querySelector('.btn-classement'); // Ton bouton dans le header
+    const btnClassement = document.querySelector('.btn-classement'); 
     const modalClassement = document.getElementById('classement-modal');
-    const closeClassement = document.getElementById('close-classement');
 
     if (btnClassement && modalClassement) {
         btnClassement.addEventListener('click', (e) => {
@@ -168,6 +178,7 @@ function setupModals() {
         });
     });
 }
+
 // ===== FUNCTION: CHARGER DONNÉES FIREBASE =====
 function getPronosticPath(type) {
     const raceCourante = getRaceCourante();
@@ -240,7 +251,7 @@ function chargerDonneesFirebase() {
 }
 
 // ===== FUNCTION: OBTENIR LA RACE COURANTE =====
-export function getRaceCourante() {
+function getRaceCourante() {
     const maintenant = new Date();
 
     for (let i = 0; i < DATA_CALENDRIER.length; i++) {
@@ -349,7 +360,7 @@ function genererPilotes() {
         div.draggable = true;
         div.dataset.num = pilote.num;
         div.dataset.nom = pilote.nom;
-        div.textContent = `${pilote.num} - ${pilote.nom}`;
+        div.textContent = `#${pilote.num} - ${pilote.nom}`;
 
         div.addEventListener('dragstart', handleDragStart);
         div.addEventListener('dragend', handleDragEnd);
@@ -448,10 +459,6 @@ function chargerPronosticsUtilisateur() {
         }
     }
 
-    // Démarrer/Charger timers et résultats
-    demarrerTimer('sprint', 'section-sprint');
-    demarrerTimer('race', 'section-race');
-
     // mettre à jour récap/modify
     afficherRecap('sprint');
     afficherRecap('race');
@@ -463,11 +470,17 @@ function chargerPronosticsUtilisateur() {
 function attachDragListeners(card) {
     card.addEventListener('dragstart', handleDragStart);
     card.addEventListener('dragend', handleDragEnd);
+
+    // Mobile
+    card.addEventListener('touchstart', handleTouchStart, { passive: false });
+    card.addEventListener('touchmove', handleTouchMove, { passive: false });
+    card.addEventListener('touchend', handleTouchEnd);
 }
 
 // ===== DRAG & DROP HANDLERS =====
 let draggedElement = null;
 let draggedFromZone = null; // Permet de tracker si on drag d'une zone
+let touchOffset = { x: 0, y: 0 };
 
 function handleDragStart(e) {
     draggedElement = e.target;
@@ -480,7 +493,114 @@ function handleDragEnd(e) {
     draggedElement = null;
     draggedFromZone = null;
 }
+
+function handleTouchStart(e) {
+    if (e.target.closest('.pilote-card')) {
+        draggedElement = e.target.closest('.pilote-card');
+        draggedFromZone = draggedElement.closest('.step');
+        
+        // Empêcher le scroll pendant le drag
+        e.preventDefault();
+
+        const touch = e.touches[0];
+        const rect = draggedElement.getBoundingClientRect();
+        
+        // Calculer l'offset pour que la carte reste sous le doigt exactement où on a touché
+        touchOffset.x = touch.clientX - rect.left;
+        touchOffset.y = touch.clientY - rect.top;
+
+        draggedElement.style.position = 'fixed';
+        draggedElement.style.zIndex = '1000';
+        draggedElement.style.opacity = '0.8';
+        draggedElement.style.pointerEvents = 'none'; // Important pour détecter ce qu'il y a DESSOUS
+    }
+}
+
+function handleTouchMove(e) {
+    if (!draggedElement) return;
+    e.preventDefault();
+
+    const touch = e.touches[0];
+    
+    // Déplacer l'élément
+    draggedElement.style.left = (touch.clientX - touchOffset.x) + 'px';
+    draggedElement.style.top = (touch.clientY - touchOffset.y) + 'px';
+
+    // Simuler le "dragover" pour le retour visuel
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    const zone = elementBelow?.closest('.step');
+
+    // Nettoyer les autres zones
+    document.querySelectorAll('.step').forEach(s => s.style.background = '');
+    
+    // Feedback visuel sur la zone survolée
+    if (zone) {
+        zone.style.background = 'rgba(225, 6, 0, 0.3)';
+    }
+}
+
+function handleTouchEnd(e) {
+    if (!draggedElement) return;
+
+    const touch = e.changedTouches[0];
+    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
+    const zone = elementBelow?.closest('.step');
+    const overList = elementBelow?.closest('.pilotes-list');
+
+    // Réinitialiser le style visuel
+    draggedElement.style.position = '';
+    draggedElement.style.zIndex = '';
+    draggedElement.style.opacity = '1';
+    draggedElement.style.pointerEvents = 'auto';
+    draggedElement.style.left = '';
+    draggedElement.style.top = '';
+
+    if (zone) {
+        // On réutilise ta logique handleDrop existante en simulant l'objet zone
+        handleDrop({ 
+            preventDefault: () => {}, 
+            currentTarget: zone 
+        });
+    } else if (overList || !zone) {
+        // Logique de retour à la liste (ton code existant pour le retrait)
+        retirerPilote(draggedElement, draggedFromZone);
+    }
+
+    draggedElement = null;
+    draggedFromZone = null;
+    document.querySelectorAll('.step').forEach(s => s.style.background = '');
+}
+
 // ===== FUNCTION: SETUP DROP ZONES =====
+function retirerPilote(element, fromZone) {
+    if (!element || !fromZone) return;
+
+    const num = parseInt(element.dataset.num);
+    const oldRank = fromZone.getAttribute('data-rank');
+    const oldSectionId = fromZone.closest('[id^="section-"]')?.id;
+    const oldType = oldSectionId === 'section-sprint' ? 'sprint' : 'race';
+    const oldPredictions = oldType === 'sprint' ? sprintPredictions : racePredictions;
+
+    delete oldPredictions[oldRank];
+    
+    const oldContent = fromZone.querySelector('.target-area');
+    if (oldContent) oldContent.innerHTML = '';
+    
+    const placeholder = fromZone.querySelector('small');
+    if (placeholder) placeholder.style.display = '';
+    
+    fromZone.classList.remove('used-crash');
+    fromZone.style.background = '';
+
+    // MAJ liste visuelle
+    document.querySelectorAll('.pilotes-list .pilote-card').forEach((card) => {
+        if (parseInt(card.dataset.num) === num) {
+            card.classList.remove('used');
+        }
+    });
+    
+    mettreAJourAffichagePronostics();
+}
 function setupDropZones() {
     const dropZones = document.querySelectorAll('.step');
 
@@ -796,20 +916,32 @@ function creerTimer(dateStr, timerKey, timerElement) {
 // ===== FUNCTION: DÉMARRER TIMER =====
 function demarrerTimer(type, sectionId) {
     const timerElement = document.getElementById(`timer-${type}`);
+    timerElement.classList.remove('hidden-timer');
     if (!timerElement) return;
 
-    const raceCourante = getRaceCourante();
+    const raceCourante = getRaceCourante(); // Ta nouvelle fonction
     if (!raceCourante) return;
 
+    // 1. Vérifier si on a déjà les résultats dans Firebase
     const results = type === 'sprint' ? sprintResults : raceResults;
     if (results && Object.keys(results).length > 0) {
-        afficherResultats(type, sectionId);
+        timerElement.innerHTML = "🏁 Course terminée";
         return;
     }
 
-    const dateEvent = type === 'sprint' ? raceCourante.sprint : raceCourante.race;
-    const timerKey = `timer_${type}_${currentRaceIndex}`;
-    creerTimer(dateEvent, timerKey, timerElement);
+    // 2. Calculer si l'événement est déjà passé
+    const dateEvent = new Date(type === 'sprint' ? raceCourante.sprint : raceCourante.race);
+    const maintenant = new Date();
+
+    if (maintenant > dateEvent) {
+        // Si l'heure de départ est passée mais qu'on n'a pas encore les résultats
+        timerElement.innerHTML = "🏃 En cours / En attente";
+        timerElement.style.color = "#ffa500"; // Orange
+    } else {
+        // Sinon, on lance le compte à rebours normalement
+        const timerKey = `timer_${type}_${currentRaceIndex}`;
+        creerTimer(dateEvent, timerKey, timerElement);
+    }
 }
 
 // ===== FUNCTION: AFFICHER RÉSULTATS =====
@@ -874,24 +1006,7 @@ function chargerResultatsOfficiels() {
     updateSectionsVisibility();
 }
 
-// --- Écouteurs Firebase en temps réel ---
-onValue(sprintResultsRef, (snapshot) => {
-    const sprintResults = snapshot.val();
-    // On récupère aussi les résultats de race pour garder la fonction unique
-    getDatabase(database).ref('results/race').get().then(raceSnapshot => {
-        const raceResults = raceSnapshot.val();
-        updateOfficialResults(sprintResults, raceResults);
-    });
-});
 
-onValue(raceResultsRef, (snapshot) => {
-    const raceResults = snapshot.val();
-    // On récupère aussi les résultats de sprint pour garder la fonction unique
-    getDatabase(database).ref('results/sprint').get().then(sprintSnapshot => {
-        const sprintResults = sprintSnapshot.val();
-        updateOfficialResults(sprintResults, raceResults);
-    });
-});
 
 // ===== FUNCTION: CALCULER LES POINTS =====
 function calculerPointsUtilisateur(type) {
@@ -1126,4 +1241,4 @@ function afficherHistorique() {
         `;
         historyList.appendChild(item);
     });
-}
+    }}
