@@ -1017,8 +1017,10 @@ function chargerResultatsOfficiels() {
 
 // ===== FUNCTION: CALCULER LES POINTS =====
 async function calculerPointsUtilisateur(type) {
-    const predRef = ref(db, `pronostics/${pseudo}/${gpId}/${type}`);
-    const resRef = ref(db, `resultats/${gpId}/${type}`);
+
+    const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
+    const predRef = ref(db, `pronostics/${pseudo}/${raceKey}/${type}`);
+    const resRef = ref(db, `resultats/${raceKey}/${type}`);
 
     // 2. On récupère les snapshots
     const [predSnap, resSnap] = await Promise.all([get(predRef), get(resRef)]);
@@ -1030,71 +1032,77 @@ async function calculerPointsUtilisateur(type) {
 
     const predictions = predSnap.val();
     const results = resSnap.val();
+    const podiumReel = [results['1er'], results['2e'], results['3e']];  
+    const chuteReelle = results['Chute'];
 
-    // --- Ensuite, ta logique de calcul commence ici ---
-    let pointsGagnes = 0;
-    const podiumReel = [results['1er'], results['2e'], results['3e']];
+    let detailPoints = {
+        "1er": 0,
+        "2e": 0,
+        "3e": 0,
+        "Chute": 0,
+        "total": 0
+    };
 
-    if (!results || !results['1er']) return;
-
-    const raceCourante = getRaceCourante();
-    if (!raceCourante) return;
+    const pointsParPosition = { '1er': 3, '2e': 2, '3e': 1 };
 
 
-    // --- PODIUM ---
-    for (const [rank, predictedNum] of Object.entries(predictions)) {
-        if (rank === 'Chute') continue;
-
+    ['1er', '2e', '3e'].forEach(rank => {
+        const predictedNum = predictions[rank];
         const pilote = DATA_PILOTES.find(p => parseInt(p.num) === predictedNum);
-        if (!pilote) continue;
-
-        const nom = pilote.nom;
-        const indexReel = podiumReel.indexOf(nom);
-
-        if (indexReel === -1) {
-            pointsGagnes -= 3; // ❌ pas sur le podium
-        } else {
-            const placeReelle = ['1er', '2e', '3e'][indexReel];
-            if (placeReelle === rank) {
-                if (rank === '1er') pointsGagnes += 3;
-                if (rank === '2e') pointsGagnes += 2;
-                if (rank === '3e') pointsGagnes += 1;
+        
+        if (pilote) {
+            const nom = pilote.nom;
+            const indexReel = podiumReel.indexOf(nom);
+            if (indexReel === -1) {
+                detailPoints[rank] = -3;
             } else {
-                pointsGagnes -= 1; // 🔄 bon pilote, mauvaise place
+                const placeReelle = ['1er', '2e', '3e'][indexReel];
+                detailPoints[rank] = (placeReelle === rank) ? pointsParPosition[rank] : -1;
             }
         }
-    }
-
+    });
+    
     // --- CHUTE ---
-    if (predictions['Chute']) {
-        const piloteChute = DATA_PILOTES.find(p => parseInt(p.num) === predictions['Chute']);
-        if (piloteChute) {
-            const estSurPodium = podiumReel.includes(piloteChute.nom);
-            if (!estSurPodium) {
-                pointsGagnes += 1; // 💥 chute bien prédite
-            }
+   if (predictions['Chute']) {
+        const piloteChutePredi = DATA_PILOTES.find(p => parseInt(p.num) === predictions['Chute']);
+        
+        if (piloteChutePredi && chuteReelle) {
+           const piloteChutePredi = DATA_PILOTES.find(p => parseInt(p.num) === predictions['Chute']);
+        if (piloteChutePredi) {
+            const estTombe = chuteReelle.includes(piloteChutePredi.nom) || chuteReelle.includes(predictions['Chute'].toString());
+            detailPoints["Chute"] = estTombe ? 1 : 0;
+        }
         }
     }
+// Calcul du total
+    detailPoints.total = detailPoints["1er"] + detailPoints["2e"] + detailPoints["3e"] + detailPoints["Chute"];
+
+    console.log("📈 Détail calculé :", detailPoints);
 
     // --- SAUVEGARDE FIREBASE ---
     const raceId = raceCourante.gp.replace(/\s+/g, '_');
+    // On enregistre l'objet COMPLET dans scores_details
     const scoreRef = ref(db, `scores_details/${pseudo}/${raceId}/${type}`);
 
-    get(scoreRef).then(snap => {
-        if (snap.exists()) return; 
+    const snap = await get(scoreRef);
+    if (!snap.exists()) {
+        // Sauvegarde du détail (ton historique utilisera ça)
+        await set(scoreRef, detailPoints);
 
-        set(scoreRef, pointsGagnes);
+        // Mise à jour du score global (cumulatif)
+        const globalScoreRef = ref(db, 'scores/' + pseudo);
+        const snapshot = await get(globalScoreRef);
+        const scoreActuel = snapshot.val() || 0;
+        const nouveauScore = scoreActuel + detailPoints.total;
+        
+        await set(globalScoreRef, nouveauScore);
+        
+        currentScores[pseudo] = nouveauScore;
+        if (typeof afficherScore === 'function') afficherScore();
+    }
 
-        get(ref(db, 'scores/' + pseudo)).then(snapshot => {
-            const scoreActuel = snapshot.val() || 0;
-            const nouveauScore = scoreActuel + pointsGagnes;
-            set(ref(db, 'scores/' + pseudo), nouveauScore);
-            currentScores[pseudo] = nouveauScore;
-            if (typeof afficherScore === 'function') afficherScore();
-        });
-    });
+    console.groupEnd();
 }
-
 // ===== FUNCTION: ÉDITER PRONOSTIC =====
 function editerPronostic(type) {
     const path = getPronosticPath(type);
@@ -1243,57 +1251,70 @@ async function afficherDetailPointsGP(raceId) {
     
     footer.style.display = 'block';
     title.innerText = `Détail : ${raceId.replace(/_/g, ' ')}`;
-    historyContainer.innerHTML = '<div class="loader">Chargement...</div>';
+    historyContainer.innerHTML = '<div class="loader">Chargement du détail...</div>';
 
     try {
         let tableHtml = `<table class="detail-score-table">
-            <thead><tr><th>Course</th><th>Pos</th><th>Pilote</th><th>Pts</th></tr></thead>
+            <thead>
+                <tr>
+                    <th>Session</th>
+                    <th>Pari</th>
+                    <th>Pilote</th>
+                    <th>Points</th>
+                </tr>
+            </thead>
             <tbody>`;
 
         const types = ['sprint', 'race'];
-        for (const type of types) {
-            // Récupération des prédictions et résultats réels de l'époque
-            const snapPred = await get(ref(db, `predictions/${pseudo}/${raceId}/${type}`));
-            const snapRes = await get(ref(db, `results/${raceId}/${type}`));
 
-            if (snapPred.exists() && snapRes.exists()) {
+        for (const type of types) {
+            // 1. On récupère les pronos (pour avoir les noms des pilotes)
+            // 2. On récupère les scores déjà calculés (dans scores_details)
+            const [snapPred, snapScore] = await Promise.all([
+                get(ref(db, `pronostics/${pseudo}/${raceId}/${type}`)),
+                get(ref(db, `scores_details/${pseudo}/${raceId}/${type}`))
+            ]);
+
+            if (snapPred.exists() && snapScore.exists()) {
                 const preds = snapPred.val();
-                const res = snapRes.val();
-                const podium = [res['1er'], res['2e'], res['3e']];
+                const pointsEnregistres = snapScore.val(); // Contient { "1er": 3, "2e": -1, ... }
 
                 ['1er', '2e', '3e', 'Chute'].forEach(pos => {
-                    if (!preds[pos]) return;
+                    if (preds[pos] === undefined) return;
+
+                    // Trouver le nom du pilote via son numéro stocké dans le prono
                     const pilote = DATA_PILOTES.find(p => parseInt(p.num) === preds[pos]);
                     const nom = pilote ? pilote.nom : 'Inconnu';
-                    let pts = 0;
-
-                    // Logique de calcul (on la répète pour l'affichage)
-                    if (pos === 'Chute') {
-                        pts = !podium.includes(nom) ? -1 : 0;
-                    } else {
-                        const indexReel = podium.indexOf(nom);
-                        if (indexReel === -1) pts = 3;
-                        else {
-                            const placeReelle = ['1er', '2e', '3e'][indexReel];
-                            pts = (placeReelle === pos) ? (pos === '1er' ? -3 : (pos === '2e' ? -2 : -1)) : 1;
-                        }
-                    }
+                    
+                    // On récupère le point directement depuis l'objet sauvegardé
+                    const pts = pointsEnregistres[pos] || 0;
 
                     tableHtml += `
                         <tr>
                             <td><strong>${type.toUpperCase()}</strong></td>
                             <td>${pos}</td>
                             <td>${nom}</td>
-                            <td class="${pts <= 0 ? 'pts-positive' : 'pts-negative'}">${pts > 0 ? '+' + pts : pts}</td>
+                            <td class="${pts > 0 ? 'pts-positive' : (pts < 0 ? 'pts-negative' : 'pts-zero')}">
+                                ${pts > 0 ? '+' + pts : pts} pts
+                            </td>
                         </tr>`;
                 });
+                
+                // Optionnel : Ajouter une ligne de sous-total pour la session
+                tableHtml += `
+                    <tr class="subtotal-row">
+                        <td colspan="3">Sous-total ${type}</td>
+                        <td><strong>${pointsEnregistres.total > 0 ? '+' + pointsEnregistres.total : pointsEnregistres.total}</strong></td>
+                    </tr>`;
             }
         }
+
         tableHtml += '</tbody></table>';
         historyContainer.innerHTML = tableHtml;
 
     } catch (error) {
-        historyContainer.innerHTML = '<p class="no-data">Erreur lors de la récupération.</p>';
+        console.error("Erreur historique détail:", error);
+        historyContainer.innerHTML = '<p class="no-data">Erreur lors de la récupération du détail.</p>';
     }
 }
 
