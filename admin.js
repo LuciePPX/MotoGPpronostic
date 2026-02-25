@@ -78,7 +78,7 @@ document.getElementById("btn-publier").onclick = async () => {
  if(!raceCourante) return alert("Aucune course disponible");
  const raceKey = getRaceKey(raceCourante);
 
- await set(ref(db, `resultats/${session}/${raceKey}`), results);
+ await set(ref(db, `resultats/${raceKey}/${session}`), results);
 
  document.getElementById("status-msg").textContent = "✅ Résultats publiés";
 };

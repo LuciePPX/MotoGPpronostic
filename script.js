@@ -109,9 +109,9 @@ function initialiserJeu() {
         // 2. Création de la clé de la course
         const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
 
-        // 3. Définition des références (Utilise bien la variable 'db' globale)
-        const sprintResultsRef = ref(db, `resultats/Sprint/${raceKey}`);
-        const raceResultsRef = ref(db, `resultats/Race/${raceKey}`);
+        // 3. Définition des références 
+        const sprintResultsRef = ref(db, `resultats/${raceKey}/sprint`);
+        const raceResultsRef = ref(db, `resultats/${raceKey}/race`);
 
         // 4. Écouteur pour le SPRINT
         onValue(sprintResultsRef, (snapshot) => {
@@ -219,7 +219,7 @@ function chargerDonneesFirebase() {
     const raceResultsKey = 'race_results_' + raceKey;
 
     // Écouter résultats Sprint
-    const sprintResultsRef = ref(db, `resultats/Sprint/${raceKey}`);
+    const sprintResultsRef = ref(db, `resultats/${raceKey}/sprint`);
     if (firebaseListeners[sprintKey]) firebaseListeners[sprintKey].unsubscribe?.();
     const unsubscribeSprint = onValue(sprintResultsRef, (snapshot) => {
         const data = snapshot.val();
@@ -233,7 +233,7 @@ function chargerDonneesFirebase() {
     firebaseListeners[sprintKey] = { unsubscribe: unsubscribeSprint };
 
     // Écouter résultats Race
-    const raceResultsRef = ref(db, `resultats/Race/${raceKey}`);
+    const raceResultsRef = ref(db, `resultats/${raceKey}/race`);
     if (firebaseListeners[raceResultsKey]) firebaseListeners[raceResultsKey].unsubscribe?.();
     const unsubscribeRace = onValue(raceResultsRef, (snapshot) => {
         const data = snapshot.val();
@@ -962,6 +962,13 @@ function afficherResultats(type, sectionId) {
     chargerResultatsOfficiels();
 }
 
+function obtenirNomPilote(num) {
+    if (!num) return 'TBD';
+    // On cherche le pilote dans DATA_PILOTES dont le num correspond
+    const pilote = DATA_PILOTES.find(p => parseInt(p.num) === parseInt(num));
+    return pilote ? pilote.nom : `Pilote #${num}`;
+}
+
 // ===== FUNCTION: CHARGER RÉSULTATS OFFICIELS =====
 function chargerResultatsOfficiels() {
     // Afficher résultats du sprint
@@ -973,9 +980,10 @@ function chargerResultatsOfficiels() {
             if (timerSprintEl) timerSprintEl.style.display = 'none';
 
             officialSprintEl.innerHTML = `
-                <div><strong>🥇 1er:</strong> ${sprintResults['1er'] || 'TBD'}</div>
-                <div><strong>🥈 2e:</strong> ${sprintResults['2e'] || 'TBD'}</div>
-                <div><strong>🥉 3e:</strong> ${sprintResults['3e'] || 'TBD'}</div>
+                <div><strong>🥇 </strong> ${obtenirNomPilote(sprintResults['1er'])}</div>
+                <div><strong>🥈 </strong> ${obtenirNomPilote(sprintResults['2e'])}</div>
+                <div><strong>🥉 </strong> ${obtenirNomPilote(sprintResults['3e'])}</div>
+                <div><strong>💥 </strong> ${obtenirNomPilote(sprintResults['Chute'])}</div>
             `;
         } else {
             if (timerSprintEl) timerSprintEl.classList.add('hidden-timer');
@@ -990,9 +998,10 @@ function chargerResultatsOfficiels() {
         if (raceResults && raceResults['1er']) {
             if (timerRaceEl) timerRaceEl.style.display = 'none';
             officialRaceEl.innerHTML = `
-                <div><strong>🥇 1er:</strong> ${raceResults['1er'] || 'TBD'}</div>
-                <div><strong>🥈 2e:</strong> ${raceResults['2e'] || 'TBD'}</div>
-                <div><strong>🥉 3e:</strong> ${raceResults['3e'] || 'TBD'}</div>
+                <div><strong>🥇 </strong> ${obtenirNomPilote(raceResults['1er'])}</div>
+                <div><strong>🥈 </strong> ${obtenirNomPilote(raceResults['2e'])}</div>
+                <div><strong>🥉 </strong> ${obtenirNomPilote(raceResults['3e'])}</div>
+                <div><strong>💥 </strong> ${obtenirNomPilote(raceResults['Chute'])}</div>
             `;
         } else {
             if (timerRaceEl) timerRaceEl.classList.add('hidden-timer');
@@ -1006,24 +1015,31 @@ function chargerResultatsOfficiels() {
     updateSectionsVisibility();
 }
 
-
-
 // ===== FUNCTION: CALCULER LES POINTS =====
-function calculerPointsUtilisateur(type) {
-    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
-    const results = type === 'sprint' ? sprintResults : raceResults;
+async function calculerPointsUtilisateur(type) {
+    const predRef = ref(db, `pronostics/${pseudo}/${gpId}/${type}`);
+    const resRef = ref(db, `resultats/${gpId}/${type}`);
+
+    // 2. On récupère les snapshots
+    const [predSnap, resSnap] = await Promise.all([get(predRef), get(resRef)]);
+
+    if (!predSnap.exists() || !resSnap.exists()) {
+        console.error("Données manquantes pour le calcul");
+        return;
+    }
+
+    const predictions = predSnap.val();
+    const results = resSnap.val();
+
+    // --- Ensuite, ta logique de calcul commence ici ---
+    let pointsGagnes = 0;
+    const podiumReel = [results['1er'], results['2e'], results['3e']];
 
     if (!results || !results['1er']) return;
 
-    let pointsGagnes = 0;
     const raceCourante = getRaceCourante();
     if (!raceCourante) return;
 
-    const podiumReel = [
-        results['1er'],
-        results['2e'],
-        results['3e']
-    ];
 
     // --- PODIUM ---
     for (const [rank, predictedNum] of Object.entries(predictions)) {
@@ -1036,18 +1052,15 @@ function calculerPointsUtilisateur(type) {
         const indexReel = podiumReel.indexOf(nom);
 
         if (indexReel === -1) {
-            // ❌ pas sur le podium
-            pointsGagnes += 3;
+            pointsGagnes -= 3; // ❌ pas sur le podium
         } else {
             const placeReelle = ['1er', '2e', '3e'][indexReel];
-
             if (placeReelle === rank) {
-                if (rank === '1er') pointsGagnes -= 3;
-                if (rank === '2e') pointsGagnes -= 2;
-                if (rank === '3e') pointsGagnes -= 1;
+                if (rank === '1er') pointsGagnes += 3;
+                if (rank === '2e') pointsGagnes += 2;
+                if (rank === '3e') pointsGagnes += 1;
             } else {
-                // 🔄 bon pilote, mauvaise place
-                pointsGagnes += 1;
+                pointsGagnes -= 1; // 🔄 bon pilote, mauvaise place
             }
         }
     }
@@ -1058,8 +1071,7 @@ function calculerPointsUtilisateur(type) {
         if (piloteChute) {
             const estSurPodium = podiumReel.includes(piloteChute.nom);
             if (!estSurPodium) {
-                // 💥 chute bien prédite
-                pointsGagnes -= 1;
+                pointsGagnes += 1; // 💥 chute bien prédite
             }
         }
     }
@@ -1069,7 +1081,7 @@ function calculerPointsUtilisateur(type) {
     const scoreRef = ref(db, `scores_details/${pseudo}/${raceId}/${type}`);
 
     get(scoreRef).then(snap => {
-        if (snap.exists()) return; // empêche double calcul
+        if (snap.exists()) return; 
 
         set(scoreRef, pointsGagnes);
 
@@ -1078,25 +1090,8 @@ function calculerPointsUtilisateur(type) {
             const nouveauScore = scoreActuel + pointsGagnes;
             set(ref(db, 'scores/' + pseudo), nouveauScore);
             currentScores[pseudo] = nouveauScore;
-            afficherScore();
+            if (typeof afficherScore === 'function') afficherScore();
         });
-    });
-}
-
-// ===== FUNCTION: METTRE À JOUR SCORE CARD =====
-function mettreAJourScoreCard() {
-    // Récupérer scores depuis Firebase
-    get(ref(db, 'scores/' + pseudo)).then((snapshot) => {
-        const score = snapshot.val() || 0;
-        currentScores[pseudo] = score;
-        afficherScore();
-    });
-
-    // Récupérer historique depuis Firebase
-    get(ref(db, 'historique/' + pseudo)).then((snapshot) => {
-        const historique = snapshot.val() || [];
-        scoresHistory[pseudo] = historique;
-        afficherScore();
     });
 }
 
@@ -1105,7 +1100,6 @@ function editerPronostic(type) {
     const path = getPronosticPath(type);
     if (!path) return;
 
-    // Vider les prédictions du type
     if (type === 'sprint') {
         sprintPredictions = {};
         sprintValide = false;
@@ -1114,9 +1108,7 @@ function editerPronostic(type) {
         raceValide = false;
     }
 
-    set(ref(db, path), null); // supprime les pronostics Firebase
-
-    // Régénérer la liste des pilotes et vider les zones
+    set(ref(db, path), null); 
     genererPilotes();
 
     const section = document.getElementById(`section-${type}`);
@@ -1130,71 +1122,178 @@ function editerPronostic(type) {
 
     afficherRecap(type);
     updateSectionsVisibility();
-    mettreAJourAffichagePronostics();
+    if (typeof mettreAJourAffichagePronostics === 'function') mettreAJourAffichagePronostics();
 }
 
 // ===== FUNCTION: SETUP BUTTONS =====
 function setupButtons() {
-    // Configurer les boutons de validation du sprint
+    // Validation
     const btnValiderSprint = document.getElementById('btn-valider-sprint');
-    if (btnValiderSprint) {
-        btnValiderSprint.addEventListener('click', () => validerPronostic('sprint'));
-    }
+    if (btnValiderSprint) btnValiderSprint.addEventListener('click', () => validerPronostic('sprint'));
 
-    // Configurer les boutons de validation de la race
     const btnValiderRace = document.getElementById('btn-valider-race');
-    if (btnValiderRace) {
-        btnValiderRace.addEventListener('click', () => validerPronostic('race'));
-    }
+    if (btnValiderRace) btnValiderRace.addEventListener('click', () => validerPronostic('race'));
 
-    // Configurer modal historique
+    // --- MODALE DETAIL (LOUPE) ---
     const historyIcon = document.getElementById('open-history');
-    const modalHistorique = document.getElementById('history-modal');
-    const closeModal = document.querySelector('.close-modal');
+    const modalDetails = document.getElementById('modal-details');
+    const closeDetails = document.getElementById('close-details-modal');
 
-    if (historyIcon && modalHistorique) {
+    if (historyIcon) {
         historyIcon.addEventListener('click', () => {
-            modalHistorique.classList.add('active');
-            afficherHistorique();
+            afficherListeHistoriqueGP(); // Ouvre et charge la modale de détails
+        });
+    }
+    document.getElementById('btn-back-history').addEventListener('click', () => {
+    document.getElementById('history-title').innerText = "📊 Historique par GP";
+        afficherListeHistoriqueGP();
+    });
+    window.afficherDetailPointsGP = afficherDetailPointsGP;
+
+    if (closeDetails) {
+        closeDetails.addEventListener('click', () => {
+            modalDetails.style.display = 'none';
         });
     }
 
-    if (closeModal && modalHistorique) {
-        closeModal.addEventListener('click', () => {
-            modalHistorique.classList.remove('active');
-        });
-    }
-
-    if (modalHistorique) {
-        modalHistorique.addEventListener('click', (e) => {
-            if (e.target === modalHistorique) {
-                modalHistorique.classList.remove('active');
-            }
-        });
-    }
+    // --- MODALE REGLES ---
     const btnRegles = document.getElementById('btn-regles');
     const modalRegles = document.getElementById('regles-modal');
     const closeRegles = document.getElementById('close-regles');
 
-    if (btnRegles && modalRegles) {
+    if (btnRegles) {
         btnRegles.addEventListener('click', (e) => {
             e.preventDefault();
             modalRegles.classList.add('active');
         });
     }
 
-    if (closeRegles && modalRegles) {
+    if (closeRegles) {
         closeRegles.addEventListener('click', () => {
             modalRegles.classList.remove('active');
         });
     }
 
-    if (modalRegles) {
-        modalRegles.addEventListener('click', (e) => {
-            if (e.target === modalRegles) {
-                modalRegles.classList.remove('active');
-            }
+    // --- MODALE HISTORIQUE (Ancienne liste) ---
+    const modalHistorique = document.getElementById('history-modal');
+    const closeHistoryList = document.getElementById('close-history-list');
+
+    if (closeHistoryList) {
+        closeHistoryList.addEventListener('click', () => {
+            modalHistorique.classList.remove('active');
         });
+    }
+
+    // Fermeture universelle au clic extérieur
+    window.addEventListener('click', (e) => {
+        if (e.target === modalDetails) modalDetails.style.display = 'none';
+        if (e.target === modalRegles) modalRegles.classList.remove('active');
+        if (e.target === modalHistorique) modalHistorique.classList.remove('active');
+    });
+}
+async function afficherListeHistoriqueGP() {
+    const historyContainer = document.getElementById('history-items');
+    const footer = document.getElementById('history-footer');
+    const modal = document.getElementById('history-modal');
+    
+    modal.classList.add('active');
+    footer.style.display = 'none';
+    historyContainer.innerHTML = '<div class="loader">Chargement de l\'historique...</div>';
+
+    try {
+        // On récupère tous les scores calculés pour l'utilisateur
+        const snapshot = await get(ref(db, `scores_details/${pseudo}`));
+        
+        if (!snapshot.exists()) {
+            historyContainer.innerHTML = '<p class="no-data">Aucun historique disponible pour le moment.</p>';
+            return;
+        }
+
+        const GPData = snapshot.val(); // Contient tous les GP : { "GP_Espagne": { "sprint": 2, "race": -1 }, ... }
+        let html = '<div class="gp-history-grid">';
+
+        Object.keys(GPData).forEach(raceId => {
+            const nomPropre = raceId.replace(/_/g, ' ');
+            const totalGP = (GPData[raceId].sprint || 0) + (GPData[raceId].race || 0);
+            
+            html += `
+                <div class="gp-history-card" onclick="afficherDetailPointsGP('${raceId}')">
+                    <div class="gp-card-info">
+                        <strong>${nomPropre}</strong>
+                        <span>Score total: ${totalGP > 0 ? '+' + totalGP : totalGP} pts</span>
+                    </div>
+                    <div class="gp-card-arrow">🔍</div>
+                </div>`;
+        });
+
+        html += '</div>';
+        historyContainer.innerHTML = html;
+
+    } catch (error) {
+        console.error(error);
+        historyContainer.innerHTML = '<p class="no-data">Erreur de chargement.</p>';
+    }
+}
+
+// ===== FUNCTION: AFFICHER DETAIL POINTS (MODALE LOUPE) =====
+async function afficherDetailPointsGP(raceId) {
+    const historyContainer = document.getElementById('history-items');
+    const footer = document.getElementById('history-footer');
+    const title = document.getElementById('history-title');
+    
+    footer.style.display = 'block';
+    title.innerText = `Détail : ${raceId.replace(/_/g, ' ')}`;
+    historyContainer.innerHTML = '<div class="loader">Chargement...</div>';
+
+    try {
+        let tableHtml = `<table class="detail-score-table">
+            <thead><tr><th>Course</th><th>Pos</th><th>Pilote</th><th>Pts</th></tr></thead>
+            <tbody>`;
+
+        const types = ['sprint', 'race'];
+        for (const type of types) {
+            // Récupération des prédictions et résultats réels de l'époque
+            const snapPred = await get(ref(db, `predictions/${pseudo}/${raceId}/${type}`));
+            const snapRes = await get(ref(db, `results/${raceId}/${type}`));
+
+            if (snapPred.exists() && snapRes.exists()) {
+                const preds = snapPred.val();
+                const res = snapRes.val();
+                const podium = [res['1er'], res['2e'], res['3e']];
+
+                ['1er', '2e', '3e', 'Chute'].forEach(pos => {
+                    if (!preds[pos]) return;
+                    const pilote = DATA_PILOTES.find(p => parseInt(p.num) === preds[pos]);
+                    const nom = pilote ? pilote.nom : 'Inconnu';
+                    let pts = 0;
+
+                    // Logique de calcul (on la répète pour l'affichage)
+                    if (pos === 'Chute') {
+                        pts = !podium.includes(nom) ? -1 : 0;
+                    } else {
+                        const indexReel = podium.indexOf(nom);
+                        if (indexReel === -1) pts = 3;
+                        else {
+                            const placeReelle = ['1er', '2e', '3e'][indexReel];
+                            pts = (placeReelle === pos) ? (pos === '1er' ? -3 : (pos === '2e' ? -2 : -1)) : 1;
+                        }
+                    }
+
+                    tableHtml += `
+                        <tr>
+                            <td><strong>${type.toUpperCase()}</strong></td>
+                            <td>${pos}</td>
+                            <td>${nom}</td>
+                            <td class="${pts <= 0 ? 'pts-positive' : 'pts-negative'}">${pts > 0 ? '+' + pts : pts}</td>
+                        </tr>`;
+                });
+            }
+        }
+        tableHtml += '</tbody></table>';
+        historyContainer.innerHTML = tableHtml;
+
+    } catch (error) {
+        historyContainer.innerHTML = '<p class="no-data">Erreur lors de la récupération.</p>';
     }
 }
 
@@ -1211,34 +1310,19 @@ function validerPronostic(type) {
     if (!path) return;
 
     set(ref(db, path), predictions).then(() => {
-        alert(`✅ Vos pronostics ${type === 'sprint' ? 'Sprint' : 'Race'} ont été sauvegardés!`);
+        alert(`✅ Vos pronostics ${type.toUpperCase()} ont été sauvegardés!`);
 
         if (type === 'sprint') sprintValide = true;
         if (type === 'race') raceValide = true;
 
-        mettreAJourAffichagePronostics();
+        if (typeof mettreAJourAffichagePronostics === 'function') mettreAJourAffichagePronostics();
         afficherRecap(type);
         updateSectionsVisibility();
 
         const results = type === 'sprint' ? sprintResults : raceResults;
-        if (results && Object.keys(results).length > 0) {
+        if (results && results['1er']) {
             calculerPointsUtilisateur(type);
         }
     });
 }
-// ===== FUNCTION: AFFICHER HISTORIQUE =====
-function afficherHistorique() {
-    const historyList = document.querySelector('.history-list');
-    if (!historyList || !scoresHistory[pseudo]) return;
-
-    historyList.innerHTML = '';
-    scoresHistory[pseudo].forEach((score, index) => {
-        const item = document.createElement('div');
-        item.className = 'history-item';
-        item.innerHTML = `
-            <span class="history-item-name">Manche ${index + 1}</span>
-            <span class="history-item-score">${score} pts</span>
-        `;
-        historyList.appendChild(item);
-    });
-    }}
+}

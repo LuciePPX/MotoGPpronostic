@@ -22,8 +22,10 @@
         <div class="content">
             <div class="game-header">
                 <h1 id="welcome-title">Bienvenue</h1>
-                <button type="button" class="btn-classement" id="btn-ouvrir-classement">🏆 Classement</button>
-                <button type="button" class="btn-classement" id="btn-regles">📋 Règles</button>
+                <div class="header-buttons">
+                    <button type="button" class="btn-classement" id="btn-ouvrir-classement">🏆 Classement</button>
+                    <button type="button" class="btn-classement" id="btn-regles">📋 Règles</button>
+                </div>
             </div>
 
             <div class="race-score-wrapper">
@@ -44,12 +46,10 @@
                                     <span id="race-date-formatted">---</span>
                                 </div>
                             </div>
-                            
                             <div id="stats-prec-box" class="stats-box">
                                 <div id="stats-content">Chargement des stats 2025...</div>
                             </div>
                         </div>
-                        
                         <div class="circuit-image-container">
                             <img id="circuit-image" src="" alt="Circuit" class="circuit-image" />
                         </div>
@@ -66,35 +66,17 @@
                 </div>
             </div>
 
-            <div id="history-modal" class="modal">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h2>📊 Historique des Points</h2>
-                        <button class="close-modal" id="close-history">✕</button>
-                    </div>
-                    <div class="history-list" id="history-items"></div>
-                </div>
-            </div>
-
             <div class="stats-flex-container">
                 <div class="results-box" id="official-results-container">
                     <h2>🏆 Résultats Officiels</h2>
-                    
                     <div class="sub-zone">
                         <h4>⏱️ Sprint</h4>
                         <div id="timer-sprint"></div>
-                    </div>
-                    <div class="sub-zone"> 
-                        <h4>Résultat Sprint</h4>
                         <div id="official-sprint"></div>
                     </div>
-
                     <div class="sub-zone">
                         <h4>⏱️ Grand Prix</h4>
                         <div id="timer-race"></div>
-                    </div>
-                    <div class="sub-zone">
-                        <h4>Résultat Grand Prix</h4>
                         <div id="official-race"></div>
                     </div>
                 </div>
@@ -118,112 +100,128 @@
 
             <div class="container">
                 <h2 class="section-banner" id="main-banner">Pronostics MotoGP</h2>
-                
                 <div class="pronostics-layout">
-                    <!-- COLONNE GAUCHE: PILOTES -->
                     <div class="pilotes-column">
                         <h3 id="current-title">Choisissez pour le SPRINT</h3>
                         <input type="text" id="search-pilotes" class="search-input" placeholder="🔍 Chercher un pilote...">
                         <div class="pilotes-list" id="pilotes-list"></div>
                     </div>
 
-                    <!-- COLONNE DROITE: PODIUM -->
                     <div class="podium-column">
-    <div class="podiums-wrapper">
-        <div id="section-sprint" class="podium-box">
-            <h3 class="course-title">SPRINT</h3>
-            <div class="pronostic-flex-row">
-                <div class="podium">
-                    <div class="step rank-2" data-rank="2e"><span>🥈 2e</span><small>Glisser ici</small><div class="target-area"></div></div>
-                    <div class="step rank-1" data-rank="1er"><span>🥇 1er</span><small>Glisser ici</small><div class="target-area"></div></div>
-                    <div class="step rank-3" data-rank="3e"><span>🥉 3e</span><small>Glisser ici</small><div class="target-area"></div></div>
-                </div>
-                <div class="crash-bet-container">
-                    <h4 class="crash-title">Pari Chute</h4>
-                    <div class="step crash-zone" data-rank="Chute">
-                        <span>❌ Chute</span>
-                        <div class="target-area">Glisser ici</div>
-                    </div>
-                </div>
-            </div>
-            <button class="btn-valider" id="btn-valider-sprint">Valider le Sprint</button>
-        </div>
+                        <div class="podiums-wrapper">
+                            <div id="section-sprint" class="podium-box">
+                                <h3 class="course-title">SPRINT</h3>
+                                <div class="pronostic-flex-row">
+                                    <div class="podium">
+                                        <div class="step rank-2" data-rank="2e"><span>🥈 2e</span><div class="target-area"></div></div>
+                                        <div class="step rank-1" data-rank="1er"><span>🥇 1er</span><div class="target-area"></div></div>
+                                        <div class="step rank-3" data-rank="3e"><span>🥉 3e</span><div class="target-area"></div></div>
+                                    </div>
+                                    <div class="crash-bet-container">
+                                        <h4 class="crash-title">Pari Chute</h4>
+                                        <div class="step crash-zone" data-rank="Chute">
+                                            <span>❌ Chute</span>
+                                            <div class="target-area"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn-valider" id="btn-valider-sprint">Valider le Sprint</button>
+                            </div>
 
-        <div id="section-race" class="podium-box hidden">
-            <h3 class="course-title">GRAND PRIX</h3>
-            <div class="pronostic-flex-row">
-                <div class="podium">
-                    <div class="step rank-2" data-rank="2e"><span>🥈 2e</span><small>Glisser ici</small><div class="target-area"></div></div>
-                    <div class="step rank-1" data-rank="1er"><span>🥇 1er</span><small>Glisser ici</small><div class="target-area"></div></div>
-                    <div class="step rank-3" data-rank="3e"><span>🥉 3e</span><small>Glisser ici</small><div class="target-area"></div></div>
-                </div>
-                <div class="crash-bet-container">
-                    <h4 class="crash-title">Pari Chute</h4>
-                    <div class="step crash-zone" data-rank="Chute">
-                        <span>❌ Chute</span>
-                        <div class="target-area">Glisser ici</div>
+                            <div id="section-race" class="podium-box hidden">
+                                <h3 class="course-title">GRAND PRIX</h3>
+                                <div class="pronostic-flex-row">
+                                    <div class="podium">
+                                        <div class="step rank-2" data-rank="2e"><span>🥈 2e</span><div class="target-area"></div></div>
+                                        <div class="step rank-1" data-rank="1er"><span>🥇 1er</span><div class="target-area"></div></div>
+                                        <div class="step rank-3" data-rank="3e"><span>🥉 3e</span><div class="target-area"></div></div>
+                                    </div>
+                                    <div class="crash-bet-container">
+                                        <h4 class="crash-title">Pari Chute</h4>
+                                        <div class="step crash-zone" data-rank="Chute">
+                                            <span>❌ Chute</span>
+                                            <div class="target-area"></div>
+                                        </div>
+                                    </div>
+                                </div>
+                                <button class="btn-valider" id="btn-valider-race">Valider le Grand Prix</button>
+                            </div>
+                        </div>
                     </div>
                 </div>
             </div>
-            <button class="btn-valider" id="btn-valider-race">Valider le Grand Prix</button>
         </div>
     </div>
-</div>
 
-<div id="classement-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>🏆 Classement des Joueurs</h2>
-            <button class="close-modal" id="close-classement">✕</button>
+    <div id="history-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="history-title">📊 Historique par GP</h2>
+                <button class="close-modal" id="close-history-list">✕</button>
+            </div>
+            <div class="history-list" id="history-items">
+                </div>
+            <div id="history-footer" style="display:none; margin-top:10px;">
+                <button class="btn-valider" id="btn-back-history">⬅ Retour à la liste</button>
+            </div>
         </div>
-        <div class="classement-body">
-            <table class="classement-table">
+    </div>
+
+    <div id="classement-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🏆 Classement des Joueurs</h2>
+                <button class="close-modal" id="close-classement">✕</button>
+            </div>
+            <div class="classement-body">
+                <table class="classement-table">
+                    <thead>
+                        <tr><th>Pos</th><th>Joueur</th><th>Points</th></tr>
+                    </thead>
+                    <tbody id="classement-items"></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <div id="regles-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📋 Règles du jeu</h2>
+                <button class="close-modal" id="close-regles">✕</button>
+            </div>
+            <div class="regles-body">
+                <p><strong>Chaque week-end :</strong></p>
+                <ul>
+                    <li>2 courses : Sprint & Race</li>
+                    <li>Parier sur le podium & 1 chute</li>
+                </ul>
+                <h3>🎯 Points</h3>
+                <ul>
+                    <li>💥 -1 pt (Chute OK)</li>
+                    <li>🥇 -3 pts | 🥈 -2 pts | 🥉 -1 pt (Place OK)</li>
+                    <li>🔄 +1 pt (Mauvaise place) | ❌ +3 pts (Absent podium)</li>
+                </ul>
+                <p><strong>Le score le plus BAS gagne !</strong></p>
+            </div>
+        </div>
+    </div>
+
+    <div id="modal-details" class="modal-overlay" style="display:none;">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h3>Détails : <span id="modal-gp-name">GP</span></h3>
+                <span class="close-modal" id="close-details-modal">&times;</span>
+            </div>
+            <table class="score-table">
                 <thead>
-                    <tr>
-                        <th>Pos</th>
-                        <th>Joueur</th>
-                        <th>Points</th>
-                    </tr>
+                    <tr><th>Type</th><th>Position</th><th>Pilote</th><th>Points</th></tr>
                 </thead>
-                <tbody id="classement-items"></tbody>
+                <tbody id="details-table-body"></tbody>
             </table>
         </div>
     </div>
-</div>
-<div id="regles-modal" class="modal">
-    <div class="modal-content">
-        <div class="modal-header">
-            <h2>📋 Règles du jeu</h2>
-            <button class="close-modal" id="close-regles">✕</button>
-        </div>
 
-        <div class="classement-body regles-body">
-            <p><strong>Chaque week-end :</strong></p>
-            <ul>
-                <li>2 courses sont disputées : <strong>Sprint</strong> & <strong>Race</strong></li>
-                <li>Le joueur doit parier sur :</li>
-                <ul>
-                    <li>🥇🥈🥉 Le podium de chaque course</li>
-                    <li>💥 La chute d’un pilote</li>
-                </ul>
-                <li>⏱️ Dernier délai : <strong>heure de la course</strong> (après, les cellules sont bloquées)</li>
-            </ul>
-
-            <h3>🎯 Attribution des points</h3>
-            <ul>
-                <li>💥 <strong>-1 point</strong> si la chute est bien prédite</li>
-                <li>🥇 <strong>-3 points</strong> → bon pilote, bonne place (1er)</li>
-                <li>🥈 <strong>-2 points</strong> → bon pilote, bonne place (2e)</li>
-                <li>🥉 <strong>-1 point</strong> → bon pilote, bonne place (3e)</li>
-                <li>🔄 <strong>+1 point</strong> → bon pilote, mauvaise place</li>
-                <li>❌ <strong>+3 points</strong> → pilote absent du podium</li>
-            </ul>
-
-            <h3>🏁 Fin de saison</h3>
-            <p>Le joueur avec le moins de points à la fin de la saison gagne le championnat !</p>
-        </div>
-    </div>
-</div>
-<script type="module" src="./script.js"></script>
+    <script type="module" src="./script.js"></script>
 </body>
 </html>
