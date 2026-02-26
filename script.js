@@ -149,6 +149,79 @@ function setupModals() {
             if (typeof afficherHistorique === 'function') afficherHistorique();
         });
     }
+async function chargerClassementGlobal() {
+    const tbody = document.getElementById('classement-tbody');
+    const loadingEl = document.getElementById('loading');
+    const tableEl = document.getElementById('classement-table');
+    const emptyEl = document.getElementById('empty');
+
+    try {
+        // On récupère tout le nœud scores_details
+        const snapshot = await get(ref(db, 'scores_details/'));
+        
+        if (snapshot.exists()) {
+            const allData = snapshot.val();
+            const listeJoueurs = [];
+
+            // Parcours de chaque utilisateur (ex: Lucy)
+            for (const [pseudo, grandsPrix] of Object.entries(allData)) {
+                let totalSprint = 0;
+                let totalRace = 0;
+
+                // Parcours de chaque GP pour cet utilisateur (ex: Grand_Prix_de_Thaïlande)
+                for (const gpName in grandsPrix) {
+                    const dataGP = grandsPrix[gpName];
+                    
+                    // Addition des totaux Sprint et Race s'ils existent
+                    if (dataGP.sprint && dataGP.sprint.total) {
+                        totalSprint += parseInt(dataGP.sprint.total);
+                    }
+                    if (dataGP.race && dataGP.race.total) {
+                        totalRace += parseInt(dataGP.race.total);
+                    }
+                }
+
+                listeJoueurs.push({
+                    pseudo: pseudo,
+                    sprint: totalSprint,
+                    race: totalRace,
+                    total: totalSprint + totalRace
+                });
+            }
+
+            // Tri par score total (du plus haut au plus bas)
+            listeJoueurs.sort((a, b) => b.total - a.total);
+
+            // Génération du HTML
+            tbody.innerHTML = listeJoueurs.map((joueur, index) => {
+                let medal = '🏅';
+                if (index === 0) medal = '🥇';
+                else if (index === 1) medal = '🥈';
+                else if (index === 2) medal = '🥉';
+
+                return `
+                    <tr>
+                        <td class="rank-col">${medal} ${index + 1}</td>
+                        <td class="pseudo-col">${joueur.pseudo}</td>
+                        <td class="points-col">${joueur.sprint > 0 ? '+' : ''}${joueur.sprint}</td>
+                        <td class="points-col">${joueur.race > 0 ? '+' : ''}${joueur.race}</td>
+                        <td class="total-col">${joueur.total > 0 ? '+' : ''}${joueur.total}</td>
+                    </tr>
+                `;
+            }).join('');
+
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'none';
+            tableEl.style.display = 'table';
+        } else {
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+        }
+    } catch (e) {
+        console.error("Erreur Firebase:", e);
+        loadingEl.innerHTML = "❌ Erreur de connexion";
+    }
+}
 
     // --- MODAL CLASSEMENT ---
     const btnClassement = document.querySelector('.btn-classement'); 
@@ -227,7 +300,6 @@ function chargerDonneesFirebase() {
             sprintResults = data;
             afficherResultats('sprint', 'section-sprint');
             calculerPointsUtilisateur('sprint');
-            mettreAJourScoreCard();
         }
     });
     firebaseListeners[sprintKey] = { unsubscribe: unsubscribeSprint };
@@ -241,7 +313,6 @@ function chargerDonneesFirebase() {
             raceResults = data;
             afficherResultats('race', 'section-race');
             calculerPointsUtilisateur('race');
-            mettreAJourScoreCard();
         }
     });
     firebaseListeners[raceResultsKey] = { unsubscribe: unsubscribeRace };
@@ -1021,6 +1092,7 @@ async function calculerPointsUtilisateur(type) {
     const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
     const predRef = ref(db, `pronostics/${pseudo}/${raceKey}/${type}`);
     const resRef = ref(db, `resultats/${raceKey}/${type}`);
+    console.log(`📊 Calcul des points pour ${pseudo} - ${type} (${raceKey})`);
 
     // 2. On récupère les snapshots
     const [predSnap, resSnap] = await Promise.all([get(predRef), get(resRef)]);
@@ -1034,7 +1106,10 @@ async function calculerPointsUtilisateur(type) {
     const results = resSnap.val();
     const podiumReel = [results['1er'], results['2e'], results['3e']];  
     const chuteReelle = results['Chute'];
-
+    console.log("📋 Prédictions :", predictions);
+    console.log("🎯 Résultats officiels :", results);
+    console.log("🎯 Podium réel :", podiumReel);
+    console.log("🎯 Chute réelle :", chuteReelle);
     let detailPoints = {
         "1er": 0,
         "2e": 0,
@@ -1048,33 +1123,22 @@ async function calculerPointsUtilisateur(type) {
 
     ['1er', '2e', '3e'].forEach(rank => {
         const predictedNum = predictions[rank];
-        const pilote = DATA_PILOTES.find(p => parseInt(p.num) === predictedNum);
-        
-        if (pilote) {
-            const nom = pilote.nom;
-            const indexReel = podiumReel.indexOf(nom);
+        const indexReel = podiumReel.indexOf(predictedNum);
+
             if (indexReel === -1) {
                 detailPoints[rank] = -3;
             } else {
                 const placeReelle = ['1er', '2e', '3e'][indexReel];
                 detailPoints[rank] = (placeReelle === rank) ? pointsParPosition[rank] : -1;
             }
-        }
-    });
-    
+        });
     // --- CHUTE ---
-   if (predictions['Chute']) {
-        const piloteChutePredi = DATA_PILOTES.find(p => parseInt(p.num) === predictions['Chute']);
-        
-        if (piloteChutePredi && chuteReelle) {
-           const piloteChutePredi = DATA_PILOTES.find(p => parseInt(p.num) === predictions['Chute']);
-        if (piloteChutePredi) {
-            const estTombe = chuteReelle.includes(piloteChutePredi.nom) || chuteReelle.includes(predictions['Chute'].toString());
-            detailPoints["Chute"] = estTombe ? 1 : 0;
+    if (predictions['Chute']) {
+        const indexChute = chuteReelle.indexOf(predictions['Chute']);
+        detailPoints['Chute'] = (indexChute !== -1) ? 1 : 0;
         }
-        }
-    }
-// Calcul du total
+    
+    // Calcul du total
     detailPoints.total = detailPoints["1er"] + detailPoints["2e"] + detailPoints["3e"] + detailPoints["Chute"];
 
     console.log("📈 Détail calculé :", detailPoints);

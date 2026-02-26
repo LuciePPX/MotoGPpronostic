@@ -168,20 +168,28 @@
     </div>
 
     <div id="classement-modal" class="modal">
-        <div class="modal-content">
-            <div class="modal-header">
-                <h2>🏆 Classement des Joueurs</h2>
-                <button class="close-modal" id="close-classement">✕</button>
+        <div class="modal-content classement-container">
+            <span class="close-modal">&times;</span>
+            <h1>🏆 CLASSEMENT GÉNÉRAL</h1>
+            
+            <div id="loading" class="loading">⏳ Chargement...</div>
+
+            <table id="classement-table" class="classement-table" style="display: none;">
+                <thead>
+                    <tr>
+                        <th class="rank-col">🏁 Rang</th>
+                        <th class="pseudo-col">Pilote</th>
+                        <th class="points-col">Sprint</th>
+                        <th class="points-col">Race</th>
+                        <th class="total-col">📊 Total</th>
+                    </tr>
+                </thead>
+                <tbody id="classement-tbody"></tbody>
+            </table>
+            
+            <div id="empty" class="empty" style="display: none;">📭 Aucun score</div>
+            
             </div>
-            <div class="classement-body">
-                <table class="classement-table">
-                    <thead>
-                        <tr><th>Pos</th><th>Joueur</th><th>Points</th></tr>
-                    </thead>
-                    <tbody id="classement-items"></tbody>
-                </table>
-            </div>
-        </div>
     </div>
 
     <div id="regles-modal" class="modal">
