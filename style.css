@@ -582,6 +582,8 @@ button {
 }
 
 .pilote-card {
+    touch-action: none; /* Empêche le navigateur de gérer le touch (scroll) sur la carte */
+    user-select: none;
     padding: 10px 15px;
     background: linear-gradient(135deg, var(--dark-bg) 0%, var(--dark-card) 100%);
     border: 2px solid rgba(225, 6, 0, 0.2);

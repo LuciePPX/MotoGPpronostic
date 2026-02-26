@@ -568,6 +568,57 @@ function attachDragListeners(card) {
 }
 
 // ===== DRAG & DROP HANDLERS =====
+
+// Fonction commune pour PC et Mobile
+function executerDepot(zone, elementSource, zoneSource) {
+    const sectionId = zone.closest('[id^="section-"]')?.id;
+    const type = sectionId === 'section-sprint' ? 'sprint' : 'race';
+    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
+    const rank = zone.getAttribute('data-rank') || 'Chute';
+    const num = parseInt(elementSource.dataset.num);
+    const nom = elementSource.dataset.nom;
+
+    // 1. Nettoyer l'ancienne zone
+    if (zoneSource && zoneSource !== zone) {
+        const oldRank = zoneSource.getAttribute('data-rank');
+        const oldSectionId = zoneSource.closest('[id^="section-"]')?.id;
+        const oldType = oldSectionId === 'section-sprint' ? 'sprint' : 'race';
+        const oldPredictions = oldType === 'sprint' ? sprintPredictions : racePredictions;
+        delete oldPredictions[oldRank];
+        
+        const oldContent = zoneSource.querySelector('.target-area') || zoneSource;
+        if (oldContent.querySelector('.pilote-card')) {
+             oldContent.innerHTML = (zoneSource.classList.contains('crash-zone')) ? '' : oldContent.innerHTML;
+             // Si ce n'est pas une crash zone, on vide juste la target area
+             if(zoneSource.querySelector('.target-area')) zoneSource.querySelector('.target-area').innerHTML = '';
+        }
+        const placeholder = zoneSource.querySelector('small');
+        if (placeholder) placeholder.style.display = '';
+        zoneSource.classList.remove('used-crash');
+        zoneSource.style.background = '';
+    }
+
+    // 2. Libérer le pilote déjà présent dans la zone de destination
+    const existingCard = zone.querySelector('.pilote-card');
+    if (existingCard) {
+        const existingNum = parseInt(existingCard.dataset.num);
+        delete predictions[rank];
+        // On ne le marque plus comme used si il n'est plus nulle part
+        // (La fonction mettreAJourAffichagePronostics s'en occupera)
+    }
+
+    // 3. Enregistrer
+    predictions[rank] = num;
+    const contentArea = zone.querySelector('.target-area') || zone;
+    const placeholder = zone.querySelector('small');
+    if (placeholder) placeholder.style.display = 'none';
+
+    contentArea.innerHTML = afficherPiloteEnZone({ num, nom }, rank);
+    attachDragListeners(contentArea.querySelector('.pilote-card'));
+
+    // 4. Mettre à jour les classes "used" sur la liste
+    mettreAJourAffichagePronostics(); 
+}
 let draggedElement = null;
 let draggedFromZone = null; // Permet de tracker si on drag d'une zone
 let touchOffset = { x: 0, y: 0 };
@@ -628,16 +679,16 @@ function handleTouchMove(e) {
         zone.style.background = 'rgba(225, 6, 0, 0.3)';
     }
 }
-
 function handleTouchEnd(e) {
     if (!draggedElement) return;
 
     const touch = e.changedTouches[0];
+    // On cherche l'élément réellement sous le doigt à la fin du mouvement
     const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
     const zone = elementBelow?.closest('.step');
     const overList = elementBelow?.closest('.pilotes-list');
 
-    // Réinitialiser le style visuel
+    // Réinitialiser le style visuel de la carte mobile
     draggedElement.style.position = '';
     draggedElement.style.zIndex = '';
     draggedElement.style.opacity = '1';
@@ -646,13 +697,11 @@ function handleTouchEnd(e) {
     draggedElement.style.top = '';
 
     if (zone) {
-        // On réutilise ta logique handleDrop existante en simulant l'objet zone
-        handleDrop({ 
-            preventDefault: () => {}, 
-            currentTarget: zone 
-        });
-    } else if (overList || !zone) {
-        // Logique de retour à la liste (ton code existant pour le retrait)
+        // CORRECTION : On passe manuellement la zone à handleDrop
+        // On modifie handleDrop pour accepter soit un event, soit directement une zone
+        handleDropMobile(zone);
+    } else {
+        // Si on lâche hors d'une zone, on retire le pilote
         retirerPilote(draggedElement, draggedFromZone);
     }
 
@@ -660,7 +709,6 @@ function handleTouchEnd(e) {
     draggedFromZone = null;
     document.querySelectorAll('.step').forEach(s => s.style.background = '');
 }
-
 // ===== FUNCTION: SETUP DROP ZONES =====
 function retirerPilote(element, fromZone) {
     if (!element || !fromZone) return;
@@ -806,72 +854,15 @@ function afficherPiloteEnZone(pilote, rank) {
         `;
     }
 }
+// Modifie ton handleDrop PC
 function handleDrop(e) {
     e.preventDefault();
-    const zone = e.currentTarget;
-    if (!draggedElement) return;
+    executerDepot(e.currentTarget, draggedElement, draggedFromZone);
+}
 
-    const sectionId = zone.closest('[id^="section-"]')?.id;
-    const type = sectionId === 'section-sprint' ? 'sprint' : 'race';
-    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
-
-    const rank = zone.getAttribute('data-rank') || 'Chute';
-
-    const num = parseInt(draggedElement.dataset.num);
-    const nom = draggedElement.dataset.nom;
-
-    // 🔴 enlever l'ancienne position si elle existe
-    if (draggedFromZone && draggedFromZone !== zone) {
-        const oldRank = draggedFromZone.getAttribute('data-rank');
-        const oldSectionId = draggedFromZone.closest('[id^="section-"]')?.id;
-        const oldType = oldSectionId === 'section-sprint' ? 'sprint' : 'race';
-        const oldPredictions = oldType === 'sprint' ? sprintPredictions : racePredictions;
-
-        delete oldPredictions[oldRank];
-
-        const oldContent = draggedFromZone.querySelector('.target-area, .crash-zone');
-        if (oldContent) oldContent.innerHTML = '';
-
-        const placeholder = draggedFromZone.querySelector('small');
-        if (placeholder) placeholder.style.display = '';
-
-        draggedFromZone.classList.remove('used-crash');
-        draggedFromZone.style.background = '';
-    }
-
-    // 🔴 si un pilote était déjà dans cette zone → le libérer
-    const existingCard = zone.querySelector('.pilote-card');
-    if (existingCard) {
-        const existingNum = parseInt(existingCard.dataset.num);
-        delete predictions[rank];
-
-        document.querySelectorAll('.pilotes-list .pilote-card').forEach(card => {
-            if (parseInt(card.dataset.num) === existingNum) {
-                card.classList.remove('used');
-            }
-        });
-    }
-
-    // 🟢 enregistrer la prédiction
-    predictions[rank] = num;
-
-    const contentArea = zone.querySelector('.target-area') || zone;
-    const placeholder = zone.querySelector('small');
-    if (placeholder) placeholder.style.display = 'none';
-
-    contentArea.innerHTML = afficherPiloteEnZone({ num, nom }, rank);
-    attachDragListeners(contentArea.querySelector('.pilote-card'));
-
-    document.querySelectorAll('.pilotes-list .pilote-card').forEach(card => {
-        if (parseInt(card.dataset.num) === num) {
-            card.classList.add('used');
-        }
-    });
-
-    zone.style.background = '';
-    if (zone.classList.contains('crash-zone')) zone.classList.add('used-crash');
-
-    mettreAJourAffichagePronostics();
+// Fonction pour le mobile
+function handleDropMobile(zone) {
+    executerDepot(zone, draggedElement, draggedFromZone);
 }
 
 // ===== FUNCTION: METTRE À JOUR AFFICHAGE PRONOSTICS =====
