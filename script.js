@@ -94,6 +94,7 @@ function initialiserJeu() {
     genererPilotes();
     afficherScore();
     setupDropZones();
+    initClickAndSelect();
     setupButtons();
     setupModals();
 
@@ -562,10 +563,6 @@ function attachDragListeners(card) {
     card.addEventListener('dragstart', handleDragStart);
     card.addEventListener('dragend', handleDragEnd);
 
-    // Mobile
-    card.addEventListener('touchstart', handleTouchStart, { passive: false });
-    card.addEventListener('touchmove', handleTouchMove, { passive: false });
-    card.addEventListener('touchend', handleTouchEnd);
 }
 
 // ===== DRAG & DROP HANDLERS =====
@@ -641,80 +638,6 @@ function handleDragEnd(e) {
     draggedFromZone = null;
 }
 
-function handleTouchStart(e) {
-    if (e.target.closest('.pilote-card')) {
-        draggedElement = e.target.closest('.pilote-card');
-        draggedFromZone = draggedElement.closest('.step');
-        
-        // Empêcher le scroll pendant le drag
-        e.preventDefault();
-
-        const touch = e.touches[0];
-        const rect = draggedElement.getBoundingClientRect();
-        
-        // Calculer l'offset pour que la carte reste sous le doigt exactement où on a touché
-        touchOffset.x = touch.clientX - rect.left;
-        touchOffset.y = touch.clientY - rect.top;
-
-        draggedElement.style.position = 'fixed';
-        draggedElement.style.zIndex = '1000';
-        draggedElement.style.opacity = '0.8';
-        draggedElement.style.pointerEvents = 'none'; // Important pour détecter ce qu'il y a DESSOUS
-    }
-}
-
-function handleTouchMove(e) {
-    if (!draggedElement) return;
-    e.preventDefault();
-
-    const touch = e.touches[0];
-    
-    // Déplacer l'élément
-    draggedElement.style.left = (touch.clientX - touchOffset.x) + 'px';
-    draggedElement.style.top = (touch.clientY - touchOffset.y) + 'px';
-
-    // Simuler le "dragover" pour le retour visuel
-    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-    const zone = elementBelow?.closest('.step');
-
-    // Nettoyer les autres zones
-    document.querySelectorAll('.step').forEach(s => s.style.background = '');
-    
-    // Feedback visuel sur la zone survolée
-    if (zone) {
-        zone.style.background = 'rgba(225, 6, 0, 0.3)';
-    }
-}
-function handleTouchEnd(e) {
-    if (!draggedElement) return;
-
-    const touch = e.changedTouches[0];
-    // On cherche l'élément réellement sous le doigt à la fin du mouvement
-    const elementBelow = document.elementFromPoint(touch.clientX, touch.clientY);
-    const zone = elementBelow?.closest('.step');
-    const overList = elementBelow?.closest('.pilotes-list');
-
-    // Réinitialiser le style visuel de la carte mobile
-    draggedElement.style.position = '';
-    draggedElement.style.zIndex = '';
-    draggedElement.style.opacity = '1';
-    draggedElement.style.pointerEvents = 'auto';
-    draggedElement.style.left = '';
-    draggedElement.style.top = '';
-
-    if (zone) {
-        // CORRECTION : On passe manuellement la zone à handleDrop
-        // On modifie handleDrop pour accepter soit un event, soit directement une zone
-        handleDropMobile(zone);
-    } else {
-        // Si on lâche hors d'une zone, on retire le pilote
-        retirerPilote(draggedElement, draggedFromZone);
-    }
-
-    draggedElement = null;
-    draggedFromZone = null;
-    document.querySelectorAll('.step').forEach(s => s.style.background = '');
-}
 // ===== FUNCTION: SETUP DROP ZONES =====
 function retirerPilote(element, fromZone) {
     if (!element || !fromZone) return;
@@ -866,10 +789,6 @@ function handleDrop(e) {
     executerDepot(e.currentTarget, draggedElement, draggedFromZone);
 }
 
-// Fonction pour le mobile
-function handleDropMobile(zone) {
-    executerDepot(zone, draggedElement, draggedFromZone);
-}
 
 // ===== FUNCTION: METTRE À JOUR AFFICHAGE PRONOSTICS =====
 function mettreAJourAffichagePronostics() {
@@ -935,8 +854,6 @@ function initClickAndSelect() {
     });
 }
 
-// Appeler la fonction au chargement
-initClickAndSelect();
 
 // ===== UTILITIES: RÉCAP ET MODIFICATION =====
 
