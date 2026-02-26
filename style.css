@@ -479,7 +479,7 @@ button {
 }
 
 .hidden-timer {
-    display: none;
+    display: none !important;
 }
 /* ===== PODIUMS & DRAG/DROP ===== */
 .container {
@@ -622,6 +622,25 @@ button {
     margin-right: 5px;
 }
 
+/* Animation pour la zone sélectionnée */
+.step.waiting-selection {
+    border: 3px dashed #e10600 !important;
+    background: rgba(225, 6, 0, 0.1) !important;
+    transform: scale(1.02);
+    animation: pulse-red 1.5s infinite;
+}
+
+@keyframes pulse-red {
+    0% { box-shadow: 0 0 0 0 rgba(225, 6, 0, 0.4); }
+    70% { box-shadow: 0 0 0 10px rgba(225, 6, 0, 0); }
+    100% { box-shadow: 0 0 0 0 rgba(225, 6, 0, 0); }
+}
+
+/* Indiquer que les cartes sont cliquables */
+.pilote-card {
+    cursor: pointer;
+    touch-action: manipulation; /* Optimise le clic sur mobile */
+}
 /* ===== PODIUMS ===== */
 .podiums-wrapper {
     display: flex;

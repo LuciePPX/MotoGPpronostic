@@ -46,6 +46,7 @@ document.addEventListener('DOMContentLoaded', () => {
     btnClassement?.addEventListener('click', () => {
         window.open('classement.html', '_blank');
     });
+    
 });
 
 // ===== FUNCTION: NETTOYAGE AVANT QUITTER =====
@@ -616,6 +617,11 @@ function executerDepot(zone, elementSource, zoneSource) {
     contentArea.innerHTML = afficherPiloteEnZone({ num, nom }, rank);
     attachDragListeners(contentArea.querySelector('.pilote-card'));
 
+    contentArea.querySelector('.pilote-card').addEventListener('click', (e) => {
+    e.stopPropagation(); // Empêche de déclencher le clic de la zone parente
+    retirerPilote(e.currentTarget, zone);
+});
+
     // 4. Mettre à jour les classes "used" sur la liste
     mettreAJourAffichagePronostics(); 
 }
@@ -881,6 +887,56 @@ function mettreAJourAffichagePronostics() {
         if (podiumColumn) podiumColumn.style.display = 'flex';
     }
 }
+
+let zoneActive = null; // Stocke la zone (.step) cliquée
+
+function initClickAndSelect() {
+    // 1. Gérer le clic sur les zones (Steps)
+    document.querySelectorAll('.step').forEach(zone => {
+        zone.addEventListener('click', (e) => {
+            // Si la zone contient déjà un pilote, on le retire d'abord (optionnel)
+            const cardInZone = zone.querySelector('.pilote-card');
+            
+            if (zoneActive === zone) {
+                // Si on reclique sur la même zone, on désactive
+                zone.classList.remove('waiting-selection');
+                zoneActive = null;
+            } else {
+                // On active la nouvelle zone
+                if (zoneActive) zoneActive.classList.remove('waiting-selection');
+                zoneActive = zone;
+                zone.classList.add('waiting-selection');
+                
+                // Petit message console pour débugger
+                console.log("Zone sélectionnée :", zone.dataset.rank);
+            }
+        });
+    });
+
+    // 2. Gérer le clic sur les pilotes dans la liste
+    // On utilise la délégation d'événement pour que ça marche même si la liste change
+    document.querySelector('.pilotes-list').addEventListener('click', (e) => {
+        const card = e.target.closest('.pilote-card');
+        
+        if (card && zoneActive) {
+            if (card.classList.contains('used')) {
+                alert("Ce pilote est déjà utilisé !");
+                return;
+            }
+
+            // Utilise ta fonction executerDepot existante !
+            // On passe null pour zoneSource car c'est un nouveau choix depuis la liste
+            executerDepot(zoneActive, card, null);
+
+            // On désactive la zone après le choix
+            zoneActive.classList.remove('waiting-selection');
+            zoneActive = null;
+        }
+    });
+}
+
+// Appeler la fonction au chargement
+initClickAndSelect();
 
 // ===== UTILITIES: RÉCAP ET MODIFICATION =====
 
@@ -1199,6 +1255,8 @@ function editerPronostic(type) {
 
     afficherRecap(type);
     updateSectionsVisibility();
+    demarrerTimer('sprint', 'section-sprint');
+    demarrerTimer('race', 'section-race');
     if (typeof mettreAJourAffichagePronostics === 'function') mettreAJourAffichagePronostics();
 }
 
@@ -1431,6 +1489,8 @@ function validerPronostic(type) {
         if (results && results['1er']) {
             calculerPointsUtilisateur(type);
         }
+        demarrerTimer('sprint', 'section-sprint');
+        demarrerTimer('race', 'section-race');
     });
 }
 }
