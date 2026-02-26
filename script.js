@@ -402,15 +402,34 @@ function afficherScore() {
     const scoreMainEl = document.querySelector('.score-main');
     const scoreGpNameEl = document.querySelector('.score-gp-name');
     const scoreLastThreeEl = document.querySelector('.score-last-three');
-
+    const raceCourante = getRaceCourante();
+    
     if (!scoreMainEl) return;
 
-    const score = currentScores[pseudo] || 0;
-    const lastThree = scoresHistory[pseudo] ? scoresHistory[pseudo].slice(0, 3).join(' - ') : 'N/A';
+    // 1. Récupération du score global cumulé
+    // On s'assure de prendre le score total stocké dans currentScores
+    const scoreGlobal = currentScores[pseudo] || 0;
 
-    scoreMainEl.textContent = score;
-    if (scoreGpNameEl) scoreGpNameEl.textContent = `${pseudo}`;
-    if (scoreLastThreeEl) scoreLastThreeEl.textContent = `Derniers résultats: ${lastThree}`;
+    // 2. Affichage du score principal (Général)
+    scoreMainEl.textContent = scoreGlobal;
+
+    // 3. Mise à jour du bandeau sous le score
+    if (scoreGpNameEl) {
+        const nomGP = (typeof raceCourante !== 'undefined' && raceCourante.gp) 
+                      ? raceCourante.gp 
+                      : "Chargement...";
+        
+        // On affiche clairement qu'il s'agit du score global
+        scoreGpNameEl.innerHTML = `SCORE GÉNÉRAL <br><small style="color: #e10600">${nomGP}</small>`;
+    }
+
+    // 4. On vide ou on cache la section "Derniers résultats" 
+    // puisqu'on veut que l'utilisateur clique sur la loupe pour l'historique
+    if (scoreLastThreeEl) {
+        scoreLastThreeEl.textContent = "Cliquez sur 🔍 pour le détail";
+        scoreLastThreeEl.style.fontSize = "0.8em";
+        scoreLastThreeEl.style.opacity = "0.6";
+    }
 }
 
 // ===== FUNCTION: GÉNÉRER PILOTES =====
@@ -1092,7 +1111,6 @@ async function calculerPointsUtilisateur(type) {
     const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
     const predRef = ref(db, `pronostics/${pseudo}/${raceKey}/${type}`);
     const resRef = ref(db, `resultats/${raceKey}/${type}`);
-    console.log(`📊 Calcul des points pour ${pseudo} - ${type} (${raceKey})`);
 
     // 2. On récupère les snapshots
     const [predSnap, resSnap] = await Promise.all([get(predRef), get(resRef)]);
@@ -1106,10 +1124,7 @@ async function calculerPointsUtilisateur(type) {
     const results = resSnap.val();
     const podiumReel = [results['1er'], results['2e'], results['3e']];  
     const chuteReelle = results['Chute'];
-    console.log("📋 Prédictions :", predictions);
-    console.log("🎯 Résultats officiels :", results);
-    console.log("🎯 Podium réel :", podiumReel);
-    console.log("🎯 Chute réelle :", chuteReelle);
+
     let detailPoints = {
         "1er": 0,
         "2e": 0,
@@ -1141,7 +1156,6 @@ async function calculerPointsUtilisateur(type) {
     // Calcul du total
     detailPoints.total = detailPoints["1er"] + detailPoints["2e"] + detailPoints["3e"] + detailPoints["Chute"];
 
-    console.log("📈 Détail calculé :", detailPoints);
 
     // --- SAUVEGARDE FIREBASE ---
     const raceId = raceCourante.gp.replace(/\s+/g, '_');
@@ -1265,37 +1279,55 @@ function setupButtons() {
 }
 async function afficherListeHistoriqueGP() {
     const historyContainer = document.getElementById('history-items');
-    const footer = document.getElementById('history-footer');
     const modal = document.getElementById('history-modal');
     
     modal.classList.add('active');
-    footer.style.display = 'none';
     historyContainer.innerHTML = '<div class="loader">Chargement de l\'historique...</div>';
 
     try {
-        // On récupère tous les scores calculés pour l'utilisateur
         const snapshot = await get(ref(db, `scores_details/${pseudo}`));
         
         if (!snapshot.exists()) {
-            historyContainer.innerHTML = '<p class="no-data">Aucun historique disponible pour le moment.</p>';
+            historyContainer.innerHTML = '<p class="no-data">Aucun historique disponible.</p>';
             return;
         }
 
-        const GPData = snapshot.val(); // Contient tous les GP : { "GP_Espagne": { "sprint": 2, "race": -1 }, ... }
-        let html = '<div class="gp-history-grid">';
-
+        const GPData = snapshot.val();
+        let html = '<div class="gp-history-container">';
+        
+        // On parcourt chaque Grand Prix
         Object.keys(GPData).forEach(raceId => {
             const nomPropre = raceId.replace(/_/g, ' ');
-            const totalGP = (GPData[raceId].sprint || 0) + (GPData[raceId].race || 0);
-            
+            const courses = GPData[raceId]; // Contient "sprint" et/ou "race"
+
             html += `
-                <div class="gp-history-card" onclick="afficherDetailPointsGP('${raceId}')">
-                    <div class="gp-card-info">
-                        <strong>${nomPropre}</strong>
-                        <span>Score total: ${totalGP > 0 ? '+' + totalGP : totalGP} pts</span>
-                    </div>
-                    <div class="gp-card-arrow">🔍</div>
-                </div>`;
+                <div class="gp-block">
+                    <h3 class="gp-title">🏁 ${nomPropre}</h3>
+                    <div class="gp-courses-flex">`;
+
+            // On parcourt les types de course (Sprint et Race)
+            ['sprint', 'race'].forEach(type => {
+                if (courses[type]) {
+                    const d = courses[type]; // Le détail (1er, 2e, etc.)
+                    const colorTotal = d.total >= 0 ? '#00ff00' : '#ff4444';
+
+                    html += `
+                        <div class="course-card">
+                            <div class="course-header">${type.toUpperCase()}</div>
+                            <div class="course-details">
+                                <p>1er: <span>${d['1er'] > 0 ? '+' : ''}${d['1er']}</span></p>
+                                <p>2e: <span>${d['2e'] > 0 ? '+' : ''}${d['2e']}</span></p>
+                                <p>3e: <span>${d['3e'] > 0 ? '+' : ''}${d['3e']}</span></p>
+                                <p>Chute: <span>${d['Chute'] > 0 ? '+' : ''}${d['Chute']}</span></p>
+                            </div>
+                            <div class="course-total" style="color: ${colorTotal}">
+                                Total: ${d.total > 0 ? '+' : ''}${d.total} pts
+                            </div>
+                        </div>`;
+                }
+            });
+
+            html += `</div></div><hr class="gp-separator">`;
         });
 
         html += '</div>';
@@ -1303,7 +1335,7 @@ async function afficherListeHistoriqueGP() {
 
     } catch (error) {
         console.error(error);
-        historyContainer.innerHTML = '<p class="no-data">Erreur de chargement.</p>';
+        historyContainer.innerHTML = '<p class="error">Erreur lors du calcul des détails.</p>';
     }
 }
 
