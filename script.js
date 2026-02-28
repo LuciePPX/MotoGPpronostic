@@ -1185,7 +1185,7 @@ async function calculerPointsUtilisateur(type) {
                 detailPoints[rank] = -1;
             } else {
                 const placeReelle = ['1er', '2e', '3e'][indexReel];
-                detailPoints[rank] = (placeReelle === rank) ? pointsParPosition[rank] : 0;
+                detailPoints[rank] = (placeReelle === rank) ? pointsParPosition[rank] : 1;
             }
         });
     // --- CHUTE ---
