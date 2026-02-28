@@ -3,9 +3,10 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Paris MotoGP - Firebase</title>
+    <title>Paris MotoGP</title>
     <link rel="stylesheet" href="./style.css">
 </head>
+
 <body>
     <div class="background"></div>
 
@@ -20,6 +21,7 @@
 
     <div id="game-screen" class="hidden">
         <div class="content">
+
             <div class="game-header">
                 <h1 id="welcome-title">Bienvenue</h1>
                 <div class="header-buttons">
@@ -29,8 +31,10 @@
             </div>
 
             <div class="race-score-wrapper">
+
                 <div id="next-race-container">
                     <div class="race-content-wrapper">
+                        
                         <div class="race-info">
                             <h2>Prochaine course</h2>
                             <div class="race-gp-name">
@@ -50,9 +54,11 @@
                                 <div id="stats-content">Chargement des stats 2025...</div>
                             </div>
                         </div>
+
                         <div class="circuit-image-container">
                             <img id="circuit-image" src="" alt="Circuit" class="circuit-image" />
                         </div>
+
                     </div>
                 </div>
 
@@ -61,23 +67,26 @@
                         <div class="score-main" id="main-score-display">0</div>
                         <div class="history-icon" id="open-history">🔍</div>
                     </div>
+
                     <div class="score-gp-name" id="current-gp-name">---</div>
                     <div class="score-last-three" id="last-three-scores"></div>
                 </div>
+
             </div>
 
             <div class="stats-flex-container">
+
                 <div class="results-box" id="official-results-container">
                     <h2>🏆 Résultats Officiels</h2>
                     <div class="sub-zone">
                         <h4>⏱️ Sprint</h4>
                         <div id="timer-sprint"></div>
-                        <div id="official-sprint"></div>
+                        <div id="official-sprint" class="mini-list"></div>
                     </div>
                     <div class="sub-zone">
                         <h4>⏱️ Grand Prix</h4>
                         <div id="timer-race"></div>
-                        <div id="official-race"></div>
+                        <div id="official-race" class="mini-list"></div>
                     </div>
                 </div>
 
@@ -96,9 +105,11 @@
                         </div>
                     </div>
                 </div>
+
             </div>
 
             <div class="container">
+
                 <h2 class="section-banner" id="main-banner">Pronostics MotoGP</h2>
                 <div class="pronostics-layout">
                     <div class="pilotes-column">
@@ -109,6 +120,7 @@
 
                     <div class="podium-column">
                         <div class="podiums-wrapper">
+
                             <div id="section-sprint" class="podium-box">
                                 <h3 class="course-title">SPRINT</h3>
                                 <div class="pronostic-flex-row">
@@ -120,7 +132,7 @@
                                     <div class="crash-bet-container">
                                         <h4 class="crash-title">Pari Chute</h4>
                                         <div class="step crash-zone" data-rank="Chute">
-                                            <span>❌ Chute</span>
+                                            <span>💥 Chute</span>
                                             <div class="target-area"></div>
                                         </div>
                                     </div>
@@ -139,31 +151,36 @@
                                     <div class="crash-bet-container">
                                         <h4 class="crash-title">Pari Chute</h4>
                                         <div class="step crash-zone" data-rank="Chute">
-                                            <span>❌ Chute</span>
+                                            <span>💥 Chute</span>
                                             <div class="target-area"></div>
                                         </div>
                                     </div>
                                 </div>
                                 <button class="btn-valider" id="btn-valider-race">Valider le Grand Prix</button>
                             </div>
+
                         </div>
                     </div>
+
                 </div>
+
             </div>
         </div>
+
     </div>
 
     <div id="history-modal" class="modal">
         <div class="modal-content">
+
             <div class="modal-header">
                 <h2 id="history-title">📊 Historique par GP</h2>
                 <button class="close-modal" id="close-history-list">✕</button>
             </div>
-            <div class="history-list" id="history-items">
-                </div>
+            <div class="history-list" id="history-items"></div>
             <div id="history-footer" style="display:none; margin-top:10px;">
                 <button class="btn-valider" id="btn-back-history">⬅ Retour à la liste</button>
             </div>
+
         </div>
     </div>
 
@@ -177,56 +194,62 @@
             <table id="classement-table" class="classement-table" style="display: none;">
                 <thead>
                     <tr>
-                        <th class="rank-col">🏁 Rang</th>
-                        <th class="pseudo-col">Pilote</th>
-                        <th class="points-col">Sprint</th>
-                        <th class="points-col">Race</th>
-                        <th class="total-col">📊 Total</th>
+                        <th class="rank-col"> 🏁 Rang </th>
+                        <th class="pseudo-col"> Pilote </th>
+                        <th class="points-col"> Sprint </th>
+                        <th class="points-col"> Race </th>
+                        <th class="total-col"> 📊 Total </th>
                     </tr>
                 </thead>
                 <tbody id="classement-tbody"></tbody>
             </table>
             
-            <div id="empty" class="empty" style="display: none;">📭 Aucun score</div>
+            <div id="empty" class="empty" style="display: none;"> 📭 Aucun score </div>
             
-            </div>
+        </div>
     </div>
 
     <div id="regles-modal" class="modal">
         <div class="modal-content">
+
             <div class="modal-header">
-                <h2>📋 Règles du jeu</h2>
+                <h2>📋 Règles du jeu </h2>
                 <button class="close-modal" id="close-regles">✕</button>
             </div>
+
             <div class="regles-body">
-                <p><strong>Chaque week-end :</strong></p>
+                <p><strong>Chaque week-end: </strong></p>
                 <ul>
-                    <li>2 courses : Sprint & Race</li>
-                    <li>Parier sur le podium & 1 chute</li>
+                    <li>2 courses: Sprint & Race</li>
+                    <li>Parier sur le podium & 1 DNF, une chute ou un abandon</li>
                 </ul>
                 <h3>🎯 Points</h3>
                 <ul>
-                    <li>💥 +1 point pour DNF valide </li>
+                    <li>💥 +2 point pour DNF valide </li>
                     <li>🥇 +3 points | 🥈 +2 points | 🥉 +1 point pour la place du podium exacte</li>
-                    <li>🔄 -1 point pilote sur la mauvaise place | ❌ -3 points Pilote absent de podium</li>
+                    <li>🔄 0 point pilote sur la mauvaise place | ❌ -1 points Pilote absent de podium</li>
                 </ul>
                 <p><strong>Le score le plus haut gagne !</strong></p>
             </div>
+
         </div>
     </div>
 
     <div id="modal-details" class="modal-overlay" style="display:none;">
         <div class="modal-content">
+
             <div class="modal-header">
                 <h3>Détails : <span id="modal-gp-name">GP</span></h3>
                 <span class="close-modal" id="close-details-modal">&times;</span>
             </div>
+
             <table class="score-table">
                 <thead>
                     <tr><th>Type</th><th>Position</th><th>Pilote</th><th>Points</th></tr>
                 </thead>
                 <tbody id="details-table-body"></tbody>
             </table>
+            
         </div>
     </div>
 
