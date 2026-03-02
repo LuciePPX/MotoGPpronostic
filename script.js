@@ -185,7 +185,7 @@ function chargerDonneesFirebase() {
         if (data) {
             sprintResults = data;
             afficherResultats('sprint', 'section-sprint');
-            calculerPointsUtilisateur('sprint');
+            
         }
     });
     firebaseListeners[sprintKey] = { unsubscribe: unsubscribeSprint };
@@ -198,7 +198,7 @@ function chargerDonneesFirebase() {
         if (data) {
             raceResults = data;
             afficherResultats('race', 'section-race');
-            calculerPointsUtilisateur('race');
+            
         }
     });
     firebaseListeners[raceResultsKey] = { unsubscribe: unsubscribeRace };
@@ -796,7 +796,7 @@ async function chargerClassementGlobal() {
             const allData = snapshot.val();
             const listeJoueurs = [];
 
-            // Parcours de chaque utilisateur (ex: Lucy)
+            // Parcours de chaque utilisateur 
             for (const [pseudo, grandsPrix] of Object.entries(allData)) {
                 let totalSprint = 0;
                 let totalRace = 0;
@@ -827,7 +827,7 @@ async function chargerClassementGlobal() {
 
             // Génération du HTML
             tbody.innerHTML = listeJoueurs.map((joueur, index) => {
-                let medal = '🏅';
+                let medal = '';
                 if (index === 0) medal = '🥇';
                 else if (index === 1) medal = '🥈';
                 else if (index === 2) medal = '🥉';
@@ -1145,84 +1145,6 @@ function afficherResultats(type, sectionId) {
 }
 
 
-
-// ===== FUNCTION: CALCULER LES POINTS =====
-async function calculerPointsUtilisateur(type) {
-
-    const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
-    const predRef = ref(db, `pronostics/${pseudo}/${raceKey}/${type}`);
-    const resRef = ref(db, `resultats/${raceKey}/${type}`);
-
-    // 2. On récupère les snapshots
-    const [predSnap, resSnap] = await Promise.all([get(predRef), get(resRef)]);
-
-    if (!predSnap.exists() || !resSnap.exists()) {
-        console.error("Données manquantes pour le calcul");
-        return;
-    }
-
-    const predictions = predSnap.val();
-    const results = resSnap.val();
-    const podiumReel = [results['1er'], results['2e'], results['3e']];  
-    const chuteReelle = results['Chute'];
-
-    let detailPoints = {
-        "1er": 0,
-        "2e": 0,
-        "3e": 0,
-        "Chute": 0,
-        "total": 0
-    };
-
-    const pointsParPosition = { '1er': 3, '2e': 2, '3e': 1 };
-
-
-    ['1er', '2e', '3e'].forEach(rank => {
-        const predictedNum = predictions[rank];
-        const indexReel = podiumReel.indexOf(predictedNum);
-
-            if (indexReel === -1) {
-                detailPoints[rank] = -1;
-            } else {
-                const placeReelle = ['1er', '2e', '3e'][indexReel];
-                detailPoints[rank] = (placeReelle === rank) ? pointsParPosition[rank] : 1;
-            }
-        });
-    // --- CHUTE ---
-    if (predictions['Chute']) {
-        const indexChute = chuteReelle.indexOf(predictions['Chute']);
-        detailPoints['Chute'] = (indexChute !== -1) ? 2 : 0;
-        }
-    
-    // Calcul du total
-    detailPoints.total = detailPoints["1er"] + detailPoints["2e"] + detailPoints["3e"] + detailPoints["Chute"];
-
-
-    // --- SAUVEGARDE FIREBASE ---
-    const raceId = raceCourante.gp.replace(/\s+/g, '_');
-    // On enregistre l'objet COMPLET dans scores_details
-    const scoreRef = ref(db, `scores_details/${pseudo}/${raceId}/${type}`);
-
-    const snap = await get(scoreRef);
-    if (!snap.exists()) {
-        // Sauvegarde du détail (ton historique utilisera ça)
-        await set(scoreRef, detailPoints);
-
-        // Mise à jour du score global (cumulatif)
-        const globalScoreRef = ref(db, 'scores/' + pseudo);
-        const snapshot = await get(globalScoreRef);
-        const scoreActuel = snapshot.val() || 0;
-        const nouveauScore = scoreActuel + detailPoints.total;
-        
-        await set(globalScoreRef, nouveauScore);
-        
-        currentScores[pseudo] = nouveauScore;
-        if (typeof afficherScore === 'function') afficherScore();
-    }
-
-    console.groupEnd();
-}
-
 // ===== FUNCTION: SETUP BUTTONS =====
 function setupButtons() {
     // Validation
@@ -1448,10 +1370,6 @@ function validerPronostic(type) {
         afficherRecap(type);
         updateSectionsVisibility();
 
-        const results = type === 'sprint' ? sprintResults : raceResults;
-        if (results && results['1er']) {
-            calculerPointsUtilisateur(type);
-        }
         demarrerTimer('sprint', 'section-sprint');
         demarrerTimer('race', 'section-race');
     });

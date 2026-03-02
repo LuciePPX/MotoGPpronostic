@@ -38,7 +38,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix du Brésil",
     "circuit": "Autódromo Internacional Ayrton Senna",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/2/20/Goiania_International_Circuit.png",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Aut%C3%B3dromo_Internacional_Ayrton_Senna_%28Goi%C3%A2nia%29_track_map_%28Brazil%29--Mixed_circuit.svg",
     "sprint": "2026-03-21T18:00:00",
     "race": "2026-03-22T17:00:00",
     "stats2025": {
@@ -50,7 +50,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix des Amériques",
     "circuit": "Circuit of The Americas",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/f/fb/COTA_NASCAR_Layout.png",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/5/5a/COTA_National_Circuit.png",
     "sprint": "2026-03-28T22:00:00",
     "race": "2026-03-29T21:00:00",
     "stats2025": {
@@ -74,7 +74,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix d'Espagne",
     "circuit": "Circuito de Jerez-Ángel Nieto",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/0/0f/Circuito_de_Jerez%2C_Ángel_Nieto_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Jerez_Grand_prix_Circuit_1994-2003.svg",
     "sprint": "2026-04-25T15:00:00",
     "race": "2026-04-26T14:00:00",
     "stats2025": {
@@ -86,7 +86,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix de France",
     "circuit": "Circuit Bugatti (Le Mans)",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/d/d2/Le_Mans_circuit_1990%28en%29.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/4/46/Bugatti_Circuit_Updated-4.png",
     "sprint": "2026-05-09T15:00:00",
     "race": "2026-05-10T14:00:00",
     "stats2025": {
