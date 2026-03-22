@@ -141,6 +141,55 @@ button {
     transform: translateY(-2px);
     box-shadow: var(--shadow-md);
 }
+
+/* Style général du tableau */
+#classement-table {
+    width: 100%;
+    border-collapse: collapse; /* Supprime les espaces vides entre les bordures */
+    margin-top: 20px;
+    background-color: rgba(0, 0, 0, 0.2); /* Fond léger pour détacher du reste */
+    border-radius: 8px;
+    overflow: hidden;
+}
+
+/* Espacement des en-têtes (th) et des cellules (td) */
+#classement-table th, 
+#classement-table td {
+    padding: 15px 25px; /* 15px en haut/bas | 25px à gauche/droite pour l'espace */
+    text-align: center;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1); /* Ligne de séparation fine */
+}
+
+/* Style spécifique pour les titres de colonnes */
+#classement-table th {
+    background-color: var(--red); /* Utilise ton rouge de DA */
+    color: white;
+    text-transform: uppercase;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px;
+    font-size: 0.9em;
+}
+
+/* Aligner le Pseudo à gauche pour plus de clarté */
+.pseudo-col {
+    text-align: left !important;
+    font-weight: 600;
+    min-width: 150px; /* Force une largeur minimum pour le nom */
+}
+
+/* Mettre en valeur la colonne Total */
+.total-col {
+    font-family: 'Oswald', sans-serif;
+    font-weight: 700;
+    color: var(--text-main);
+    background-color: rgba(255, 255, 255, 0.05); /* Légère surbrillance */
+}
+
+/* Effet au survol d'une ligne */
+#classement-table tbody tr:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
 .regles-body {
     color: var(--text-secondary);
     font-size: 0.95em;
@@ -334,50 +383,195 @@ button {
 }
 
 /* ===== SCORE CARD ===== */
+/* ===== SCORE CARD REVISITÉE ===== */
 .score-card-container {
     flex: 0 0 auto;
-    background: linear-gradient(135deg, var(--dark-card) 0%, var(--dark-bg) 100%);
-    padding: 20px;
-    border-radius: 12px;
-    border: 2px solid var(--border-red);
-    box-shadow: var(--shadow-md);
+    background: #1a1a1a; /* Fond très sombre pour faire ressortir le reste */
+    padding: 24px;
+    border-radius: 16px;
+    /* On remplace la bordure simple par un effet de contour néon partiel */
+    border-left: 5px solid var(--red); 
+    box-shadow: 0 10px 30px rgba(0, 0, 0, 0.5), inset 0 0 20px rgba(255, 255, 255, 0.02);
     text-align: center;
-    min-width: 180px;
+    min-width: 200px;
+    position: relative;
+    overflow: hidden;
+    transition: transform 0.3s ease;
 }
 
+.score-card-container:hover {
+    transform: translateY(-5px);
+    border-left-width: 8px;
+}
+
+/* Petit label au-dessus du score */
 .score-card-header {
-    display: flex;
-    justify-content: space-between;
-    align-items: center;
-    gap: 10px;
+    display: block; /* On empile pour donner de la hauteur */
+    margin-bottom: 8px;
+}
+
+.score-card-header span {
+    text-transform: uppercase;
+    letter-spacing: 2px;
+    font-size: 0.75rem;
+    color: #888;
+    font-weight: 600;
 }
 
 .score-main {
-    font-size: 2.5em;
-    color: var(--red);
-    font-weight: 700;
-}
-
-.history-icon {
-    font-size: 1.8em;
-    cursor: pointer;
-    transition: transform 0.2s;
-}
-
-.history-icon:hover {
-    transform: scale(1.2);
-}
-
-.score-gp-name {
-    font-size: 0.9em;
-    color: var(--text-secondary);
+    font-size: 4em; /* On booste la taille */
+    font-family: 'Orbitron', 'Roboto', sans-serif; /* Une police typée sport/tech si tu as */
+    color: #ffffff;
+    font-weight: 900;
+    line-height: 1;
+    display: block;
+    /* Effet de lueur rouge pour attirer l'oeil */
+    text-shadow: 0 0 15px rgba(224, 6, 0, 0.4); 
     margin: 10px 0;
 }
 
-.score-last-three {
-    font-size: 0.85em;
-    color: var(--gray-light);
+/* Un badge "PTS" plus discret à côté ou dessous */
+.score-main::after {
+    content: 'PTS';
+    font-size: 0.3em;
+    margin-left: 5px;
+    color: var(--red);
+    vertical-align: middle;
 }
+
+/* Décoration : Ligne de vitesse en fond */
+.score-card-container::before {
+    content: "";
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 100%;
+    height: 100%;
+    background: radial-gradient(circle, rgba(224, 6, 0, 0.1) 0%, transparent 70%);
+    pointer-events: none;
+}
+.top-players-mini {
+    margin-top: 15px;
+    padding: 15px;
+    background: rgba(0, 0, 0, 0.3);
+    border-radius: 12px;
+    border: 1px solid var(--border-red);
+}
+
+.top-players-mini h4 {
+    text-align: center;
+    font-size: 0.9em;
+    color: var(--text-secondary);
+    margin-bottom: 20px;
+    text-transform: uppercase;
+}
+
+/* Conteneur pour aligner les 3 joueurs comme un podium */
+#mini-podium-list {
+    display: flex;
+    align-items: flex-end; /* Aligne tout le monde sur le sol */
+    justify-content: center;
+    gap: 8px;
+    height: 150px; /* On donne de la hauteur pour voir la différence */
+    padding: 10px;
+    width: 100%;
+}
+
+.mini-rank-item {
+    flex: 1; /* Donne la même largeur aux 3 marches */
+    min-width: 0; /* Permet au flex de réduire la taille si besoin */
+    max-width: 30%; /* Empêche qu'un joueur ne prenne toute la place */
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-end;
+    padding: 10px 5px;
+    border-radius: 8px 8px 4px 4px;
+    background: linear-gradient(180deg, rgba(255,255,255,0.1) 0%, rgba(0,0,0,0.4) 100%);
+    transition: transform 0.3s ease;
+    min-width: 80px;
+}
+
+/* --- HAUTEURS DES MARCHES (Comme ton podium de pronos) --- */
+
+/* 1er (Centre) */
+.mini-rank-item:nth-child(1) {
+    order: 2; /* Place au milieu */
+    height: 120%;
+    border-top: 3px solid  var(--red);
+}
+
+/* 2e (Gauche) */
+.mini-rank-item:nth-child(2) {
+    order: 1; /* Place à gauche */
+    height: 110%;
+    border-top: 3px solid  var(--red);
+}
+
+/* 3e (Droite) */
+.mini-rank-item:nth-child(3) {
+    order: 3; /* Place à droite */
+    height: 100%;
+    border-top: 3px solid  var(--red);
+}
+
+/* --- DÉTAILS INTÉRIEURS --- */
+
+.mini-rank-item .player-name {
+    font-size: 1.1em;
+    font-weight: 700;
+    text-align: center;
+    color: var(--text-main);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 100%;
+
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    width: 95%;
+
+    text-shadow: 1px 1px 3px rgba(0, 0, 0, 0.9);
+    margin-bottom: 2px;
+}
+
+.mini-rank-item .player-score {
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.5em;
+    color: var(--red);
+    margin-top: 5px;
+}
+
+/* Petit badge de rang (1, 2, 3) */
+.mini-rank-item::before {
+    font-size: 1.5em;
+    margin-bottom: auto;
+}
+.mini-rank-item:nth-child(1)::before { content: "🥇"; }
+.mini-rank-item:nth-child(2)::before { content: "🥈"; }
+.mini-rank-item:nth-child(3)::before { content: "🥉"; }
+
+.btn-historique {
+    background: transparent;
+    border: 2px solid var(--red);
+    color: var(--red);
+    padding: 10px 20px;
+    border-radius: 6px;
+    text-decoration: none;
+    text-transform: uppercase;
+    font-weight: 700;
+    display: inline-block;
+}
+
+.btn-historique:hover {
+    background: var(--red);
+    color: var(--text-main);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow-md);
+}
+
+
 
 /* ===== STATS FLEX CONTAINER ===== */
 .stats-flex-container {

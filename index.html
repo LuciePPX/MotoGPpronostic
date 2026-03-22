@@ -25,9 +25,32 @@
             <div class="game-header">
                 <h1 id="welcome-title">Bienvenue</h1>
                 <div class="header-buttons">
-                    <button type="button" class="btn-classement" id="btn-ouvrir-classement">🏆 Classement</button>
+                    <button type="button" class="btn-classement" id="btn-ouvrir-classement">🏆 Classement complet </button>
                     <button type="button" class="btn-classement" id="btn-regles">📋 Règles</button>
                 </div>
+            </div>
+
+            <div class="stats-flex-container">
+
+                <div class="stats-column">
+                    <div class="user-score-box">
+                        <h2>🏁 Score Général</h2> 
+                        <div class="score-main" id="main-score-display">0</div> 
+                        <div class="history-icon" id="open-history">
+                            <button class="btn-historique">🔍 Historique</button>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="results-box">
+                    <h2>🏆 Top 3 </h2>
+                    <div id="mini-podium-list" class="mini-list">
+                        <div class="loading-mini">Chargement du podium...</div>
+                    </div>
+                </div>
+
+
+
             </div>
 
             <div class="race-score-wrapper">
@@ -62,15 +85,7 @@
                     </div>
                 </div>
 
-                <div class="score-card-container" id="score-card-main">
-                    <div class="score-card-header">
-                        <div class="score-main" id="main-score-display">0</div>
-                        <div class="history-icon" id="open-history">🔍</div>
-                    </div>
-
-                    <div class="score-gp-name" id="current-gp-name">---</div>
-                    <div class="score-last-three" id="last-three-scores"></div>
-                </div>
+                
 
             </div>
 
@@ -190,7 +205,7 @@
             <h1>🏆 CLASSEMENT GÉNÉRAL</h1>
             
             <div id="loading" class="loading">⏳ Chargement...</div>
-
+            <div style="overflow-x: auto;">
             <table id="classement-table" class="classement-table" style="display: none;">
                 <thead>
                     <tr>
@@ -203,7 +218,7 @@
                 </thead>
                 <tbody id="classement-tbody"></tbody>
             </table>
-            
+            </div>
             <div id="empty" class="empty" style="display: none;"> 📭 Aucun score </div>
             
         </div>

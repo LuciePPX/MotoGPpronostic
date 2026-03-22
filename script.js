@@ -2,7 +2,7 @@ import { DATA_PILOTES, DATA_CALENDRIER } from './config.js';
 
 // ===== FIREBASE SDK IMPORTS =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { getDatabase, ref, set, get, onValue, query, orderByValue, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
@@ -84,6 +84,7 @@ function commencerJeu() {
         return;
     }
 
+    
     // Login normal: cacher auth-container, afficher game-container
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
@@ -102,6 +103,8 @@ function initialiserJeu() {
     initClickAndSelect();
     setupButtons();
     setupModals();
+    chargerScoreGeneral(pseudo);
+    chargerTop3();
 
     
     // Démarrer/Charger timers 
@@ -769,7 +772,61 @@ function afficherProchainesCourses() {
 
 
 // ===== FUNCTION: AFFICHER SCORE =====
+// Fonction pour charger le score individuel dans le header
+async function chargerScoreGeneral(pseudoUtilisateur) {
+    const scoreDisplay = document.getElementById('main-score-display');
+    
+    try {
+        // On cible le score spécifique de l'utilisateur dans le nœud 'scores'
+        const snapshot = await get(ref(db, `scores/${pseudoUtilisateur}`));
+        
+        if (snapshot.exists()) {
+            const score = snapshot.val();
+            // Mise à jour de l'affichage avec le score récupéré
+            scoreDisplay.textContent = score;
+        } else {
+            scoreDisplay.textContent = 0;
+            console.warn("Aucun score trouvé pour cet utilisateur.");
+        }
+    } catch (e) {
+        console.error("Erreur lors de la récupération du score:", e);
+        scoreDisplay.textContent = "Score Général : !";
+    }
+}
 
+function chargerTop3() {
+    const miniPodium = document.getElementById('mini-podium-list');
+    
+    // On demande à Firebase les 3 plus gros scores
+    // Note : orderByValue trie par ordre croissant, donc on prend les "derniers"
+    const scoresRef = query(ref(db, 'scores'), orderByValue(), limitToLast(3));
+
+    onValue(scoresRef, (snapshot) => {
+        if (snapshot.exists()) {
+            let players = [];
+            
+            snapshot.forEach((childSnapshot) => {
+                players.push({
+                    pseudo: childSnapshot.key,
+                    score: childSnapshot.val()
+                });
+            });
+
+            // Firebase trie en croissant, on inverse pour avoir le 1er en haut
+            players.reverse();
+            console.log("Top 3 des scores récupérés:", players);
+            // Génération du HTML
+            miniPodium.innerHTML = players.map((p, i) => `
+                <div class="mini-rank-item">
+                    <span class="player-name">${p.pseudo}</span>
+                    <span class="player-score">${p.score}</span>
+                </div>
+            `).join('');
+        } else {
+            miniPodium.innerHTML = "Aucun score pour le moment";
+        }
+    });
+}
 
 function setupModals() {
     // --- MODAL HISTORIQUE ---
@@ -836,9 +893,9 @@ async function chargerClassementGlobal() {
                     <tr>
                         <td class="rank-col">${medal} ${index + 1}</td>
                         <td class="pseudo-col">${joueur.pseudo}</td>
-                        <td class="points-col">${joueur.sprint > 0 ? '+' : ''}${joueur.sprint}</td>
-                        <td class="points-col">${joueur.race > 0 ? '+' : ''}${joueur.race}</td>
-                        <td class="total-col">${joueur.total > 0 ? '+' : ''}${joueur.total}</td>
+                        <td class="points-col">${joueur.sprint}</td>
+                        <td class="points-col">${joueur.race}</td>
+                        <td class="total-col">${joueur.total}</td>
                     </tr>
                 `;
             }).join('');

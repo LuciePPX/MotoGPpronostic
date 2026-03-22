@@ -118,31 +118,37 @@ async function executerRecalculGlobal() {
         const nouveauxScoresTotaux = {};
         const pointsParPosition = { '1er': 3, '2e': 2, '3e': 1 };
 
-        for (const pseudo in pronosGlobal) {
+        for (const joueur in pronosGlobal) {
             let totalJoueur = 0;
-            const gps = pronosGlobal[pseudo];
+            const pronosJoueur = pronosGlobal[joueur];
 
-            for (const rKey in gps) {
-                for (const type in gps[rKey]) {
-                    const prono = gps[rKey][type];
-                    const officiel = resultsGlobal[rKey]?.[type];
+            for (const raceKey in pronosJoueur) {
+                for (const type in pronosJoueur[raceKey]) {
+
+                    const prono = pronosJoueur[raceKey][type];
+                    const officiel = resultsGlobal[raceKey]?.[type];
 
                     if (!officiel) continue;
                     
                     let detail = { "1er": 0, "2e": 0, "3e": 0, "Chute": 0, "total": 0 };
                     const podiumReel = [officiel['1er'], officiel['2e'], officiel['3e']];
+                    const placeListe = ['1er', '2e', '3e']
 
-                    ['1er', '2e', '3e'].forEach(rank => {
-                        const piloteProno = parseInt(prono[rank]);
+                    placeListe.forEach((place, indexProno)=> {
+
+                        const piloteProno = parseInt(prono[place]);
                         if (!piloteProno) return; 
+                        
+                        // On vérifie si le pilote pronostiqué est dans le podium officiel
+                        // On attribue les points en conséquence. 
+                        // Si le pilote n'est pas dans le podium, on attribue -1 point.
+                        const indexReel = podiumReel.indexOf(piloteProno);
 
-                        const idx = podiumReel.indexOf(piloteProno);
-
-                        if (idx !== -1) {
-                            const placeReelle = ['1er', '2e', '3e'][idx];
-                            detail[rank] = (placeReelle === rank) ? pointsParPosition[rank] : 1;
+                        if (indexReel !== -1) {
+                            const estBonnePlace = indexProno == indexReel;
+                            detail[place] = estBonnePlace ? pointsParPosition[place] : 1;
                         } else {
-                            detail[rank] = -1; 
+                            detail[place] = -1; 
                         }
                     });
 
@@ -154,10 +160,10 @@ async function executerRecalculGlobal() {
                     detail.total = detail["1er"] + detail["2e"] + detail["3e"] + detail["Chute"];
                     totalJoueur += detail.total;
 
-                    await set(ref(db, `scores_details/${pseudo}/${rKey}/${type}`), detail);
+                    await set(ref(db, `scores_details/${joueur}/${raceKey}/${type}`), detail);
                 }
             }
-            nouveauxScoresTotaux[pseudo] = totalJoueur;
+            nouveauxScoresTotaux[joueur] = totalJoueur;
         }
 
         // --- SAUVEGARDE FINALE DU CLASSEMENT ---
