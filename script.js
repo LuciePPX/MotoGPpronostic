@@ -762,8 +762,8 @@ function afficherProchainesCourses() {
     if (statsContent && raceCourante.stats2025) {
         statsContent.innerHTML = `
             <div><strong>🏆 Vainqueur 2025:</strong> ${raceCourante.stats2025.vainqueurGP}</div>
-            <div><strong>🏃 Sprint 2025:</strong> ${raceCourante.stats2025.vainqueurSprint}</div>
-            <div><strong>🎯 Pole 2025:</strong> ${raceCourante.stats2025.pole}</div>
+            <div><strong>🏎️ Sprint 2025:</strong> ${raceCourante.stats2025.vainqueurSprint}</div>
+            <div><strong>🏁 Pole 2025:</strong> ${raceCourante.stats2025.pole}</div>
         `;
     }
 }
@@ -836,9 +836,148 @@ function setupModals() {
     if (historyIcon && modalHistorique) {
         historyIcon.addEventListener('click', () => {
             modalHistorique.classList.add('active');
-            if (typeof afficherHistorique === 'function') afficherHistorique();
+            if (typeof afficherHistorique === 'function') afficherHistorique(pseudo);
         });
     }
+
+async function afficherHistorique(pseudoConnecte) {
+    const historyContainer = document.getElementById('history-items');
+    const historyFooter = document.getElementById('history-footer');
+    const historyTitle = document.getElementById('history-title');
+    
+    // Si le pseudo n'est pas passé en argument, on essaie de le récupérer dans le localStorage
+    const pseudo = pseudoConnecte || localStorage.getItem('userPseudo');
+
+    if (!pseudo) {
+        historyContainer.innerHTML = "<p>Utilisateur non identifié.</p>";
+        return;
+    }
+
+    try {
+        const snapshot = await get(ref(db, `scores_details/${pseudo}`));
+        historyContainer.innerHTML = ""; 
+        historyFooter.style.display = "none";
+        historyTitle.innerText = "📊 Historique par GP";
+
+        if (snapshot.exists()) {
+            const gps = snapshot.val();
+            
+            // On trie les clés (GPs) si nécessaire, ou on les parcourt
+            Object.keys(gps).forEach(gpName => {
+                const data = gps[gpName];
+                const totalGP = (Number(data.sprint?.total) || 0) + (Number(data.race?.total) || 0);
+                const cleanName = gpName.replace(/_/g, ' ');
+
+                const item = document.createElement('div');
+                item.className = 'history-item clickable'; 
+                item.innerHTML = `
+                   <div class="gp-card-info">
+                        <span class="history-item-name">${cleanName}</span>
+                        <span class="history-item-score-small">${totalGP} pts</span>
+                    </div>
+                    <div class="go-icon">❯</div>
+                `;
+
+                // CORRECTION ICI : On passe bien l'objet "data" en deuxième argument
+                item.onclick = () => afficherDetailsGP(gpName, pseudo);
+                
+                historyContainer.appendChild(item);
+            });
+        } else {
+            historyContainer.innerHTML = "<p class='empty-msg'>Aucun historique disponible.</p>";
+        }
+    } catch (e) {
+        console.error("Erreur historique:", e);
+        historyContainer.innerHTML = "<p>Erreur lors du chargement.</p>";
+    }
+}
+
+async function afficherDetailsGP(gpName, pseudo) {
+    const historyContainer = document.getElementById('history-items');
+    const historyFooter = document.getElementById('history-footer');
+    const historyTitle = document.getElementById('history-title');
+
+    const cleanName = gpName.replace(/_/g, ' ');
+    historyTitle.innerText = `🏁 ${cleanName}`;
+    historyFooter.style.display = "block";
+
+    try {
+        // 1. Récupérer les résultats officiels (Sprint ET Race)
+        const snapProno = await get(ref(db, `pronostics/${pseudo}/${gpName}`));
+        const prono = snapProno.exists() ? snapProno.val() : {};
+        const snapRes = await get(ref(db, `resultats/${gpName}`));
+        const results = snapRes.exists() ? snapRes.val() : {};
+        const snapdetail = await get(ref(db, `scores_details/${pseudo}/${gpName}`));
+        const detail = snapdetail.exists() ? snapdetail.val() : {};
+
+        console.log("Détails récupérés pour", gpName, { prono, results, detail });
+        historyContainer.innerHTML = `
+            <div class="detail-section">
+                <h4 class="session-title">🏎️ SPRINT</h4>
+                <div class="comparison-grid">
+                    <div class="comparison-grid">
+                    <div class="comp-header">
+                        <span>Pos.</span>
+                        <span>Prono</span>
+                        <span>Résultat</span>
+                        <span>Pts</span>
+                    </div>
+                    
+                    ${renderRow("1er", prono.sprint?.['1er'], results.sprint?.['1er'], detail.sprint?.['1er'])}
+                    ${renderRow("2e", prono.sprint?.['2e'], results.sprint?.['2e'], detail.sprint?.['2e'])}
+                    ${renderRow("3e", prono.sprint?.['3e'], results.sprint?.['3e'], detail.sprint?.['3e'])}
+                    ${renderRow("Chute", prono.sprint?.['Chute'], results.sprint?.['Chute'], detail.sprint?.['Chute'])}
+                </div>
+                </div>
+            </div>
+
+            <div class="detail-section">
+                <h4 class="session-title">🏁 COURSE</h4>
+                <div class="comparison-grid">
+                    <div class="comp-header">
+                        <span>Pos.</span>
+                        <span>Prono</span>
+                        <span>Résultat</span>
+                        <span>Pts</span>
+                    </div>
+                    
+                    ${renderRow("1er", prono.race?.['1er'], results.race?.['1er'], detail.race?.['1er'])}
+                    ${renderRow("2e", prono.race?.['2e'], results.race?.['2e'], detail.race?.['2e'])}
+                    ${renderRow("3e", prono.race?.['3e'], results.race?.['3e'], detail.race?.['3e'])}
+                    ${renderRow("Chute", prono.race?.['Chute'], results.race?.['Chute'], detail.race?.['Chute'])}
+                </div>
+            </div>
+        
+            <div class="total-bar">
+                <span>🏆 TOTAL GP     </span>
+                <span class="total-val">${(detail.sprint['total'] || 0) + (detail.race['total'] || 0)} pts</span>
+            </div>
+            
+        `;
+    } catch (e) {
+        console.error(e);
+        historyContainer.innerHTML = "<p>Grand prix en cours.</p>";
+    }
+}
+
+// Fonction pour générer une ligne proprement
+function renderRow(label, prono, reel, pts) {
+    const isCorrect = prono === reel && prono !== undefined;
+    const ptsClass = pts > 0 ? 'pts-pos' : (pts < 0 ? 'pts-neg' : '');
+    
+    return `
+        <div class="comp-row">
+            <span class="row-label">${label}</span>
+            <span class="prio-val">${prono || '-'}</span>
+            <span class="res-val ${isCorrect ? 'match' : ''}">${reel || '?'}</span>
+            <span class="pts-val ${ptsClass}">${pts || 0}</span>
+        </div>
+    `;
+}
+
+// Gestion du bouton Retour
+document.getElementById('btn-back-history')?.addEventListener('click', () => afficherHistorique(pseudo));
+
 async function chargerClassementGlobal() {
     const tbody = document.getElementById('classement-tbody');
     const loadingEl = document.getElementById('loading');

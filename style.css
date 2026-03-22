@@ -1129,16 +1129,20 @@ button {
     display: flex;
     flex-direction: column;
     gap: 12px;
+    max-height: 400px; /* Ajoute un scroll si tu as beaucoup de GP */
+    overflow-y: auto;
+    padding-right: 5px;
 }
 
 .history-item {
     background: rgba(255, 255, 255, 0.08);
-    border-left: 3px solid var(--red);
+    border-left: 4px solid var(--red);
     padding: 15px;
     border-radius: 6px;
     display: flex;
     justify-content: space-between;
     align-items: center;
+    cursor: pointer;
     transition: all 0.2s ease;
 }
 
@@ -1176,19 +1180,180 @@ button {
     color: #aaa;
 }
 .history-item:hover {
-    background: rgba(255, 255, 255, 0.12);
-    transform: translateX(5px);
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateX(8px); /* Petit décalage vers la droite au survol */
 }
 
 .history-item-name {
     font-weight: 700;
     color: var(--text-main);
+    display: block;
+    font-size: 1.1em;
 }
 
 .history-item-score {
-    font-size: 1.3em;
+    font-family: 'Oswald', sans-serif;
+    font-size: 1.2em;
     color: var(--red);
     font-weight: 700;
+}
+
+.history-detail-table {
+    width: 100%;
+    border-collapse: collapse;
+    margin-top: 15px;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    overflow: hidden;
+    animation: fadeIn 0.3s ease; /* Petite animation d'apparition */
+}
+
+.history-detail-table th {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 12px;
+    text-align: left;
+    font-size: 0.8em;
+    color: #888;
+    text-transform: uppercase;
+}
+
+.history-detail-table td {
+    padding: 15px 12px;
+    border-top: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.history-detail-table .pts-detail {
+    font-weight: bold;
+    color: var(--text-main);
+    text-align: right;
+}
+
+/* Sections Sprint et Course */
+.detail-section {
+    background: rgba(255, 255, 255, 0.05);
+    border-radius: 10px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.session-title {
+    color: var(--red);
+    margin-top: 0;
+    margin-bottom: 12px;
+    font-family: 'Oswald', sans-serif;
+    letter-spacing: 1px;
+    border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+    padding-bottom: 5px;
+}
+
+.detail-row {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    font-size: 0.95em;
+}
+
+.detail-row.highlight {
+    margin-top: 10px;
+    padding-top: 10px;
+    border-top: 1px dashed rgba(255, 255, 255, 0.2);
+    font-size: 1.1em;
+}
+
+/* Les petits scores détaillés (1er, 2e, etc) */
+.detail-scores {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    margin: 10px 0;
+}
+
+.score-chip {
+    background: rgba(0, 0, 0, 0.3);
+    padding: 4px 10px;
+    border-radius: 20px;
+    font-size: 0.8em;
+    color: #bbb;
+    border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.score-negatif {
+    color: #ff4d4d !important;
+}
+
+/* Container de comparaison */
+.comparison-table {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+    margin: 15px 0;
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+    padding: 10px;
+}
+
+.comp-header {
+    display: grid;
+    grid-template-columns: 1fr 2fr 0.5fr 1fr;
+    font-size: 0.75em;
+    color: #888;
+    text-transform: uppercase;
+    padding-bottom: 8px;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+    margin-bottom: 5px;
+}
+
+.comp-row {
+    display: grid;
+    grid-template-columns: 1fr 2fr 0.5fr 1fr;
+    align-items: center;
+    padding: 8px 0;
+    font-size: 0.95em;
+    border-bottom: 1px solid rgba(255,255,255,0.03);
+}
+
+.comp-label {
+    font-weight: bold;
+    color: var(--red);
+}
+
+.comp-prio {
+    color: var(--text-main);
+    font-family: 'Oswald', sans-serif;
+}
+
+.comp-pts {
+    text-align: right;
+    font-weight: 800;
+}
+
+/* Couleurs de réussite */
+.pts-pos { color: #4cd137; } /* Vert */
+.pts-neg { color: #ff4757; } /* Rouge */
+
+.main-total {
+    background: rgba(255, 255, 255, 0.05);
+    padding: 10px;
+    border-radius: 5px;
+    margin-top: 10px;
+}
+
+.pari-recap {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.pari-total {
+    font-weight: bold;
+    font-size: 1.2em;
+    color: var(--text-main);
+}
+/* --- ANIMATION --- */
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
 }
 
 /* ===== RESPONSIVE DESIGN ===== */
