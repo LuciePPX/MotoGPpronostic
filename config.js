@@ -40,7 +40,7 @@ export const DATA_CALENDRIER = [
     "circuit": "Autódromo Internacional Ayrton Senna",
     "image": "https://upload.wikimedia.org/wikipedia/commons/a/a7/Aut%C3%B3dromo_Internacional_Ayrton_Senna_%28Goi%C3%A2nia%29_track_map_%28Brazil%29--Mixed_circuit.svg",
     "sprint": "2026-03-21T18:00:00",
-    "race": "2026-03-22T17:00:00",
+    "race": "2026-03-22T19:00:00",
     "stats2025": {
         "vainqueurGP": "N/A", // Non présent au calendrier 2025
         "vainqueurSprint": "N/A",
