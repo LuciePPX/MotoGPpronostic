@@ -239,6 +239,12 @@ function getRaceCourante() {
     return null;
 }
 
+function getNomPilote(num) {
+    if (!num) return "-"; // Gestion du cas vide
+    const pilote = DATA_PILOTES.find(p => p.num === String(num));
+    return pilote ? pilote.nom : num; 
+}
+
 // ____  FUNCTION: CHARGER PRONOSTICS UTILISATEUR ___
 function chargerPronosticsUtilisateur() {
     // Sprint predictions
@@ -315,7 +321,7 @@ function afficherPiloteEnZone(pilote, rank) {
         // crash prediction stays inside zone
         return `
             <div class="pilote-card" draggable="true" data-num="${pilote.num}" data-nom="${pilote.nom}">
-                🚨 Chute<br>
+                💥 Chute<br>
                 <strong class="num">${pilote.num}</strong> <span>${pilote.nom}</span>
             </div>
         `;
@@ -762,7 +768,7 @@ function afficherProchainesCourses() {
     if (statsContent && raceCourante.stats2025) {
         statsContent.innerHTML = `
             <div><strong>🏆 Vainqueur 2025:</strong> ${raceCourante.stats2025.vainqueurGP}</div>
-            <div><strong>🏎️ Sprint 2025:</strong> ${raceCourante.stats2025.vainqueurSprint}</div>
+            <div><strong>🏍️ Sprint 2025:</strong> ${raceCourante.stats2025.vainqueurSprint}</div>
             <div><strong>🏁 Pole 2025:</strong> ${raceCourante.stats2025.pole}</div>
         `;
     }
@@ -814,7 +820,6 @@ function chargerTop3() {
 
             // Firebase trie en croissant, on inverse pour avoir le 1er en haut
             players.reverse();
-            console.log("Top 3 des scores récupérés:", players);
             // Génération du HTML
             miniPodium.innerHTML = players.map((p, i) => `
                 <div class="mini-rank-item">
@@ -827,78 +832,174 @@ function chargerTop3() {
         }
     });
 }
+// ===== FUNCTION: SETUP BUTTONS =====
+function setupButtons() {
+    // Validation
+    const btnValiderSprint = document.getElementById('btn-valider-sprint');
+    if (btnValiderSprint) btnValiderSprint.addEventListener('click', () => validerPronostic('sprint'));
 
-function setupModals() {
-    // --- MODAL HISTORIQUE ---
-    const historyIcon = document.getElementById('open-history');
-    const modalHistorique = document.getElementById('history-modal');
+    const btnValiderRace = document.getElementById('btn-valider-race');
+    if (btnValiderRace) btnValiderRace.addEventListener('click', () => validerPronostic('race'));
 
-    if (historyIcon && modalHistorique) {
-        historyIcon.addEventListener('click', () => {
-            modalHistorique.classList.add('active');
-            if (typeof afficherHistorique === 'function') afficherHistorique(pseudo);
+
+    // --- MODALE REGLES ---
+    const btnRegles = document.getElementById('btn-regles');
+    const modalRegles = document.getElementById('regles-modal');
+    const closeRegles = document.getElementById('close-regles');
+
+    if (btnRegles) {
+        btnRegles.addEventListener('click', (e) => {
+            e.preventDefault();
+            modalRegles.classList.add('active');
         });
     }
 
-async function afficherHistorique(pseudoConnecte) {
-    const historyContainer = document.getElementById('history-items');
-    const historyFooter = document.getElementById('history-footer');
-    const historyTitle = document.getElementById('history-title');
-    
-    // Si le pseudo n'est pas passé en argument, on essaie de le récupérer dans le localStorage
-    const pseudo = pseudoConnecte || localStorage.getItem('userPseudo');
+    if (closeRegles) {
+        closeRegles.addEventListener('click', () => {
+            modalRegles.classList.remove('active');
+        });
+    }
 
-    if (!pseudo) {
-        historyContainer.innerHTML = "<p>Utilisateur non identifié.</p>";
-        return;
+    // Fermeture universelle au clic extérieur
+    window.addEventListener('click', (e) => {
+        if (e.target === modalRegles) modalRegles.classList.remove('active');
+    });
+}
+
+function setupModals() {
+    const modalHistorique = document.getElementById('history-modal');
+    const btnPerso = document.getElementById('open-history'); // "Mon Historique"
+    const btnGlobal = document.getElementById('open-global-history'); // "Historique Adversaires"
+    const btnBack = document.getElementById('btn-back-history');
+
+
+    // 2. Clic sur "Historique ADVERSAIRES" (Global)
+    if (btnGlobal) {
+        btnGlobal.onclick = () => {
+            modalHistorique.classList.add('active');
+            afficherHistoriqueGlobal(); 
+        };
+    }
+
+    // 3. Fermeture de la modale (croix ou clic extérieur)
+    const closeHistory = document.getElementById('close-history-modal');
+    if (closeHistory) {
+        closeHistory.onclick = () => modalHistorique.classList.remove('active');
+    }
+
+async function afficherHistoriqueGlobal() {
+    const container = document.getElementById('history-items');
+    const title = document.getElementById('history-title');
+    const btnBack = document.getElementById('btn-back-history');
+
+    title.innerText = "🏁 Choisir un Grand Prix";
+    container.classList.remove('grid-layout'); // Mode liste standard
+    container.innerHTML = "<p class='loading-msg'>Chargement des courses...</p>";
+    
+    if (btnBack) btnBack.style.display = "none"; 
+
+    try {
+        const snapshot = await get(ref(db, 'resultats'));
+        if (!snapshot.exists()) {
+            container.innerHTML = "<p class='empty-msg'>Aucun GP terminé.</p>";
+            return;
+        }
+
+        const gps = snapshot.val();
+        container.innerHTML = "";
+
+        Object.keys(gps).reverse().forEach(gpName => {
+            const item = document.createElement('div');
+            item.className = 'history-item clickable';
+            item.innerHTML = `
+                <div class="gp-card-info">
+                    <span class="history-item-name">🏍️ ${gpName.replace(/_/g, ' ')}</span>
+                </div>
+                <div class="go-icon">❯</div>
+            `;
+            
+            item.onclick = () => afficherGrilleJoueursGP(gpName);
+            container.appendChild(item);
+        });
+    } catch (e) {
+        container.innerHTML = "<p class='error-msg'>Erreur de chargement.</p>";
+    }
+}
+
+async function afficherGrilleJoueursGP(gpName) {
+    const container = document.getElementById('history-items');
+    const title = document.getElementById('history-title');
+    const btnBack = document.getElementById('btn-back-history');
+
+    title.innerText = `👥 Participants : ${gpName.replace(/_/g, ' ')}`;
+    container.innerHTML = "<p class='loading-msg'>Recherche des pronos...</p>";
+    
+    // On active la grille
+    container.classList.add('grid-layout'); 
+
+    if (btnBack) {
+        btnBack.style.display = "block";
+        btnBack.onclick = () => {
+            container.classList.remove('grid-layout');
+            afficherHistoriqueGlobal();
+        };
     }
 
     try {
-        const snapshot = await get(ref(db, `scores_details/${pseudo}`));
-        historyContainer.innerHTML = ""; 
-        historyFooter.style.display = "none";
-        historyTitle.innerText = "📊 Historique par GP";
-
-        if (snapshot.exists()) {
-            const gps = snapshot.val();
-            
-            // On trie les clés (GPs) si nécessaire, ou on les parcourt
-            Object.keys(gps).forEach(gpName => {
-                const data = gps[gpName];
-                const totalGP = (Number(data.sprint?.total) || 0) + (Number(data.race?.total) || 0);
-                const cleanName = gpName.replace(/_/g, ' ');
-
-                const item = document.createElement('div');
-                item.className = 'history-item clickable'; 
-                item.innerHTML = `
-                   <div class="gp-card-info">
-                        <span class="history-item-name">${cleanName}</span>
-                        <span class="history-item-score-small">${totalGP} pts</span>
-                    </div>
-                    <div class="go-icon">❯</div>
-                `;
-
-                // CORRECTION ICI : On passe bien l'objet "data" en deuxième argument
-                item.onclick = () => afficherDetailsGP(gpName, pseudo);
-                
-                historyContainer.appendChild(item);
-            });
-        } else {
-            historyContainer.innerHTML = "<p class='empty-msg'>Aucun historique disponible.</p>";
+        // On récupère TOUS les pronostics pour filtrer les pseudos
+        const snapshot = await get(ref(db, 'pronostics'));
+        
+        if (!snapshot.exists()) {
+            console.error("❌ La branche 'pronostics' est vide dans Firebase");
+            container.innerHTML = "<p class='empty-msg'>Aucun prono trouvé.</p>";
+            return;
         }
+
+        const allData = snapshot.val();
+        container.innerHTML = ""; // On vide le chargement
+        
+        let count = 0;
+
+        // On boucle sur chaque PSEUDO 
+        Object.keys(allData).forEach(uName => {
+            // On vérifie si ce pseudo a un dossier pour ce GP précis
+            if (allData[uName][gpName]) {
+                count++;
+                
+                const card = document.createElement('div');
+                card.className = 'user-card-grid';
+                card.innerHTML = `
+                    <div class="user-avatar">${uName.charAt(0).toUpperCase()}</div>
+                    <div class="user-name">${uName}</div>
+                `;
+                
+                card.onclick = () => {
+                    container.classList.remove('grid-layout');
+                    afficherDetailsGP(gpName, uName); 
+                };
+                container.appendChild(card);
+            }
+        });
+
+        if (count === 0) {
+            console.warn("⚠️ Aucun joueur n'a de prono pour", gpName);
+            container.innerHTML = "<p class='empty-msg'>Aucun prono pour ce GP.</p>";
+        }
+
     } catch (e) {
-        console.error("Erreur historique:", e);
-        historyContainer.innerHTML = "<p>Erreur lors du chargement.</p>";
+        console.error("❌ Erreur Firebase :", e);
+        container.innerHTML = "<p class='error-msg'>Erreur de connexion.</p>";
     }
 }
+
 
 async function afficherDetailsGP(gpName, pseudo) {
     const historyContainer = document.getElementById('history-items');
     const historyFooter = document.getElementById('history-footer');
     const historyTitle = document.getElementById('history-title');
+    const btnBack = document.getElementById('btn-back-history')
 
-    const cleanName = gpName.replace(/_/g, ' ');
-    historyTitle.innerText = `🏁 ${cleanName}`;
+    historyTitle.innerText = `🏁 ${gpName.replace(/_/g, ' ')}`;
     historyFooter.style.display = "block";
 
     try {
@@ -910,23 +1011,22 @@ async function afficherDetailsGP(gpName, pseudo) {
         const snapdetail = await get(ref(db, `scores_details/${pseudo}/${gpName}`));
         const detail = snapdetail.exists() ? snapdetail.val() : {};
 
-        console.log("Détails récupérés pour", gpName, { prono, results, detail });
         historyContainer.innerHTML = `
             <div class="detail-section">
-                <h4 class="session-title">🏎️ SPRINT</h4>
+                <h4 class="session-title">🏍️ SPRINT</h4>
                 <div class="comparison-grid">
                     <div class="comparison-grid">
-                    <div class="comp-header">
-                        <span>Pos.</span>
-                        <span>Prono</span>
-                        <span>Résultat</span>
-                        <span>Pts</span>
-                    </div>
+                        <div class="comp-header" style="display: flex; gap: 10px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; color: #888; font-size: 0.8rem; text-transform: uppercase;">
+                            <span style="width: 45px; flex-shrink: 0;">Pos.</span>
+                            <span style="flex: 1;">Prono</span>
+                            <span style="flex: 1;">Résultat</span>
+                            <span style="margin-left: auto; min-width: 40px; text-align: right;">Pts</span>
+                        </div>
                     
-                    ${renderRow("1er", prono.sprint?.['1er'], results.sprint?.['1er'], detail.sprint?.['1er'])}
-                    ${renderRow("2e", prono.sprint?.['2e'], results.sprint?.['2e'], detail.sprint?.['2e'])}
-                    ${renderRow("3e", prono.sprint?.['3e'], results.sprint?.['3e'], detail.sprint?.['3e'])}
-                    ${renderRow("Chute", prono.sprint?.['Chute'], results.sprint?.['Chute'], detail.sprint?.['Chute'])}
+                    ${renderRow("1er", getNomPilote(prono.sprint?.['1er']), getNomPilote(results.sprint?.['1er']), detail.sprint?.['1er'])}
+                    ${renderRow("2e", getNomPilote(prono.sprint?.['2e']), getNomPilote(results.sprint?.['2e']), detail.sprint?.['2e'])}
+                    ${renderRow("3e", getNomPilote(prono.sprint?.['3e']), getNomPilote(results.sprint?.['3e']), detail.sprint?.['3e'])}
+                    ${renderRow("Chute", getNomPilote(prono.sprint?.['Chute']), getNomPilote(results.sprint?.['Chute']), detail.sprint?.['Chute'])}
                 </div>
                 </div>
             </div>
@@ -934,17 +1034,17 @@ async function afficherDetailsGP(gpName, pseudo) {
             <div class="detail-section">
                 <h4 class="session-title">🏁 COURSE</h4>
                 <div class="comparison-grid">
-                    <div class="comp-header">
-                        <span>Pos.</span>
-                        <span>Prono</span>
-                        <span>Résultat</span>
-                        <span>Pts</span>
+                    <div class="comp-header" style="display: flex; gap: 10px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; color: #888; font-size: 0.8rem; text-transform: uppercase;">
+                        <span style="width: 45px; flex-shrink: 0;">Pos.</span>
+                        <span style="flex: 1;">Prono</span>
+                        <span style="flex: 1;">Résultat</span>
+                        <span style="margin-left: auto; min-width: 40px; text-align: right;">Pts</span>
                     </div>
                     
-                    ${renderRow("1er", prono.race?.['1er'], results.race?.['1er'], detail.race?.['1er'])}
-                    ${renderRow("2e", prono.race?.['2e'], results.race?.['2e'], detail.race?.['2e'])}
-                    ${renderRow("3e", prono.race?.['3e'], results.race?.['3e'], detail.race?.['3e'])}
-                    ${renderRow("Chute", prono.race?.['Chute'], results.race?.['Chute'], detail.race?.['Chute'])}
+                    ${renderRow("1er", getNomPilote(prono.race?.['1er']), getNomPilote(results.race?.['1er']), detail.race?.['1er'])}
+                    ${renderRow("2e", getNomPilote(prono.race?.['2e']), getNomPilote(results.race?.['2e']), detail.race?.['2e'])}
+                    ${renderRow("3e", getNomPilote(prono.race?.['3e']), getNomPilote(results.race?.['3e']), detail.race?.['3e'])}
+                    ${renderRow("Chute", getNomPilote(prono.race?.['Chute']), getNomPilote(results.race?.['Chute']), detail.race?.['Chute'])}
                 </div>
             </div>
         
@@ -958,25 +1058,32 @@ async function afficherDetailsGP(gpName, pseudo) {
         console.error(e);
         historyContainer.innerHTML = "<p>Grand prix en cours.</p>";
     }
+
+    if (btnBack) {
+        btnBack.style.display = "block";
+        btnBack.onclick = () => {
+                // Si on vient du global, on repart à la grille des joueurs de CE GP
+                afficherGrilleJoueursGP(gpName);
+            
+        };
+    }
 }
 
-// Fonction pour générer une ligne proprement
 function renderRow(label, prono, reel, pts) {
     const isCorrect = prono === reel && prono !== undefined;
     const ptsClass = pts > 0 ? 'pts-pos' : (pts < 0 ? 'pts-neg' : '');
     
+    // Le secret est le "margin-left: auto" sur le dernier élément
     return `
-        <div class="comp-row">
-            <span class="row-label">${label}</span>
-            <span class="prio-val">${prono || '-'}</span>
-            <span class="res-val ${isCorrect ? 'match' : ''}">${reel || '?'}</span>
-            <span class="pts-val ${ptsClass}">${pts || 0}</span>
+        <div class="comp-row" style="display: flex; align-items: center; gap: 10px; padding: 5px 0;">
+            <span class="row-label" style="width: 45px; flex-shrink: 0;">${label}</span>
+            <span class="prio-val" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${prono || '-'}</span>
+            <span class="res-val ${isCorrect ? 'match' : ''}" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${reel || '?'}</span>
+            <span class="pts-val ${ptsClass}" style="margin-left: auto; min-width: 40px; text-align: right; font-weight: bold;">${pts || 0}</span>
         </div>
     `;
 }
 
-// Gestion du bouton Retour
-document.getElementById('btn-back-history')?.addEventListener('click', () => afficherHistorique(pseudo));
 
 async function chargerClassementGlobal() {
     const tbody = document.getElementById('classement-tbody');
@@ -1083,7 +1190,6 @@ async function chargerClassementGlobal() {
 
 
 
-
 // ===== FUNCTION: CHARGER SCORES UTILISATEUR =====
 function chargerScoresUtilisateur() {
     get(ref(db, 'scores/' + pseudo)).then((snapshot) => {
@@ -1091,13 +1197,7 @@ function chargerScoresUtilisateur() {
         afficherScore();
     });
 
-    get(ref(db, 'historique/' + pseudo)).then((snapshot) => {
-        scoresHistory[pseudo] = snapshot.val() || [];
-        afficherScore();
-    });
 }
-
-
 
 
 // ===== FUNCTION: EST UTILISÉ =====
@@ -1107,8 +1207,6 @@ function estUtilise(num) {
         Object.values(racePredictions).includes(num)
     );
 }
-
-
 
 
 // ===== DRAG & DROP HANDLERS =====
@@ -1228,7 +1326,6 @@ function handleDrop(e) {
 
 
 
-
 let zoneActive = null; // Stocke la zone (.step) cliquée
 
 function initClickAndSelect() {
@@ -1249,7 +1346,6 @@ function initClickAndSelect() {
                 zone.classList.add('waiting-selection');
                 
                 // Petit message console pour débugger
-                console.log("Zone sélectionnée :", zone.dataset.rank);
             }
         });
     });
@@ -1275,7 +1371,6 @@ function initClickAndSelect() {
         }
     });
 }
-
 
 
 
@@ -1341,208 +1436,6 @@ function afficherResultats(type, sectionId) {
 }
 
 
-// ===== FUNCTION: SETUP BUTTONS =====
-function setupButtons() {
-    // Validation
-    const btnValiderSprint = document.getElementById('btn-valider-sprint');
-    if (btnValiderSprint) btnValiderSprint.addEventListener('click', () => validerPronostic('sprint'));
-
-    const btnValiderRace = document.getElementById('btn-valider-race');
-    if (btnValiderRace) btnValiderRace.addEventListener('click', () => validerPronostic('race'));
-
-    // --- MODALE DETAIL (LOUPE) ---
-    const historyIcon = document.getElementById('open-history');
-    const modalDetails = document.getElementById('modal-details');
-    const closeDetails = document.getElementById('close-details-modal');
-
-    if (historyIcon) {
-        historyIcon.addEventListener('click', () => {
-            afficherListeHistoriqueGP(); // Ouvre et charge la modale de détails
-        });
-    }
-    document.getElementById('btn-back-history').addEventListener('click', () => {
-    document.getElementById('history-title').innerText = "📊 Historique par GP";
-        afficherListeHistoriqueGP();
-    });
-    window.afficherDetailPointsGP = afficherDetailPointsGP;
-
-    if (closeDetails) {
-        closeDetails.addEventListener('click', () => {
-            modalDetails.style.display = 'none';
-        });
-    }
-
-    // --- MODALE REGLES ---
-    const btnRegles = document.getElementById('btn-regles');
-    const modalRegles = document.getElementById('regles-modal');
-    const closeRegles = document.getElementById('close-regles');
-
-    if (btnRegles) {
-        btnRegles.addEventListener('click', (e) => {
-            e.preventDefault();
-            modalRegles.classList.add('active');
-        });
-    }
-
-    if (closeRegles) {
-        closeRegles.addEventListener('click', () => {
-            modalRegles.classList.remove('active');
-        });
-    }
-
-    // --- MODALE HISTORIQUE (Ancienne liste) ---
-    const modalHistorique = document.getElementById('history-modal');
-    const closeHistoryList = document.getElementById('close-history-list');
-
-    if (closeHistoryList) {
-        closeHistoryList.addEventListener('click', () => {
-            modalHistorique.classList.remove('active');
-        });
-    }
-
-    // Fermeture universelle au clic extérieur
-    window.addEventListener('click', (e) => {
-        if (e.target === modalDetails) modalDetails.style.display = 'none';
-        if (e.target === modalRegles) modalRegles.classList.remove('active');
-        if (e.target === modalHistorique) modalHistorique.classList.remove('active');
-    });
-}
-async function afficherListeHistoriqueGP() {
-    const historyContainer = document.getElementById('history-items');
-    const modal = document.getElementById('history-modal');
-    
-    modal.classList.add('active');
-    historyContainer.innerHTML = '<div class="loader">Chargement de l\'historique...</div>';
-
-    try {
-        const snapshot = await get(ref(db, `scores_details/${pseudo}`));
-        
-        if (!snapshot.exists()) {
-            historyContainer.innerHTML = '<p class="no-data">Aucun historique disponible.</p>';
-            return;
-        }
-
-        const GPData = snapshot.val();
-        let html = '<div class="gp-history-container">';
-        
-        // On parcourt chaque Grand Prix
-        Object.keys(GPData).forEach(raceId => {
-            const nomPropre = raceId.replace(/_/g, ' ');
-            const courses = GPData[raceId]; // Contient "sprint" et/ou "race"
-
-            html += `
-                <div class="gp-block">
-                    <h3 class="gp-title">🏁 ${nomPropre}</h3>
-                    <div class="gp-courses-flex">`;
-
-            // On parcourt les types de course (Sprint et Race)
-            ['sprint', 'race'].forEach(type => {
-                if (courses[type]) {
-                    const d = courses[type]; // Le détail (1er, 2e, etc.)
-                    const colorTotal = d.total >= 0 ? '#00ff00' : '#ff4444';
-
-                    html += `
-                        <div class="course-card">
-                            <div class="course-header">${type.toUpperCase()}</div>
-                            <div class="course-details">
-                                <p>1er: <span>${d['1er'] > 0 ? '+' : ''}${d['1er']}</span></p>
-                                <p>2e: <span>${d['2e'] > 0 ? '+' : ''}${d['2e']}</span></p>
-                                <p>3e: <span>${d['3e'] > 0 ? '+' : ''}${d['3e']}</span></p>
-                                <p>Chute: <span>${d['Chute'] > 0 ? '+' : ''}${d['Chute']}</span></p>
-                            </div>
-                            <div class="course-total" style="color: ${colorTotal}">
-                                Total: ${d.total > 0 ? '+' : ''}${d.total} pts
-                            </div>
-                        </div>`;
-                }
-            });
-
-            html += `</div></div><hr class="gp-separator">`;
-        });
-
-        html += '</div>';
-        historyContainer.innerHTML = html;
-
-    } catch (error) {
-        console.error(error);
-        historyContainer.innerHTML = '<p class="error">Erreur lors du calcul des détails.</p>';
-    }
-}
-
-// ===== FUNCTION: AFFICHER DETAIL POINTS (MODALE LOUPE) =====
-async function afficherDetailPointsGP(raceId) {
-    const historyContainer = document.getElementById('history-items');
-    const footer = document.getElementById('history-footer');
-    const title = document.getElementById('history-title');
-    
-    footer.style.display = 'block';
-    title.innerText = `Détail : ${raceId.replace(/_/g, ' ')}`;
-    historyContainer.innerHTML = '<div class="loader">Chargement du détail...</div>';
-
-    try {
-        let tableHtml = `<table class="detail-score-table">
-            <thead>
-                <tr>
-                    <th>Session</th>
-                    <th>Pari</th>
-                    <th>Pilote</th>
-                    <th>Points</th>
-                </tr>
-            </thead>
-            <tbody>`;
-
-        const types = ['sprint', 'race'];
-
-        for (const type of types) {
-            // 1. On récupère les pronos (pour avoir les noms des pilotes)
-            // 2. On récupère les scores déjà calculés (dans scores_details)
-            const [snapPred, snapScore] = await Promise.all([
-                get(ref(db, `pronostics/${pseudo}/${raceId}/${type}`)),
-                get(ref(db, `scores_details/${pseudo}/${raceId}/${type}`))
-            ]);
-
-            if (snapPred.exists() && snapScore.exists()) {
-                const preds = snapPred.val();
-                const pointsEnregistres = snapScore.val(); // Contient { "1er": 3, "2e": -1, ... }
-
-                ['1er', '2e', '3e', 'Chute'].forEach(pos => {
-                    if (preds[pos] === undefined) return;
-
-                    // Trouver le nom du pilote via son numéro stocké dans le prono
-                    const pilote = DATA_PILOTES.find(p => parseInt(p.num) === preds[pos]);
-                    const nom = pilote ? pilote.nom : 'Inconnu';
-                    
-                    // On récupère le point directement depuis l'objet sauvegardé
-                    const pts = pointsEnregistres[pos] || 0;
-
-                    tableHtml += `
-                        <tr>
-                            <td><strong>${type.toUpperCase()}</strong></td>
-                            <td>${pos}</td>
-                            <td>${nom}</td>
-                            <td class="${pts > 0 ? 'pts-positive' : (pts < 0 ? 'pts-negative' : 'pts-zero')}">
-                                ${pts > 0 ? '+' + pts : pts} pts
-                            </td>
-                        </tr>`;
-                });
-                
-                // Optionnel : Ajouter une ligne de sous-total pour la session
-                tableHtml += `
-                    <tr class="subtotal-row">
-                        <td colspan="3">Sous-total ${type}</td>
-                        <td><strong>${pointsEnregistres.total > 0 ? '+' + pointsEnregistres.total : pointsEnregistres.total}</strong></td>
-                    </tr>`;
-            }
-        }
-
-        tableHtml += '</tbody></table>';
-        historyContainer.innerHTML = tableHtml;
-
-    } catch (error) {
-        console.error("Erreur historique détail:", error);
-        historyContainer.innerHTML = '<p class="no-data">Erreur lors de la récupération du détail.</p>';
-    }
-}
 
 // ===== FUNCTION: VALIDER PRONOSTIC =====
 function validerPronostic(type) {

@@ -552,6 +552,7 @@ button {
 .mini-rank-item:nth-child(2)::before { content: "🥈"; }
 .mini-rank-item:nth-child(3)::before { content: "🥉"; }
 
+
 .btn-historique {
     background: transparent;
     border: 2px solid var(--red);
@@ -648,6 +649,21 @@ button {
     font-size: 0.9em;
 }
 
+.paddock-help-text {
+    margin-top: 12px;
+    font-size: 0.85rem;
+    color: #a0a0a0; /* Gris clair pour ne pas polluer l'oeil */
+    line-height: 1.4;
+    max-width: 250px; /* Pour éviter que le texte s'étale trop sur grand écran */
+    margin-left: auto;
+    margin-right: auto;
+    font-style: italic;
+}
+
+.paddock-help-text strong {
+    color: #ffffff; /* On fait ressortir le mot Paddock */
+    font-weight: 600;
+}
 /* ===== TIMERS ===== */
 #timer-sprint,
 #timer-race {
@@ -1125,6 +1141,13 @@ button {
 }
 .score-table th { color: #ff4757; }
 
+.history-actions {
+    display: flex;
+    gap: 10px;
+    justify-content: center;
+    margin-top: 15px;
+}
+
 .history-list {
     display: flex;
     flex-direction: column;
@@ -1227,6 +1250,137 @@ button {
     color: var(--text-main);
     text-align: right;
 }
+
+/* Conteneur spécifique pour la grille des joueurs */
+#history-items.grid-layout {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr); /* 3 colonnes égales */
+    gap: 10px;
+    padding: 10px;
+    align-content: start;
+}
+
+/* Carte individuelle */
+.user-card-grid {
+    background: rgba(255, 255, 255, 0.08);
+    border: 1px solid rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+    padding: 15px 5px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.user-card-grid:hover {
+    background: rgba(255, 255, 255, 0.15);
+    transform: translateY(-2px);
+}
+
+/* Rond avec l'initiale */
+.user-avatar {
+    width: 35px;
+    height: 35px;
+    background: #e10600; /* Rouge course */
+    color: white;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-weight: bold;
+    margin-bottom: 8px;
+    box-shadow: 0 2px 5px rgba(0,0,0,0.2);
+}
+
+.user-name {
+    font-size: 0.75rem;
+    color: #eee;
+    font-weight: 500;
+    text-align: center;
+}
+
+
+/* Responsive : boutons l'un sur l'autre sur petits écrans */
+@media (max-width: 480px) {
+    .history-actions {
+        flex-direction: column;
+    }
+}
+/* Grille de joueurs */
+.players-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(160px, 1fr));
+    gap: 15px;
+    padding: 10px;
+}
+
+.player-card {
+    background: #2a2a2a;
+    border-radius: 12px;
+    padding: 10px;
+    transition: transform 0.2s;
+    border: 1px solid #333;
+}
+
+.player-card:hover {
+    transform: translateY(-5px);
+    border-color: #555;
+}
+
+.player-header {
+    display: flex;
+    justify-content: space-between;
+    font-weight: bold;
+    border-bottom: 1px solid #444;
+    padding-bottom: 5px;
+    margin-bottom: 10px;
+    font-size: 0.9em;
+}
+
+.player-total-gp {
+    color: #ffcc00;
+}
+
+/* Podiums */
+.mini-podium h6 {
+    font-size: 0.7em;
+    margin: 5px 0;
+    color: #aaa;
+    text-align: center;
+}
+
+.podium-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2x2 pour le sprint/course */
+    gap: 5px;
+}
+
+.podium-step {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    padding: 4px;
+    border-radius: 4px;
+    font-size: 0.75em;
+    min-height: 45px;
+    justify-content: center;
+}
+
+/* Couleurs des marches */
+.step-win { background-color: rgba(46, 204, 113, 0.2); border: 1px solid #2ecc71; }
+.step-loss { background-color: rgba(231, 76, 60, 0.2); border: 1px solid #e74c3c; }
+.step-zero { background-color: rgba(255, 255, 255, 0.05); border: 1px solid #444; }
+
+.step-label { font-weight: 800; color: #fff; }
+.step-pilot { 
+    white-space: nowrap; 
+    overflow: hidden; 
+    text-overflow: ellipsis; 
+    width: 100%; 
+    text-align: center;
+}
+.step-pts { font-size: 0.8em; opacity: 0.8; }
 
 /* Sections Sprint et Course */
 .detail-section {
