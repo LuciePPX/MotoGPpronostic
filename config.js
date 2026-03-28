@@ -51,8 +51,8 @@ export const DATA_CALENDRIER = [
     "gp": "Grand Prix des Amériques",
     "circuit": "Circuit of The Americas",
     "image": "https://upload.wikimedia.org/wikipedia/commons/5/5a/COTA_National_Circuit.png",
-    "sprint": "2026-03-28T22:00:00",
-    "race": "2026-03-29T21:00:00",
+    "sprint": "2026-03-28T21:00:00",
+    "race": "2026-03-29T22:00:00",
     "stats2025": {
         "vainqueurGP": "Francesco Bagnaia",
         "vainqueurSprint": "Marc Márquez",
