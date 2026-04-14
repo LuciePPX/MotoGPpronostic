@@ -60,18 +60,6 @@ export const DATA_CALENDRIER = [
     }
   },
   {
-    "gp": "Grand Prix du Qatar",
-    "circuit": "Lusail International Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Lusail_International_Circuit_2023.svg",
-    "sprint": "2026-04-11T17:00:00",
-    "race": "2026-04-12T18:00:00",
-    "stats2025": {
-        "vainqueurGP": "Marc Márquez",
-        "vainqueurSprint": "Marc Márquez",
-        "pole": "Marc Márquez"
-    }
-  },
-  {
     "gp": "Grand Prix d'Espagne",
     "circuit": "Circuito de Jerez-Ángel Nieto",
     "image": "https://upload.wikimedia.org/wikipedia/commons/b/bc/Jerez_Grand_prix_Circuit_1994-2003.svg",
@@ -171,7 +159,7 @@ export const DATA_CALENDRIER = [
     "gp": "Grand Prix de Grande-Bretagne",
     "circuit": "Silverstone Circuit",
     "image": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Silverstone_Circuit_2017.svg",
-    "sprint": "2026-08-08T16:00:00",
+    "sprint": "2026-08-08T17:00:00",
     "race": "2026-08-09T14:00:00",
     "stats2025": {
         "vainqueurGP": "Marco Bezzecchi",
@@ -232,7 +220,7 @@ export const DATA_CALENDRIER = [
     "circuit": "Mandalika International Street Circuit",
     "image": "https://upload.wikimedia.org/wikipedia/commons/8/87/Mandalika_Circuit_map.svg",
     "sprint": "2026-10-10T09:00:00",
-    "race": "2026-10-11T09:00:00",
+    "race": "2026-10-11T08:00:00",
     "stats2025": {
         "vainqueurGP": "Fermín Aldeguer",
         "vainqueurSprint": "Marco Bezzecchi",
@@ -244,7 +232,7 @@ export const DATA_CALENDRIER = [
     "circuit": "Phillip Island Circuit",
     "image": "https://upload.wikimedia.org/wikipedia/commons/5/59/Phillip_Island_GP_Circuit_map.svg",
     "sprint": "2026-10-24T06:00:00",
-    "race": "2026-10-25T05:00:00",
+    "race": "2026-10-25T04:00:00",
     "stats2025": {
         "vainqueurGP": "Raúl Fernández",
         "vainqueurSprint": "Marco Bezzecchi",
@@ -262,13 +250,25 @@ export const DATA_CALENDRIER = [
         "vainqueurSprint": "Francesco Bagnaia",
         "pole": "Francesco Bagnaia"
     }
+  },  
+  {
+    "gp": "Grand Prix du Qatar",
+    "circuit": "Lusail International Circuit",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Lusail_International_Circuit_2023.svg",
+    "sprint": "2026-11-07T18:00:00",
+    "race": "2026-11-08T18:00:00",
+    "stats2025": {
+        "vainqueurGP": "Marc Márquez",
+        "vainqueurSprint": "Marc Márquez",
+        "pole": "Marc Márquez"
+    }
   },
   {
     "gp": "Grand Prix du Portugal",
     "circuit": "Autódromo Internacional do Algarve",
     "image": "https://upload.wikimedia.org/wikipedia/commons/4/4b/Aut%C3%B3dromo_do_Algarve_moto.svg",
     "sprint": "2026-11-14T16:00:00",
-    "race": "2026-11-15T15:00:00",
+    "race": "2026-11-15T14:00:00",
     "stats2025": {
         "vainqueurGP": "Marco Bezzecchi",
         "vainqueurSprint": "Álex Márquez",
