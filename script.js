@@ -828,25 +828,23 @@ async function afficherCoursePrecedente() {
                         </div>
                     </div>
                     <div class="stats-box" style="display: flex; gap: 25px; flex-wrap: wrap;">
-                        <div class="sub-zone" style="flex: 1;">
+                        <div style="flex: 1;">
                             <h4>⏱️ Sprint</h4>
                             <div>🥇 ${obtenirNomPilote(sprint["1er"])}</div>
                             <div>🥈 ${obtenirNomPilote(sprint["2e"])}</div>
                             <div>🥉 ${obtenirNomPilote(sprint["3e"])}</div>
-                            <div>💥 ${obtenirNomPilote(sprint["Chute"])}</div>
                             <div><strong>🏆 Meilleur parieur :</strong> ${meilleurSprint.join(', ') || "Aucun"}</div>
                         </div>
-                        <div class="sub-zone" style="flex: 1;">
+                        <div style="flex: 1;">
                             <h4>🏁 Grand Prix</h4>
                             <div>🥇 ${obtenirNomPilote(race["1er"])}</div>
                             <div>🥈 ${obtenirNomPilote(race["2e"])}</div>
                             <div>🥉 ${obtenirNomPilote(race["3e"])}</div>
-                            <div>💥 ${obtenirNomPilote(race["Chute"])}</div>
                             <div><strong>🏆 Meilleur parieur :</strong> ${meilleurRace.join(', ') || "Aucun"}</div>
                         </div>
                     </div>
-                    <div class="sub-zone">
-                        <h4>📊 Classement général du week-end</h4>
+                    <div style="flex: 1;">
+                        <h4>Récapitulatif du week-end</h4>
                         <div><strong>🥇 Meilleur parieur GP :</strong> ${meilleurGP.join(', ') || "Aucun"}</div>
                         <div><strong>😞 Pire parieur GP :</strong> ${pireGP.join(', ') || "Aucun"}</div>
                     </div>
@@ -1016,21 +1014,23 @@ async function afficherHistoriqueGlobal() {
 
     title.innerText = "🏁 Choisir un Grand Prix";
     container.classList.remove('grid-layout'); // Mode liste standard
-    container.innerHTML = "<p class='loading-msg'>Chargement des courses...</p>";
+    container.innerHTML = "<p class='loading-msg'></p>";
     
     if (btnBack) btnBack.style.display = "none"; 
 
     try {
-        const snapshot = await get(ref(db, 'resultats'));
-        if (!snapshot.exists()) {
-            container.innerHTML = "<p class='empty-msg'>Aucun GP terminé.</p>";
-            return;
-        }
+        const snapshot = await get(ref(db, 'pronostics'));
+        const allPronos = snapshot.val();
+        const gpSet = new Set();
 
-        const gps = snapshot.val();
-        container.innerHTML = "";
+        // reconstruire la liste des GP depuis les pronos
+        Object.keys(allPronos).forEach(pseudo => {
+            Object.keys(allPronos[pseudo]).forEach(gpName => {
+                gpSet.add(gpName);
+            });
+        });
 
-        Object.keys(gps).reverse().forEach(gpName => {
+        [...gpSet].reverse().forEach(gpName => {
             const item = document.createElement('div');
             item.className = 'history-item clickable';
             item.innerHTML = `
@@ -1172,7 +1172,7 @@ async function afficherDetailsGP(gpName, pseudo) {
         
             <div class="total-bar">
                 <span>🏆 TOTAL GP     </span>
-                <span class="total-val">${(detail.sprint['total'] || 0) + (detail.race['total'] || 0)} pts</span>
+                <span class="total-val">${((detail.sprint?.['total'] || 0) + (detail.race?.['total'] || 0))} pts</span>
             </div>
             
         `;
@@ -1192,15 +1192,18 @@ async function afficherDetailsGP(gpName, pseudo) {
 }
 
 function renderRow(label, prono, reel, pts) {
-    const isCorrect = prono === reel && prono !== undefined;
+    const safeProno = prono || '-';
+    const safeReel = reel || '-';
+
+    const isCorrect = prono && reel && prono === reel;
     const ptsClass = pts > 0 ? 'pts-pos' : (pts < 0 ? 'pts-neg' : '');
     
     // Le secret est le "margin-left: auto" sur le dernier élément
     return `
         <div class="comp-row" style="display: flex; align-items: center; gap: 10px; padding: 5px 0;">
             <span class="row-label" style="width: 45px; flex-shrink: 0;">${label}</span>
-            <span class="prio-val" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${prono || '-'}</span>
-            <span class="res-val ${isCorrect ? 'match' : ''}" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${reel || '?'}</span>
+            <span class="prio-val" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${safeProno}</span>
+            <span class="res-val ${isCorrect ? 'match' : ''}" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${safeReel}</span>
             <span class="pts-val ${ptsClass}" style="margin-left: auto; min-width: 40px; text-align: right; font-weight: bold;">${pts || 0}</span>
         </div>
     `;
