@@ -747,7 +747,7 @@ async function afficherCoursePrecedente() {
         // ===== TROUVER DERNIERE COURSE =====
         const courses = Object.keys(resultats);
         const derniereCourseKey = courses.sort((a, b) => {
-            return new Date(resultats[b].timestamp) - new Date(resultats[a].timestamp);
+            return new Date(resultats[b].race.timestamp) - new Date(resultats[a].race.timestamp);
         })[0];
 
         const courseData = resultats[derniereCourseKey];

@@ -86,7 +86,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix de Catalogne",
     "circuit": "Circuit de Barcelona-Catalunya",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/c/c3/Circuit_Barcelona-Catalunya_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/e/e8/Circuit_Catalunya_2007.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
     "sprint": "2026-05-16T15:00:00",
     "race": "2026-05-17T14:00:00",
     "stats2025": {
@@ -98,7 +98,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix d'Italie",
     "circuit": "Autodromo del Mugello",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/8/82/Mugello_circuit_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/3/38/Mugello_Racing_Circuit_track_map_15_turns.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
     "sprint": "2026-05-30T15:00:00",
     "race": "2026-05-31T14:00:00",
     "stats2025": {
@@ -110,7 +110,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand-Prix de Hongrie",
     "circuit": "Balaton Park Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/5/52/Balaton_Park_Circuit.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/3/36/Balaton_Park_Circuit_layout_%28motorcycle_racing%29.svg?utm_source=commons.wikimedia.org&utm_campaign=index&utm_content=original",
     "sprint": "2026-06-06T15:00:00",
     "race": "2026-06-07T14:00:00",
     "stats2025": {

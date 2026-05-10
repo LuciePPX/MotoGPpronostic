@@ -31,6 +31,20 @@ function getRaceKey(race) {
     return race.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
 }
 
+function remplirCourses() {
+    const select = document.getElementById("select-race");
+    if (!select) return;
+
+    DATA_CALENDRIER.forEach(race => {
+        const option = document.createElement("option");
+
+        option.value = getRaceKey(race);
+        option.textContent = race.gp;
+
+        select.appendChild(option);
+    });
+}
+
 function remplirSelect(select) {
     if(!select) return;
     select.innerHTML = `<option value="">-- Choisir --</option>`;
@@ -46,6 +60,7 @@ function remplirSelect(select) {
 // --- INITIALISATION INTERFACE ---
 document.querySelectorAll("#res-1, #res-2, #res-3, .res-chute").forEach(remplirSelect);
 
+remplirCourses();
 document.getElementById("add-crash").onclick = () => {
     const sel = document.createElement("select");
     sel.className = "res-chute";
@@ -61,8 +76,7 @@ if (btnPublier) {
         if (pass !== "1234") return alert("Mot de passe incorrect");
 
         const session = document.getElementById("type-session").value; 
-        const raceCourante = getRaceCourante();
-        const raceKey = getRaceKey(raceCourante);
+        const raceKey = document.getElementById("select-race").value;
 
         const chutes = [...document.querySelectorAll(".res-chute")]
             .map(s => parseInt(s.value))
