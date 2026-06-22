@@ -122,7 +122,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix de Tchéquie",
     "circuit": "Automotodrom Brno Masaryk",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/2/2b/Brno_Circuit.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/2/2b/https://upload.wikimedia.org/wikipedia/commons/6/67/Masaryk_circuit_1930-37.svg.svg",
     "sprint": "2026-06-20T15:00:00",
     "race": "2026-06-21T14:00:00",
     "stats2025": {
@@ -134,7 +134,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix des Pays-Bas",
     "circuit": "TT Circuit Assen",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/c/c4/TT_Circuit_Assen_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/8/84/TT_Circuit_Assen_2005.svg",
     "sprint": "2026-06-27T15:00:00",
     "race": "2026-06-28T14:00:00",
     "stats2025": {
@@ -146,7 +146,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix d'Allemagne",
     "circuit": "Sachsenring",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/3/31/Sachsenring_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/2/2c/Sachsenring_2001-2002.svg",
     "sprint": "2026-07-11T15:00:00",
     "race": "2026-07-12T14:00:00",
     "stats2025": {
@@ -158,7 +158,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix de Grande-Bretagne",
     "circuit": "Silverstone Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/f/f9/Silverstone_Circuit_2017.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/c/ca/Circuit_Silverstone_2011.svg",
     "sprint": "2026-08-08T17:00:00",
     "race": "2026-08-09T14:00:00",
     "stats2025": {
@@ -170,7 +170,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix d'Aragon",
     "circuit": "MotorLand Aragón",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/7/7a/Motorland_Aragon_circuit.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/0/03/Motorland_Arag%C3%B3n_FIM.svg",
     "sprint": "2026-08-29T15:00:00",
     "race": "2026-08-30T14:00:00",
     "stats2025": {
@@ -182,7 +182,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix de Saint-Marin",
     "circuit": "Misano World Circuit Marco Simoncelli",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/b/b6/Misano_Adriatico_GP_circuit.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/4/4f/Misano_World_Circuit_2007.svg",
     "sprint": "2026-09-12T15:00:00",
     "race": "2026-09-13T14:00:00",
     "stats2025": {
@@ -194,7 +194,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix d'Autriche",
     "circuit": "Red Bull Ring",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Red_Bull_Ring_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/3/36/Red_Bull_Ring_moto_2022.svg",
     "sprint": "2026-09-19T15:00:00",
     "race": "2026-09-20T14:00:00",
     "stats2025": {
@@ -206,7 +206,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix du Japon",
     "circuit": "Mobility Resort Motegi",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/d/d9/Motegi_circuit_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/3/3e/Twin_Ring_Motegi_map-2.svg",
     "sprint": "2026-10-03T08:00:00",
     "race": "2026-10-04T07:00:00",
     "stats2025": {
@@ -218,7 +218,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix d'Indonésie",
     "circuit": "Mandalika International Street Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/8/87/Mandalika_Circuit_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/d/da/Mandalika_International_Circuit.svg",
     "sprint": "2026-10-10T09:00:00",
     "race": "2026-10-11T08:00:00",
     "stats2025": {
@@ -230,7 +230,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix d'Australie",
     "circuit": "Phillip Island Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/5/59/Phillip_Island_GP_Circuit_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/8/88/Phillip_Island_Grand_Prix_Circuit_v2022.svg",
     "sprint": "2026-10-24T06:00:00",
     "race": "2026-10-25T04:00:00",
     "stats2025": {
@@ -242,7 +242,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix de Malaisie",
     "circuit": "Sepang International Circuit",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/6/6f/Sepang_International_Circuit_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/7/7e/Circuit_Sepang.svg",
     "sprint": "2026-10-31T08:00:00",
     "race": "2026-11-01T08:00:00",
     "stats2025": {
@@ -278,7 +278,7 @@ export const DATA_CALENDRIER = [
   {
     "gp": "Grand Prix de Valence",
     "circuit": "Circuit Ricardo Tormo",
-    "image": "https://upload.wikimedia.org/wikipedia/commons/e/e0/Circuit_Ricardo_Tormo_map.svg",
+    "image": "https://upload.wikimedia.org/wikipedia/commons/a/a2/Valencia_%28Ricardo_Tormo%29_track_map.svg",
     "sprint": "2026-11-21T15:00:00",
     "race": "2026-11-22T14:00:00",
     "stats2025": {
