@@ -1,63 +1,332 @@
+
 <!DOCTYPE html>
 <html lang="fr">
 <head>
 <meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
 <title>Admin - Résultats MotoGP</title>
+
 <link rel="stylesheet" href="./style.css">
+
 <style>
-body { font-family: 'Oswald', sans-serif; background:#1a1a1a; color:white; display:flex; justify-content:center; align-items:center; min-height:100vh; }
-.admin-box { width:100%; max-width:500px; padding:30px; background:rgba(0,0,0,0.9); border-radius:15px; border:2px solid #e10600; }
-input, select, button { width:100%; padding:10px; margin-top:5px; }
-.grid-admin { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
-.btn-valider { background:#e10600; color:white; border:none; cursor:pointer; margin-top:15px; }
+    * {
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'Oswald', sans-serif;
+        background:
+            radial-gradient(circle at top, #2b2b2b 0%, #1a1a1a 45%, #0d0d0d 100%);
+        color: white;
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 100vh;
+        margin: 0;
+        padding: 20px;
+    }
+
+    .admin-box {
+        width: 100%;
+        max-width: 600px;
+        padding: 30px;
+        background: rgba(0, 0, 0, 0.92);
+        border-radius: 18px;
+        border: 2px solid #e10600;
+        box-shadow: 0 15px 50px rgba(0, 0, 0, 0.6);
+    }
+
+    .admin-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .admin-header h1 {
+        margin: 0;
+        font-size: 32px;
+        text-transform: uppercase;
+        letter-spacing: 1px;
+    }
+
+    .admin-header p {
+        color: #aaa;
+        margin-top: 8px;
+        font-size: 14px;
+    }
+
+    .form-group {
+        margin-bottom: 18px;
+    }
+
+    label {
+        display: block;
+        font-weight: bold;
+        margin-bottom: 6px;
+        color: #eee;
+    }
+
+    input,
+    select,
+    button {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        font-family: inherit;
+        font-size: 15px;
+    }
+
+    input,
+    select {
+        background: #222;
+        color: white;
+        border: 1px solid #555;
+        outline: none;
+    }
+
+    input:focus,
+    select:focus {
+        border-color: #e10600;
+        box-shadow: 0 0 0 2px rgba(225, 6, 0, 0.2);
+    }
+
+    .session-row {
+        display: grid;
+        grid-template-columns: 1fr 160px;
+        gap: 12px;
+    }
+
+    .grid-admin {
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 15px;
+        margin-top: 20px;
+    }
+
+    .result-card {
+        background: #171717;
+        border: 1px solid #333;
+        border-radius: 10px;
+        padding: 12px;
+    }
+
+    .result-card label {
+        margin-bottom: 8px;
+    }
+
+    .crash-card {
+        grid-column: 1 / -1;
+    }
+
+    .crash-row {
+        display: flex;
+        gap: 8px;
+        margin-bottom: 8px;
+    }
+
+    .crash-row select {
+        flex: 1;
+    }
+
+    .btn {
+        border: none;
+        cursor: pointer;
+        transition: 0.2s ease;
+        font-weight: bold;
+    }
+
+    .btn:hover {
+        transform: translateY(-1px);
+        filter: brightness(1.1);
+    }
+
+    .btn-retour {
+        background: #333;
+        color: white;
+        margin-bottom: 25px;
+        border: 1px solid #555;
+    }
+
+    .btn-retour:hover {
+        background: #444;
+    }
+
+    .btn-ajout {
+        background: #292929;
+        color: #fff;
+        border: 1px solid #555;
+        margin-top: 5px;
+    }
+
+    .btn-publier {
+        background: #e10600;
+        color: white;
+        margin-top: 25px;
+    }
+
+    .btn-recalcul {
+        background: #b00000;
+        color: white;
+        margin-top: 12px;
+        border: 1px solid #ff3333;
+    }
+
+    .danger-zone {
+        margin-top: 25px;
+        padding-top: 20px;
+        border-top: 1px solid #333;
+    }
+
+    .danger-zone-title {
+        color: #ff5555;
+        font-size: 13px;
+        text-transform: uppercase;
+        margin-bottom: 8px;
+        font-weight: bold;
+    }
+
+    #status-msg {
+        text-align: center;
+        min-height: 20px;
+        margin-top: 18px;
+        font-weight: bold;
+    }
+
+    @media (max-width: 600px) {
+        body {
+            padding: 10px;
+            align-items: flex-start;
+        }
+
+        .admin-box {
+            margin-top: 15px;
+            padding: 20px;
+        }
+
+        .session-row,
+        .grid-admin {
+            grid-template-columns: 1fr;
+        }
+
+        .crash-card {
+            grid-column: auto;
+        }
+
+        .admin-header h1 {
+            font-size: 26px;
+        }
+    }
 </style>
 </head>
 
 <body>
+
 <div class="admin-box">
-<h1>🏆 Résultats</h1>
 
-<label>Mot de passe</label>
-<input type="password" id="admin-pass">
+    <!-- RETOUR ACCUEIL -->
+    <button
+        type="button"
+        class="btn btn-retour"
+        onclick="window.location.href='index.html'">
+        ← Retour à l'accueil
+    </button>
 
-<label>Session</label>
-<select id="select-race"></select>
-<select id="type-session">
-<option value="sprint">sprint</option>
-<option value="race">race</option>
-</select>
+    <!-- TITRE -->
+    <div class="admin-header">
+        <h1>🏆 Résultats MotoGP</h1>
+        <p>Administration des résultats et recalcul des scores</p>
+    </div>
 
-<div class="grid-admin">
-<div>
-<label>🥇 1er</label>
-<select id="res-1"></select>
-</div>
-<div>
-<label>🥈 2e</label>
-<select id="res-2"></select>
-</div>
-<div>
-<label>🥉 3e</label>
-<select id="res-3"></select>
-</div>
-<div>
-<label>⚠️ Chute(s)</label>
-<div id="crash-selects-container">
-<select class="res-chute"></select>
-</div>
-<button id="add-crash" type="button">+ Ajouter une chute</button>
-</div>
+    <!-- MOT DE PASSE -->
+    <div class="form-group">
+        <label for="admin-pass">🔐 Mot de passe administrateur</label>
+        <input
+            type="password"
+            id="admin-pass"
+            placeholder="Mot de passe">
+    </div>
+
+    <!-- SESSION -->
+    <div class="form-group">
+        <label>🏁 Session</label>
+
+        <div class="session-row">
+            <select id="select-race"></select>
+
+            <select id="type-session">
+                <option value="sprint">Sprint</option>
+                <option value="race">Course</option>
+            </select>
+        </div>
+    </div>
+
+    <!-- RESULTATS -->
+    <div class="grid-admin">
+
+        <div class="result-card">
+            <label for="res-1">🥇 1er</label>
+            <select id="res-1"></select>
+        </div>
+
+        <div class="result-card">
+            <label for="res-2">🥈 2e</label>
+            <select id="res-2"></select>
+        </div>
+
+        <div class="result-card">
+            <label for="res-3">🥉 3e</label>
+            <select id="res-3"></select>
+        </div>
+
+        <!-- CHUTES -->
+        <div class="result-card crash-card">
+            <label>⚠️ Chute(s)</label>
+
+            <div id="crash-selects-container">
+                <div class="crash-row">
+                    <select class="res-chute"></select>
+                </div>
+            </div>
+
+            <button
+                id="add-crash"
+                type="button"
+                class="btn btn-ajout">
+                + Ajouter une chute
+            </button>
+        </div>
+
+    </div>
+
+    <!-- ACTIONS -->
+    <button
+        id="btn-publier"
+        class="btn btn-publier">
+        🏁 Publier les résultats
+    </button>
+
+    <div class="danger-zone">
+
+        <div class="danger-zone-title">
+            ⚠️ Zone sensible
+        </div>
+
+        <button
+            id="btn-recalcul-global"
+            class="btn btn-recalcul">
+            🔄 Recalculer TOUS les scores
+        </button>
+
+    </div>
+
+    <!-- MESSAGE -->
+    <p id="status-msg"></p>
+
 </div>
 
-<button id="btn-recalcul-global" class="btn-valider">
-    🔄 Recalculer TOUS les scores (Réinitialisation)
-</button>
-
-<button id="btn-publier" class="btn-valider">Publier</button>
-<p id="status-msg"></p>
-</div>
-
-<!-- On charge maintenant le JS séparé -->
+<!-- JS -->
 <script type="module" src="./admin.js"></script>
+
 </body>
 </html>
+
