@@ -7,13 +7,15 @@ import { getDatabase, ref, set, get, onValue, query, orderByValue, limitToLast }
 
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
-    apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
-    authDomain: "motogp-pronostic.firebaseapp.com",
-    databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "motogp-pronostic",
-    storageBucket: "motogp-pronostic.appspot.com",
-    messagingSenderId: "1082916850330",
-    appId: "1:1082916850330:web:dbf5d1c7d8e47d86f01b75"
+
+  apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
+  authDomain: "motogppronostic.firebaseapp.com",
+  databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
+  projectId: "motogppronostic",
+  storageBucket: "motogppronostic.firebasestorage.app",
+  messagingSenderId: "1093723718276",
+  appId: "1:1093723718276:web:51b754c96ceacd589638d1",
+  measurementId: "G-D9M06ECP07"
 };
 
 // Initialize Firebase
