@@ -39,7 +39,8 @@ export async function activerNotifications(app, db, pseudo) {
 
         // Les caractères interdits dans une clé Firebase sont remplacés par _
         const cleBase = pseudo.replace(/[.#$\[\]\/]/g, "_");
-        await set(ref(db, `tokens/${cleBase}`), jeton);
+        // Un jeton par appareil : le PC et le téléphone ne s'écrasent plus
+        await set(ref(db, `tokens/${cleBase}/${jeton}`), true);
 
         alert("Notifications activées !");
     } catch (e) {
