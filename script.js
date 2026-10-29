@@ -357,7 +357,7 @@ function chargerResultatsOfficiels() {
                 <div><strong>🥇 </strong> ${obtenirNomPilote(sprintResults['1er'])}</div>
                 <div><strong>🥈 </strong> ${obtenirNomPilote(sprintResults['2e'])}</div>
                 <div><strong>🥉 </strong> ${obtenirNomPilote(sprintResults['3e'])}</div>
-                <div><strong>💥 </strong> ${obtenirNomPilote(sprintResults['Chute'])}</div>
+                <div><strong>💥 </strong> ${obtenirNomsChutes(sprintResults['Chute'])}</div>
             `;
         } else {
             if (timerSprintEl) timerSprintEl.classList.add('hidden-timer');
@@ -375,7 +375,7 @@ function chargerResultatsOfficiels() {
                 <div><strong>🥇 </strong> ${obtenirNomPilote(raceResults['1er'])}</div>
                 <div><strong>🥈 </strong> ${obtenirNomPilote(raceResults['2e'])}</div>
                 <div><strong>🥉 </strong> ${obtenirNomPilote(raceResults['3e'])}</div>
-                <div><strong>💥 </strong> ${obtenirNomPilote(raceResults['Chute'])}</div>
+                <div><strong>💥 </strong> $${obtenirNomsChutes(raceResults['Chute'])}}</div>
             `;
         } else {
             if (timerRaceEl) timerRaceEl.classList.add('hidden-timer');
@@ -388,6 +388,19 @@ function chargerResultatsOfficiels() {
     // ajuster les sections en fonction des pronostics
     updateSectionsVisibility();
 }
+
+// ===== FONCTION: NOMS DES PILOTES CHUTÉS =====
+// Les résultats contiennent un tableau de pilotes chutés (ex. [25, 89]),
+// alors que les pronostics contiennent un seul numéro. Cette fonction gère les deux cas.
+function obtenirNomsChutes(valeur) {
+    if (valeur === undefined || valeur === null) return 'TBD';
+
+    const numeros = Array.isArray(valeur) ? valeur : [valeur];
+    if (numeros.length === 0) return 'Aucun';
+
+    return numeros.map((num) => obtenirNomPilote(num)).join(', ');
+}
+
 
 function obtenirNomPilote(num) {
     if (!num) return 'TBD';
@@ -769,7 +782,7 @@ function construireBlocSession(titre, session, meilleursParieurs) {
 
 // ===== FONCTION: AFFICHER LA DERNIÈRE COURSE =====
 async function afficherCoursePrecedente() {
-    const container = document.getElementById('previous-races-content');
+    const container = document.getElementById('previous-races-body');
     if (!container) return;
 
     try {
@@ -1166,7 +1179,7 @@ async function afficherDetailsGP(gpName, pseudo) {
                     ${renderRow("1er", getNomPilote(prono.sprint?.['1er']), getNomPilote(results.sprint?.['1er']), detail.sprint?.['1er'])}
                     ${renderRow("2e", getNomPilote(prono.sprint?.['2e']), getNomPilote(results.sprint?.['2e']), detail.sprint?.['2e'])}
                     ${renderRow("3e", getNomPilote(prono.sprint?.['3e']), getNomPilote(results.sprint?.['3e']), detail.sprint?.['3e'])}
-                    ${renderRow("Chute", getNomPilote(prono.sprint?.['Chute']), getNomPilote(results.sprint?.['Chute']), detail.sprint?.['Chute'])}
+                    ${renderRow("Chute", getNomPilote(prono.sprint?.['Chute']), obtenirNomsChutes(results.sprint?.['Chute']), detail.sprint?.['Chute'])}
                 </div>
                 </div>
             </div>
@@ -1184,7 +1197,7 @@ async function afficherDetailsGP(gpName, pseudo) {
                     ${renderRow("1er", getNomPilote(prono.race?.['1er']), getNomPilote(results.race?.['1er']), detail.race?.['1er'])}
                     ${renderRow("2e", getNomPilote(prono.race?.['2e']), getNomPilote(results.race?.['2e']), detail.race?.['2e'])}
                     ${renderRow("3e", getNomPilote(prono.race?.['3e']), getNomPilote(results.race?.['3e']), detail.race?.['3e'])}
-                    ${renderRow("Chute", getNomPilote(prono.race?.['Chute']), getNomPilote(results.race?.['Chute']), detail.race?.['Chute'])}
+                    ${renderRow("Chute", getNomPilote(prono.race?.['Chute']), obtenirNomsChutes(results.race?.['Chute']), detail.race?.['Chute'])}
                 </div>
             </div>
         
