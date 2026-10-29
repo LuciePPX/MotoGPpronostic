@@ -1,4 +1,5 @@
 import { DATA_PILOTES, DATA_CALENDRIER } from './config.js';
+import { activerNotifications } from './notifications.js';
 
 // ===== FIREBASE SDK IMPORTS =====
 import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
@@ -38,6 +39,9 @@ document.addEventListener('DOMContentLoaded', () => {
     const pseudoInput = document.getElementById('pseudo-input');
     const btnValider = document.getElementById('btn-valider');
     const btnClassement = document.getElementById('btn-classement');
+
+    document.getElementById('btn-notifications')?.addEventListener('click', () => {
+    activerNotifications(app, db, pseudo);});
 
     btnValider?.addEventListener('click', commencerJeu);
     pseudoInput?.addEventListener('keypress', (e) => {

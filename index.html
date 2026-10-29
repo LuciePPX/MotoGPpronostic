@@ -4,29 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Paris MotoGP</title>
-
     <link rel="stylesheet" href="./style.css">
-
-<script src="https://cdn.onesignal.com/sdks/web/v16/OneSignalSDK.page.js" defer></script>
-
-<script>
-window.OneSignalDeferred = window.OneSignalDeferred || [];
-
-OneSignalDeferred.push(async function(OneSignal) {
-
-    console.log("OneSignal chargé");
-
-    await OneSignal.init({
-        appId: "fe015705-ffc7-4ae3-a218-68064f362f36",
-        notifyButton: {
-            enable: true,
-        },
-    });
-
-    console.log("OneSignal initialisé");
-
-});
-</script>
 </head>
 
 <body>
@@ -49,6 +27,7 @@ OneSignalDeferred.push(async function(OneSignal) {
                 <div class="header-buttons">
                     <button type="button" class="btn-classement" id="btn-ouvrir-classement">🏆 Classement complet </button>
                     <button type="button" class="btn-classement" id="btn-regles">📋 Règles</button>
+                    <button type="button" class="btn-classement" id="btn-notifications">🔔 Notifications</button>
                 </div>
             </div>
 
