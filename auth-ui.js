@@ -4,7 +4,8 @@ import {
     deconnexion,
     surveillerConnexion,
     pseudoDeUtilisateur,
-    messageErreur
+    messageErreur,
+    estAdministrateur
 } from "./auth.js";
 
 // ===== ÉLÉMENTS DE LA PAGE =====
@@ -82,7 +83,9 @@ ongletInscription.addEventListener("click", () => afficherMode("inscription"));
 // Si le joueur est déjà connecté (rechargement de la page), on passe directement au jeu
 surveillerConnexion(async (utilisateur) => {
     if (!utilisateur) return;
-
+    // Afficher le bouton Admin seulement pour les comptes listés dans admins
+    const admin = await estAdministrateur(utilisateur.uid);
+    document.getElementById("btn-admin")?.classList.toggle("hidden", !admin);
     const pseudo = await pseudoDeUtilisateur(utilisateur.uid);
     if (pseudo) signalerJoueur(pseudo);
 });
@@ -91,4 +94,9 @@ surveillerConnexion(async (utilisateur) => {
 document.getElementById("btn-deconnexion")?.addEventListener("click", async () => {
     await deconnexion();
     location.reload();
+});
+
+// ===== BOUTON ADMIN =====
+document.getElementById("btn-admin")?.addEventListener("click", () => {
+    window.location.href = "admin.html";
 });

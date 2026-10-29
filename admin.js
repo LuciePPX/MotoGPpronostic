@@ -1,20 +1,22 @@
-import { getDatabase, ref, set, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
 import { DATA_PILOTES, DATA_CALENDRIER } from "./config.js";
+import { ref, set, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { db } from "./firebase-init.js";
+import { surveillerConnexion } from "./auth.js";
 
-// ===== FIREBASE CONFIG =====
-const firebaseConfig = {
-    apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
-    authDomain: "motogp-pronostic.firebaseapp.com",
-    databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
-    projectId: "motogp-pronostic",
-    storageBucket: "motogp-pronostic.appspot.com",
-    messagingSenderId: "1082916850330",
-    appId: "1:1082916850330:web:dbf5d1c7d8e47d86f01b75"
-};
+// ===== CONTRÔLE D'ACCÈS =====
+// La page n'est accessible qu'à un compte connecté et listé dans admins
+surveillerConnexion(async (utilisateur) => {
+    if (!utilisateur) {
+        window.location.href = "index.html";
+        return;
+    }
 
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
+    const estAdmin = (await get(ref(db, `admins/${utilisateur.uid}`))).val() === true;
+    if (!estAdmin) {
+        alert("Accès réservé à l'administrateur.");
+        window.location.href = "index.html";
+    }
+});
 
 // --- UTILITAIRES ---
 function getRaceCourante() {
@@ -72,8 +74,6 @@ document.getElementById("add-crash").onclick = () => {
 const btnPublier = document.getElementById("btn-publier");
 if (btnPublier) {
     btnPublier.onclick = async () => {
-        const pass = document.getElementById("admin-pass").value;
-        if (pass !== "1234") return alert("Mot de passe incorrect");
 
         const session = document.getElementById("type-session").value; 
         const raceKey = document.getElementById("select-race").value;
@@ -107,8 +107,6 @@ if (btnPublier) {
 const btnRecalcul = document.getElementById("btn-recalcul-global");
 if (btnRecalcul) {
     btnRecalcul.onclick = async () => {
-        const pass = document.getElementById("admin-pass").value;
-        if (pass !== "1234") return alert("Mot de passe incorrect");
         await executerRecalculGlobal();
     };
 }

@@ -216,9 +216,56 @@
             font-size: 26px;
         }
     }
+    .onglets-admin {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+    .onglets-admin .btn-onglet {
+        flex: 1;
+        padding: 10px;
+        border: 1px solid #555;
+        border-radius: 8px;
+        background: #222;
+        color: #fff;
+        cursor: pointer;
+        font-weight: bold;
+    }
+
+    .onglets-admin .btn-onglet.actif {
+        background: #e10600;
+        border-color: #e10600;
+    }
+
+    .admin-panneau {
+        display: none;
+    }
+
+    .admin-panneau.actif {
+        display: block;
+    }
+
+    textarea {
+        width: 100%;
+        padding: 12px;
+        border-radius: 8px;
+        background: #222;
+        color: white;
+        border: 1px solid #555;
+        font-family: inherit;
+        font-size: 15px;
+        margin-bottom: 12px;
+        resize: vertical;
+    }
+
+    .notif-bloc {
+        margin-top: 10px;
+    }
 </style>
 </head>
 
+<body>
 <body>
 
 <div class="admin-box">
@@ -233,99 +280,127 @@
 
     <!-- TITRE -->
     <div class="admin-header">
-        <h1>🏆 Résultats MotoGP</h1>
-        <p>Administration des résultats et recalcul des scores</p>
+        <h1>🏆 Admin MotoGP</h1>
+        <p>Résultats, scores et notifications</p>
     </div>
 
-    <!-- MOT DE PASSE -->
-    <div class="form-group">
-        <label for="admin-pass">🔐 Mot de passe administrateur</label>
-        <input
-            type="password"
-            id="admin-pass"
-            placeholder="Mot de passe">
+    <!-- ONGLETS -->
+    <div class="onglets-admin">
+        <button type="button" class="btn-onglet actif" data-onglet="resultats">🏁 Résultats GP</button>
+        <button type="button" class="btn-onglet" data-onglet="notifications">📣 Notification</button>
     </div>
 
-    <!-- SESSION -->
-    <div class="form-group">
-        <label>🏁 Session</label>
+    <!-- ONGLET 1 : RÉSULTATS -->
+    <section id="onglet-resultats" class="admin-panneau actif">
 
-        <div class="session-row">
-            <select id="select-race"></select>
+        <!-- SESSION -->
+        <div class="form-group">
+            <label>🏁 Session</label>
 
-            <select id="type-session">
-                <option value="sprint">Sprint</option>
-                <option value="race">Course</option>
-            </select>
-        </div>
-    </div>
+            <div class="session-row">
+                <select id="select-race"></select>
 
-    <!-- RESULTATS -->
-    <div class="grid-admin">
-
-        <div class="result-card">
-            <label for="res-1">🥇 1er</label>
-            <select id="res-1"></select>
+                <select id="type-session">
+                    <option value="sprint">Sprint</option>
+                    <option value="race">Course</option>
+                </select>
+            </div>
         </div>
 
-        <div class="result-card">
-            <label for="res-2">🥈 2e</label>
-            <select id="res-2"></select>
-        </div>
+        <!-- RESULTATS -->
+        <div class="grid-admin">
 
-        <div class="result-card">
-            <label for="res-3">🥉 3e</label>
-            <select id="res-3"></select>
-        </div>
+            <div class="result-card">
+                <label for="res-1">🥇 1er</label>
+                <select id="res-1"></select>
+            </div>
 
-        <!-- CHUTES -->
-        <div class="result-card crash-card">
-            <label>⚠️ Chute(s)</label>
+            <div class="result-card">
+                <label for="res-2">🥈 2e</label>
+                <select id="res-2"></select>
+            </div>
 
-            <div id="crash-selects-container">
-                <div class="crash-row">
-                    <select class="res-chute"></select>
+            <div class="result-card">
+                <label for="res-3">🥉 3e</label>
+                <select id="res-3"></select>
+            </div>
+
+            <!-- CHUTES -->
+            <div class="result-card crash-card">
+                <label>⚠️ Chute(s)</label>
+
+                <div id="crash-selects-container">
+                    <div class="crash-row">
+                        <select class="res-chute"></select>
+                    </div>
                 </div>
+
+                <button
+                    id="add-crash"
+                    type="button"
+                    class="btn btn-ajout">
+                    + Ajouter une chute
+                </button>
+            </div>
+
+        </div>
+
+        <!-- ACTIONS -->
+        <button
+            id="btn-publier"
+            class="btn btn-publier">
+            🏁 Publier les résultats
+        </button>
+
+        <div class="danger-zone">
+
+            <div class="danger-zone-title">
+                ⚠️ Zone sensible
             </div>
 
             <button
-                id="add-crash"
-                type="button"
-                class="btn btn-ajout">
-                + Ajouter une chute
+                id="btn-recalcul-global"
+                class="btn btn-recalcul">
+                🔄 Recalculer TOUS les scores
             </button>
+
         </div>
 
-    </div>
+        <!-- MESSAGE -->
+        <p id="status-msg"></p>
 
-    <!-- ACTIONS -->
-    <button
-        id="btn-publier"
-        class="btn btn-publier">
-        🏁 Publier les résultats
-    </button>
+    </section>
 
-    <div class="danger-zone">
+    <!-- ONGLET 2 : NOTIFICATION -->
+    <section id="onglet-notifications" class="admin-panneau">
 
-        <div class="danger-zone-title">
-            ⚠️ Zone sensible
+        <div class="form-group notif-bloc">
+            <label for="notif-titre">📣 Titre</label>
+            <input type="text" id="notif-titre" placeholder="Ex : Pronostics ouverts !" maxlength="60">
+        </div>
+
+        <div class="form-group">
+            <label for="notif-message">✏️ Message</label>
+            <textarea id="notif-message" rows="4" placeholder="Ex : Le GP du Portugal est ouvert, à vos pronos !" maxlength="200"></textarea>
         </div>
 
         <button
-            id="btn-recalcul-global"
-            class="btn btn-recalcul">
-            🔄 Recalculer TOUS les scores
+            id="btn-envoyer-notif"
+            type="button"
+            class="btn btn-publier">
+            📨 Préparer la notification
         </button>
 
-    </div>
+        <p id="notif-statut"></p>
 
-    <!-- MESSAGE -->
-    <p id="status-msg"></p>
+    </section>
 
 </div>
 
 <!-- JS -->
 <script type="module" src="./admin.js"></script>
+
+</body>
 
 </body>
 </html>

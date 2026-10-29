@@ -75,3 +75,9 @@ export function messageErreur(erreur) {
     };
     return messages[erreur.code] || erreur.message;
 }
+
+// ===== FONCTION: VÉRIFIER SI UN COMPTE EST ADMIN =====
+export async function estAdministrateur(uid) {
+    const snapshot = await get(ref(db, `admins/${uid}`));
+    return snapshot.val() === true;
+}
