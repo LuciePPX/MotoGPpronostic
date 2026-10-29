@@ -4,7 +4,7 @@ import { DATA_PILOTES, DATA_CALENDRIER } from "./config.js";
 
 // ===== FIREBASE CONFIG =====
 const firebaseConfig = {
-    apiKey: "AIzaSyBYjWjsY5eHOjrQOD2nJhXh0lZuQLwM6YQ",
+    apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
     authDomain: "motogp-pronostic.firebaseapp.com",
     databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
     projectId: "motogp-pronostic",
