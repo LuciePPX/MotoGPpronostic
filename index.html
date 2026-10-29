@@ -13,9 +13,17 @@
     <div id="login-screen" class="auth-container">
         <h1>Paris MotoGP</h1>
         <div class="login-box">
-            <h3>Entrez votre nom de pilote</h3>
-            <input type="text" id="pseudo-input" placeholder="Pseudo..." maxlength="15">
-            <button class="btn-valider" id="btn-valider">Rejoindre le Paddock</button>
+            <div class="onglets-auth">
+                <button type="button" class="btn-onglet actif" id="onglet-connexion">Connexion</button>
+                <button type="button" class="btn-onglet" id="onglet-inscription">Inscription</button>
+            </div>
+
+            <input type="email" id="auth-email" placeholder="Email" autocomplete="email">
+            <input type="password" id="auth-mot-de-passe" placeholder="Mot de passe" autocomplete="current-password">
+            <input type="text" id="auth-pseudo" class="hidden" placeholder="Pseudo (2 à 15 caractères)" maxlength="15" autocomplete="nickname">
+
+            <p id="auth-message" class="auth-message"></p>
+            <button class="btn-valider" id="btn-auth-valider">Se connecter</button>
         </div>
     </div>
 
@@ -28,6 +36,7 @@
                     <button type="button" class="btn-classement" id="btn-ouvrir-classement">🏆 Classement complet </button>
                     <button type="button" class="btn-classement" id="btn-regles">📋 Règles</button>
                     <button type="button" class="btn-classement" id="btn-notifications">🔔 Notifications</button>
+                    <button type="button" class="btn-classement" id="btn-deconnexion">🚪 Déconnexion</button>
                 </div>
             </div>
 
@@ -282,7 +291,7 @@
             
         </div>
     </div>
-
+    <script type="module" src="./auth-ui.js"></script>
     <script type="module" src="./script.js"></script>
 </body>
 </html>
