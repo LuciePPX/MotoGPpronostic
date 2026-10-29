@@ -188,3 +188,81 @@ async function executerRecalculGlobal() {
         status.textContent = "❌ Erreur critique lors du recalcul.";
     }
 }
+
+// ===== ONGLETS DE LA PAGE ADMIN =====
+document.querySelectorAll(".onglets-admin .btn-onglet").forEach((bouton) => {
+    bouton.addEventListener("click", () => {
+        document.querySelectorAll(".onglets-admin .btn-onglet")
+            .forEach((b) => b.classList.remove("actif"));
+        document.querySelectorAll(".admin-panneau")
+            .forEach((p) => p.classList.remove("actif"));
+
+        bouton.classList.add("actif");
+        document.getElementById(`onglet-${bouton.dataset.onglet}`).classList.add("actif");
+    });
+});
+
+// ===== ENVOYER UNE NOTIFICATION =====
+// 1. Enregistre le message dans la base
+// 2. Lance le workflow GitHub qui l'envoie aux appareils
+document.getElementById("btn-envoyer-notif")?.addEventListener("click", async () => {
+    const titre = document.getElementById("notif-titre").value.trim();
+    const message = document.getElementById("notif-message").value.trim();
+    const statut = document.getElementById("notif-statut");
+    const bouton = document.getElementById("btn-envoyer-notif");
+
+    if (!titre || !message) {
+        statut.textContent = "Remplis le titre et le message.";
+        return;
+    }
+
+    bouton.disabled = true;
+    statut.textContent = "⏳ Envoi en cours...";
+
+    try {
+        await push(ref(db, "notifications"), {
+            titre,
+            message,
+            date: new Date().toISOString(),
+            envoyee: false
+        });
+
+        const jeton = (await get(ref(db, "config_admin/github_token"))).val();
+        if (!jeton) throw new Error("jeton GitHub absent de la base");
+
+        await lancerEnvoiGitHub(jeton);
+
+        statut.textContent = "✅ Notification envoyée. Elle arrive dans 1 à 2 minutes.";
+        document.getElementById("notif-titre").value = "";
+        document.getElementById("notif-message").value = "";
+    } catch (erreur) {
+        console.error(erreur);
+        statut.textContent = `❌ Erreur : ${erreur.message}. Elle partira au prochain envoi automatique.`;
+    } finally {
+        bouton.disabled = false;
+    }
+});
+
+// ===== LANCER LE WORKFLOW D'ENVOI SUR GITHUB =====
+const GITHUB_DEPOT = "LuciePPX/MotoGPpronostic";
+const GITHUB_WORKFLOW = "notifications.yml";
+
+async function lancerEnvoiGitHub(jeton) {
+    const reponse = await fetch(
+        `https://api.github.com/repos/${GITHUB_DEPOT}/actions/workflows/${GITHUB_WORKFLOW}/dispatches`,
+        {
+            method: "POST",
+            headers: {
+                "Accept": "application/vnd.github+json",
+                "Authorization": `Bearer ${jeton}`,
+                "X-GitHub-Api-Version": "2022-11-28",
+                "Content-Type": "application/json"
+            },
+            body: JSON.stringify({ ref: "main" })
+        }
+    );
+
+    if (!reponse.ok) {
+        throw new Error(`GitHub a répondu ${reponse.status}`);
+    }
+}

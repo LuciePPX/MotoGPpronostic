@@ -1,0 +1,19 @@
+name: Envoyer les notifications
+
+on:
+  workflow_dispatch:      # bouton manuel depuis GitHub
+  schedule:
+    - cron: "*/15 * * * *"  # toutes les 15 minutes
+
+jobs:
+  envoyer:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install firebase-admin
+      - run: python scripts/envoyer_notification.py
+        env:
+          FIREBASE_SERVICE_ACCOUNT: ${{ secrets.FIREBASE_SERVICE_ACCOUNT }}
