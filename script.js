@@ -1,26 +1,7 @@
 import { DATA_PILOTES, DATA_CALENDRIER } from './config.js';
-import { activerNotifications } from './notifications.js';
+import { ref, set, get, onValue, query, orderByValue, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+import { db } from './firebase-init.js';
 
-// ===== FIREBASE SDK IMPORTS =====
-import { initializeApp } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-app.js";
-import { getDatabase, ref, set, get, onValue, query, orderByValue, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-
-// ===== FIREBASE CONFIG =====
-const firebaseConfig = {
-
-  apiKey: "AIzaSyAlWxI_w2R6eyJYBg9h_ynHWAgz3VS51Zk",
-  authDomain: "motogppronostic.firebaseapp.com",
-  databaseURL: "https://motogppronostic-default-rtdb.europe-west1.firebasedatabase.app",
-  projectId: "motogppronostic",
-  storageBucket: "motogppronostic.firebasestorage.app",
-  messagingSenderId: "1093723718276",
-  appId: "1:1093723718276:web:51b754c96ceacd589638d1",
-  measurementId: "G-D9M06ECP07"
-};
-
-// Initialize Firebase
-const app = initializeApp(firebaseConfig);
-const db = getDatabase(app);
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
@@ -36,23 +17,20 @@ let firebaseListeners = {}; // Stockage des écouteurs Firebase
 let sprintValide = false;
 let raceValide = false;
 
-// ===== ÉCRAN D'AUTH =====
-document.addEventListener('DOMContentLoaded', () => {
-    const pseudoInput = document.getElementById('pseudo-input');
-    const btnValider = document.getElementById('btn-valider');
-    const btnClassement = document.getElementById('btn-classement');
+// ===== DÉMARRAGE APRÈS CONNEXION =====
+// auth-ui.js envoie cet événement quand le joueur est connecté
+let jeuDemarre = false;
 
-    document.getElementById('btn-notifications')?.addEventListener('click', () => {
-    activerNotifications(app, db, pseudo);});
+document.addEventListener('joueur-connecte', (e) => {
+    if (jeuDemarre) return; // Évite de lancer le jeu deux fois
+    jeuDemarre = true;
 
-    btnValider?.addEventListener('click', commencerJeu);
-    pseudoInput?.addEventListener('keypress', (e) => {
-        if (e.key === 'Enter') commencerJeu();
-    });
+    pseudo = e.detail.pseudo;
 
-    btnClassement?.addEventListener('click', () => {
-        window.open('classement.html', '_blank');
-    });
+    document.getElementById('login-screen').classList.add('hidden');
+    document.getElementById('game-screen').classList.remove('hidden');
+
+    initialiserJeu();
 });
 
 // ___ FUNCTION: cleanning ___
@@ -72,31 +50,6 @@ window.addEventListener('beforeunload', () => {
 
     firebaseListeners = {};
 });
-
-// ___ FUNCTION: begin game ___
-function commencerJeu() {
-
-    const pseudoInput = document.getElementById('pseudo-input');
-    pseudo = pseudoInput.value.trim();
-
-    if (pseudo === '') {
-        alert('Veuillez entrer un pseudo');
-        return;
-    }
-
-    // Check si pseudo === "root" → Ouvre page admin
-    if (pseudo.toLowerCase() === 'root') {
-        window.location.href = 'admin.html';
-        return;
-    }
-
-    
-    // Login normal: cacher auth-container, afficher game-container
-    document.getElementById('login-screen').classList.add('hidden');
-    document.getElementById('game-screen').classList.remove('hidden');
-
-    initialiserJeu();
-}
 
 // ===== FUNCTION: INITIALISER JEU =====
 function initialiserJeu() {

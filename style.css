@@ -1626,3 +1626,40 @@ button {
         height: 70px;
     }
 }
+
+.onglets-auth {
+    display: flex;
+    gap: 8px;
+    margin-bottom: 12px;
+}
+
+.btn-onglet {
+    flex: 1;
+    padding: 8px;
+    border: none;
+    border-radius: 6px;
+    background: #333;
+    color: #fff;
+    cursor: pointer;
+}
+
+.btn-onglet.actif {
+    background: #e10600;
+}
+
+.login-box input {
+    display: block;
+    width: 100%;
+    margin-bottom: 10px;
+    padding: 8px;
+    box-sizing: border-box;
+}
+
+.login-box .hidden {
+    display: none !important;
+}
+
+.auth-message {
+    color: #ff6b6b;
+    min-height: 1.2em;
+}
