@@ -2,7 +2,7 @@ import { DATA_PILOTES, DATA_CALENDRIER } from './config.js';
 import { ref, set, get, onValue, query, orderByValue, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { app, db } from './firebase-init.js';
 import { activerNotifications } from './notifications.js';
-
+import { libelleCourse, normaliser } from './utils.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
@@ -489,13 +489,13 @@ function genererPilotes() {
 // ___ FUNCTION: filter pilotes ___
 function filtrerPilotes(valeur) {
     const pilotesList = document.querySelectorAll('.pilotes-list .pilote-card');
-    const search = valeur.toLowerCase();
+    const recherche = normaliser(valeur);
 
     pilotesList.forEach((card) => {
-        const nom = card.dataset.nom.toLowerCase();
+        const nom = normaliser(card.dataset.nom);
         const num = card.dataset.num;
-        const match = nom.includes(search) || num.includes(search);
-        card.style.display = match ? 'block' : 'none';
+        const correspond = nom.includes(recherche) || num.includes(recherche);
+        card.style.display = correspond ? 'block' : 'none';
     });
 }
 
@@ -796,7 +796,7 @@ async function afficherCoursePrecedente() {
             <div class="race-info" style="max-width: none; margin: 0 auto;">
                 <h2>Dernière course</h2>
                 <div class="race-gp-name">
-                    <span>${derniereCourseKey.replaceAll('_', ' ')}</span>
+                    <span>${libelleCourse(derniereCourseKey)}</span>
                 </div>
                 <div class="race-details">
                     <div class="detail-item">
@@ -999,7 +999,7 @@ async function afficherHistoriqueGlobal() {
             item.className = 'history-item clickable';
             item.innerHTML = `
                 <div class="gp-card-info">
-                    <span class="history-item-name">🏍️ ${gpName.replace(/_/g, ' ')}</span>
+                    <span class="history-item-name">🏍️ ${libelleCourse(gpName)}</span>
                 </div>
                 <div class="go-icon">❯</div>
             `;
@@ -1017,7 +1017,7 @@ async function afficherGrilleJoueursGP(gpName) {
     const title = document.getElementById('history-title');
     const btnBack = document.getElementById('btn-back-history');
 
-    title.innerText = `👥 Participants : ${gpName.replace(/_/g, ' ')}`;
+    title.innerText = `👥 Participants : ${libelleCourse(gpName)}`;
     container.innerHTML = "<p class='loading-msg'>Recherche des pronos...</p>";
     
     // On active la grille
@@ -1085,7 +1085,7 @@ async function afficherDetailsGP(gpName, pseudo) {
     const historyTitle = document.getElementById('history-title');
     const btnBack = document.getElementById('btn-back-history')
 
-    historyTitle.innerText = `🏁 ${gpName.replace(/_/g, ' ')}`;
+    historyTitle.innerText = `🏁 ${libelleCourse(gpName)}`;
     historyFooter.style.display = "block";
 
     try {
