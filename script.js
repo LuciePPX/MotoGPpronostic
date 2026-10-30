@@ -531,8 +531,8 @@ function updateSectionsVisibility() {
 // ___ FUNCTION: begin timer ___
 function demarrerTimer(type, sectionId) {
     const timerElement = document.getElementById(`timer-${type}`);
-    timerElement.classList.remove('hidden-timer');
     if (!timerElement) return;
+    timerElement.classList.remove('hidden-timer');
 
     const raceCourante = getRaceCourante(); // Ta nouvelle fonction
     if (!raceCourante) return;
