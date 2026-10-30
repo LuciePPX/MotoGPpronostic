@@ -78,19 +78,33 @@ if (btnPublier) {
         const session = document.getElementById("type-session").value; 
         const raceKey = document.getElementById("select-race").value;
 
-        const chutes = [...document.querySelectorAll(".res-chute")]
-            .map(s => parseInt(s.value))
-            .filter(v => !isNaN(v));
+        // ===== VALIDATI ON DU PODIUM =====
+        const podium = ["res-1", "res-2", "res-3"]
+            .map(id => parseInt(document.getElementById(id).value));
+
+        if (podium.some(isNaN)) {
+            return alert("Sélectionne les 3 pilotes du podium (1er, 2e et 3e).");
+        }
+
+        if (new Set(podium).size !== podium.length) {
+            return alert("Un même pilote ne peut pas être 1er, 2e et 3e à la fois.");
+        }
+
+        // Chutes : on retire les valeurs vides et les doublons
+        const chutes = [...new Set(
+            [...document.querySelectorAll(".res-chute")]
+                .map(s => parseInt(s.value))
+                .filter(v => !isNaN(v))
+        )];
 
         const results = {
-            "1er": parseInt(document.getElementById("res-1").value),
-            "2e": parseInt(document.getElementById("res-2").value),
-            "3e": parseInt(document.getElementById("res-3").value),
+            "1er": podium[0],
+            "2e": podium[1],
+            "3e": podium[2],
             "Chute": chutes,
             "timestamp": new Date().toISOString()
         };
 
-        if (!results["1er"]) return alert("Sélectionnez au moins le vainqueur");
 
         try {
             await set(ref(db, `resultats/${raceKey}/${session}`), results);
