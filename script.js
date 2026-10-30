@@ -77,41 +77,6 @@ function initialiserJeu() {
     demarrerTimer('sprint', 'section-sprint');
     demarrerTimer('race', 'section-race');
     
-    // Vérifier les résultats toutes les 30 secondes
-   // 1. On récupère la course une seule fois proprement
-    const raceCourante = getRaceCourante();
-
-    if (raceCourante) {
-        // 2. Création de la clé de la course
-        const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
-
-        // 3. Définition des références 
-        const sprintResultsRef = ref(db, `resultats/${raceKey}/sprint`);
-        const raceResultsRef = ref(db, `resultats/${raceKey}/race`);
-
-        // 4. Écouteur pour le SPRINT
-        onValue(sprintResultsRef, (snapshot) => {
-            sprintResults = snapshot.val() || {};
-            if (Object.keys(sprintResults).length > 0) {
-                // Si on a des résultats, on les affiche
-                chargerResultatsOfficiels();
-            } else {
-                // SINON, on lance le timer !
-                demarrerTimer('sprint', 'section-sprint');
-            }
-        });
-
-        // 5. Écouteur pour la RACE
-        onValue(raceResultsRef, (snapshot) => {
-            raceResults = snapshot.val() || {};
-            if (Object.keys(raceResults).length > 0) {
-                chargerResultatsOfficiels();
-            } else {
-                // SINON, on lance le timer !
-                demarrerTimer('race', 'section-race');
-            }
-        });
-    }
 
 
 // ____ FUNCTION: firebase data load ____ 
@@ -149,12 +114,14 @@ function chargerDonneesFirebase() {
     // Écouter résultats Sprint
     const sprintResultsRef = ref(db, `resultats/${raceKey}/sprint`);
     if (firebaseListeners[sprintKey]) firebaseListeners[sprintKey].unsubscribe?.();
+    
+    // Résultats sprint : affichés si présents, sinon le compte à rebours est lancé
     const unsubscribeSprint = onValue(sprintResultsRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            sprintResults = data;
+        sprintResults = snapshot.val() || {};
+        if (Object.keys(sprintResults).length > 0) {
             afficherResultats('sprint', 'section-sprint');
-            
+        } else {
+            demarrerTimer('sprint', 'section-sprint');
         }
     });
     firebaseListeners[sprintKey] = { unsubscribe: unsubscribeSprint };
@@ -162,12 +129,13 @@ function chargerDonneesFirebase() {
     // Écouter résultats Race
     const raceResultsRef = ref(db, `resultats/${raceKey}/race`);
     if (firebaseListeners[raceResultsKey]) firebaseListeners[raceResultsKey].unsubscribe?.();
+    // Résultats course : même logique
     const unsubscribeRace = onValue(raceResultsRef, (snapshot) => {
-        const data = snapshot.val();
-        if (data) {
-            raceResults = data;
+        raceResults = snapshot.val() || {};
+        if (Object.keys(raceResults).length > 0) {
             afficherResultats('race', 'section-race');
-            
+        } else {
+            demarrerTimer('race', 'section-race');
         }
     });
     firebaseListeners[raceResultsKey] = { unsubscribe: unsubscribeRace };
