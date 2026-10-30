@@ -94,8 +94,31 @@ if (btnPublier) {
 
         try {
             await set(ref(db, `resultats/${raceKey}/${session}`), results);
-            await executerRecalculGlobal(); // Recalcule tout après publication
-            document.getElementById("status-msg").textContent = "✅ Résultats publiés et scores mis à jour !";
+            await executerRecalculGlobal(); // Les scores doivent être calculés avant l'envoi
+
+            // Notification de résultats : le podium est commun, les points sont personnels
+            const course = DATA_CALENDRIER.find(r => getRaceKey(r) === raceKey);
+            const libelle = session === "sprint" ? "Sprint" : "Grand Prix";
+            const chutesTxt = chutes.map(nomPilote).join(", ") || "aucune";
+
+            await push(ref(db, "notifications"), {
+                titre: `Résultats ${libelle} : ${course?.gp ?? raceKey}`,
+                message: `🥇 ${nomPilote(results["1er"])}  🥈 ${nomPilote(results["2e"])}  🥉 ${nomPilote(results["3e"])}\n💥 Chute : ${chutesTxt}`,
+                type: "resultats",
+                course: raceKey,
+                session,
+                date: new Date().toISOString(),
+                envoyee: false
+            });
+
+            // Lance l'envoi tout de suite. Si ça échoue, le passage automatique enverra quand même.
+            try {
+                await declencherEnvoiGitHub();
+            } catch (erreurEnvoi) {
+                console.error("Envoi GitHub :", erreurEnvoi);
+            }
+
+            document.getElementById("status-msg").textContent = "✅ Résultats publiés, notifications en route.";
         } catch (error) {
             console.error(error);
             alert("Erreur Firebase");
@@ -265,4 +288,17 @@ async function lancerEnvoiGitHub(jeton) {
     if (!reponse.ok) {
         throw new Error(`GitHub a répondu ${reponse.status}`);
     }
+}
+
+// ===== AIDE : NOM D'UN PILOTE À PARTIR DE SON NUMÉRO =====
+function nomPilote(num) {
+    if (isNaN(num)) return "-";
+    return DATA_PILOTES.find(p => parseInt(p.num) === num)?.nom ?? `#${num}`;
+}
+
+// ===== AIDE : LANCER L'ENVOI GITHUB =====
+async function declencherEnvoiGitHub() {
+    const jeton = (await get(ref(db, "config_admin/github_token"))).val();
+    if (!jeton) throw new Error("jeton GitHub absent de la base");
+    await lancerEnvoiGitHub(jeton);
 }
