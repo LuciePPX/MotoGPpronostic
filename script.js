@@ -27,6 +27,7 @@ document.addEventListener('joueur-connecte', (e) => {
     jeuDemarre = true;
 
     pseudo = e.detail.pseudo;
+    document.getElementById('welcome-title').textContent = `Bienvenue ${pseudo} !`;
 
     document.getElementById('login-screen').classList.add('hidden');
     document.getElementById('game-screen').classList.remove('hidden');
