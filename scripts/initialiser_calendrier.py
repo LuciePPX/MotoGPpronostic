@@ -20,13 +20,13 @@ def en_millisecondes(texte):
     dt = datetime.fromisoformat(texte).replace(tzinfo=FUSEAU)
     return int(dt.timestamp() * 1000)
 
-
 if __name__ == "__main__":
-    # Chemin de la clé passé en argument, ex : python scripts/initialiser_calendrier.py notification_ignore/cle-compte-service.json
-    cred = credentials.Certificate(sys.argv[1])
-    firebase_admin.initialize_app(cred, {"databaseURL": URL_BASE})
+    # La clé vient du secret GitHub, jamais du code
+    cle = json.loads(os.environ["FIREBASE_SERVICE_ACCOUNT"])
+    firebase_admin.initialize_app(credentials.Certificate(cle), {"databaseURL": URL_BASE})
 
-    with open("scripts/calendrier.json", encoding="utf-8") as f:
+    chemin = os.path.join(os.path.dirname(__file__), "calendrier.json")
+    with open(chemin, encoding="utf-8") as f:
         calendrier = json.load(f)
 
     donnees = {
