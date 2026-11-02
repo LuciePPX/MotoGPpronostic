@@ -275,6 +275,27 @@
         </div>
     </div>
 
+    <div id="preferences-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>🔔 Mes notifications</h2>
+                <button class="close-modal" id="close-preferences">✕</button>
+            </div>
+
+            <div class="regles-body">
+                <p><strong>Cet appareil</strong></p>
+                <p>À faire une fois par téléphone ou PC.</p>
+                <button type="button" class="btn-valider" id="btn-activer-appareil">🔔 Activer sur cet appareil</button>
+
+                <p style="margin-top: 20px;"><strong>Ce que je veux recevoir</strong></p>
+                <label><input type="checkbox" id="pref-rappel_weekend"> 📅 Rappel d'un week end de course le vendredi à 9h</label><br>
+                <label><input type="checkbox" id="pref-rappel_course"> ⏰ Rappel 1h avant chaque départ</label><br>
+                <label><input type="checkbox" id="pref-resume_lundi"> 📊 Résumé du week-end le lundi à 9h, spoiler !</label><br>
+                <label><input type="checkbox" id="pref-resultats"> 🏁 Résultats disponibles, sans spoil ! </label>
+            </div>
+        </div>
+    </div>
+
     <div id="modal-details" class="modal-overlay" style="display:none;">
         <div class="modal-content">
 

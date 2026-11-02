@@ -1,8 +1,8 @@
 import { DATA_PILOTES, DATA_CALENDRIER } from './config.js';
 import { ref, set, get, onValue, query, orderByValue, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { app, db } from './firebase-init.js';
-import { activerNotifications } from './notifications.js';
+import { db } from './firebase-init.js';
 import { libelleCourse, normaliser } from './utils.js';
+import { initPreferences } from './prefs.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
@@ -33,11 +33,7 @@ document.addEventListener('joueur-connecte', (e) => {
     document.getElementById('game-screen').classList.remove('hidden');
 
     initialiserJeu();
-});
-
-// ===== BOUTON NOTIFICATIONS =====
-document.getElementById('btn-notifications')?.addEventListener('click', () => {
-    activerNotifications(app, db, pseudo);
+    initPreferences(pseudo);
 });
 
 // ___ FUNCTION: cleanning ___

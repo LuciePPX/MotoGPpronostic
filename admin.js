@@ -113,11 +113,10 @@ if (btnPublier) {
             // Notification de résultats : le podium est commun, les points sont personnels
             const course = DATA_CALENDRIER.find(r => getRaceKey(r) === raceKey);
             const libelle = session === "sprint" ? "Sprint" : "Grand Prix";
-            const chutesTxt = chutes.map(nomPilote).join(", ") || "aucune";
 
             await push(ref(db, "notifications"), {
-                titre: `Résultats ${libelle} : ${course?.gp ?? raceKey}`,
-                message: `🥇 ${nomPilote(results["1er"])}  🥈 ${nomPilote(results["2e"])}  🥉 ${nomPilote(results["3e"])}\n💥 Chute : ${chutesTxt}`,
+                titre: "Résultats disponibles",
+                message: `Les résultats du ${libelle} ${course?.gp ?? raceKey} sont en ligne. Va voir tes points sur le site !`,
                 type: "resultats",
                 course: raceKey,
                 session,
