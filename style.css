@@ -1,6 +1,5 @@
 /* ===== MOTO GP PRONOSTIC - DESIGN HARMONISÉ ===== */
-@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Inter:wght@300;400;600&display=swap');
-
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@400;700&family=Inter:wght@300;400;600&family=Orbitron:wght@700;900&display=swap');
 :root {
     --red: #e10600;
     --dark: #0f0f0f;
@@ -1461,6 +1460,7 @@ button {
 /* Couleurs de réussite */
 .pts-pos { color: #4cd137; } /* Vert */
 .pts-neg { color: #ff4757; } /* Rouge */
+.pts-zero {color: #fff;}
 
 .main-total {
     background: rgba(255, 255, 255, 0.05);

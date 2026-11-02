@@ -6,6 +6,12 @@ import { cleCourse, libelleCourse } from './utils.js';
 // Affiche +3, -1 ou 0
 const fmt = (n) => (n > 0 ? `+${n}` : `${n}`);
 
+// Vert = point gagné, rouge = point perdu, blanc = zéro
+const pts = (n) => {
+    const classe = n > 0 ? "pts-pos" : n < 0 ? "pts-neg" : "pts-zero";
+    return `<span class="${classe}">${fmt(n)}</span>`;
+};
+
 function nomPilote(num) {
     if (num === undefined || num === null || num === "") return "—";
     const pilote = DATA_PILOTES.find(p => parseInt(p.num) === parseInt(num));
@@ -135,9 +141,9 @@ function tableauClassement(lignes) {
                 ${lignes.map((l, i) => `
                     <tr class="paddock-ligne" data-pseudo="${l.pseudo}">
                         <td>${i === 0 ? "🥇 " : ""}${l.pseudo}</td>
-                        <td>${fmt(l.sprint)}</td>
-                        <td>${fmt(l.course)}</td>
-                        <td><strong>${fmt(l.total)}</strong></td>
+                        <td>${pts(l.sprint)}</td>
+                        <td>${pts(l.course)}</td>
+                        <td><strong>${pts(l.total)}</strong></td>
                     </tr>
                 `).join("")}
             </tbody>
@@ -165,12 +171,12 @@ function tableauPronos(titre, prono, reel, points) {
         return `<div class="paddock-carte"><h4>${titre}</h4><p>Pas de prono pour cette session.</p></div>`;
     }
 
-    const ligne = (libelle, p, r, pts) =>
-        `<tr><td>${libelle}</td><td>${p}</td><td>${r}</td><td>${fmt(pts || 0)}</td></tr>`;
+    const ligne = (libelle, p, r, valeur) =>
+        `<tr><td>${libelle}</td><td>${p}</td><td>${r}</td><td>${pts(valeur || 0)}</td></tr>`;
 
     return `
         <div class="paddock-carte">
-            <h4>${titre} : ${fmt(points?.total || 0)} pts</h4>
+            <h4>${titre} : ${pts(points?.total || 0)} pts</h4>
             <table class="score-table">
                 <thead>
                     <tr><th>Place</th><th>Prono</th><th>Résultat</th><th>Pts</th></tr>
