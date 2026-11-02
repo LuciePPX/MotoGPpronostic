@@ -1663,3 +1663,116 @@ button {
     color: #ff6b6b;
     min-height: 1.2em;
 }
+
+/* ===== BARRE DE BOUTONS (règle absente du fichier) ===== */
+.header-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.header-buttons .btn-classement {
+    padding: 10px 14px;
+    font-size: 0.85em;
+    min-height: 44px;
+}
+
+/* ===== PETITS ÉCRANS : suppression du défilement horizontal ===== */
+@media (max-width: 480px) {
+    #next-race-container,
+    .race-block,
+    .results-box,
+    .stats-column {
+        min-width: 0;
+        width: 100%;
+    }
+
+    .header-buttons .btn-classement {
+        flex: 1 1 45%;
+        padding: 10px 8px;
+    }
+
+    .circuit-image-container {
+        flex: 0 0 auto;
+        height: 200px;
+    }
+}
+
+/* ===== CASES DE LA FENÊTRE NOTIFICATIONS ===== */
+#preferences-modal label {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-height: 44px;
+    padding: 6px 0;
+    cursor: pointer;
+}
+
+#preferences-modal input[type="checkbox"] {
+    width: 20px;
+    height: 20px;
+    flex-shrink: 0;
+    accent-color: var(--red);
+}
+
+/* ===== CORRECTION : variable inexistante ===== */
+.race-card-title {
+    color: var(--text-main);
+}
+
+.aide {
+    font-size: 0.85em;
+    color: #aaa;
+    margin: 8px 0;
+}
+
+#paddock-course {
+    width: 100%;
+    padding: 10px;
+    margin-bottom: 12px;
+    border-radius: 8px;
+    background: #222;
+    color: #fff;
+    border: 1px solid #555;
+    font-size: 1em;
+}
+
+.paddock-podiums {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+    margin: 12px 0;
+}
+
+.paddock-carte {
+    background: rgba(255, 255, 255, 0.06);
+    border-left: 3px solid var(--red);
+    border-radius: 8px;
+    padding: 12px;
+    margin-bottom: 12px;
+}
+
+.paddock-carte h4 {
+    margin: 0 0 8px 0;
+}
+
+.paddock-carte p {
+    margin: 4px 0;
+    font-size: 0.9em;
+}
+
+.paddock-ligne {
+    cursor: pointer;
+}
+
+.paddock-ligne:hover {
+    background: rgba(225, 6, 0, 0.12);
+}
+
+@media (max-width: 480px) {
+    .paddock-podiums {
+        grid-template-columns: 1fr;
+    }
+}

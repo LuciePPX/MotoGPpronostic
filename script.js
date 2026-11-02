@@ -3,6 +3,7 @@ import { ref, set, get, onValue, query, orderByValue, limitToLast } from "https:
 import { db } from './firebase-init.js';
 import { libelleCourse, normaliser } from './utils.js';
 import { initPreferences } from './prefs.js';
+import { initPaddock } from './paddock.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
@@ -34,6 +35,7 @@ document.addEventListener('joueur-connecte', (e) => {
 
     initialiserJeu();
     initPreferences(pseudo);
+    initPaddock();
 });
 
 // ___ FUNCTION: cleanning ___

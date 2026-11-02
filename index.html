@@ -49,7 +49,7 @@
                         <div class="score-main" id="main-score-display">0</div> 
 
                         <div class="history-container">                             
-                            <button class="btn-historique btn-global" id="open-global-history"> 🏍️ Paddock </button>
+                            <button type="button" class="btn-historique btn-global" id="btn-paddock">📊 Historique des courses</button>
                         </div>
                     </div>
                 </div>
@@ -293,6 +293,20 @@
                 <label><input type="checkbox" id="pref-resume_lundi"> 📊 Résumé du week-end le lundi à 9h, spoiler !</label><br>
                 <label><input type="checkbox" id="pref-resultats"> 🏁 Résultats disponibles, sans spoil ! </label>
             </div>
+        </div>
+    </div>
+
+    <div id="paddock-modal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2>📊 Historique des courses</h2>
+                <button class="close-modal">✕</button>
+            </div>
+
+            <p class="aide">1. Choisis une course · 2. Regarde les points · 3. Touche un joueur pour voir ses pronos</p>
+
+            <select id="paddock-course"></select>
+            <div id="paddock-contenu"></div>
         </div>
     </div>
 
