@@ -17,6 +17,9 @@ let timerIntervals = {}; // Stockage des intervalles de timer
 let firebaseListeners = {}; // Stockage des écouteurs Firebase
 let sprintValide = false;
 let raceValide = false;
+let draggedElement = null; // Carte pilote en cours de glisser-déposer
+let draggedFromZone = null; // Zone d'où vient la carte glissée
+let zoneActive = null; // Zone (.step) sélectionnée au clic
 
 // ===== DÉMARRAGE APRÈS CONNEXION =====
 // auth-ui.js envoie cet événement quand le joueur est connecté
@@ -149,11 +152,8 @@ function getRaceCourante() {
 
     for (let i = 0; i < DATA_CALENDRIER.length; i++) {
         const race = DATA_CALENDRIER[i];
-        const dateSprint = new Date(race.sprint);
         const dateRace = new Date(race.race);
 
-        // On considère que la course est terminée 2h après la fin
-        const finSprint = new Date(dateSprint.getTime() + 2 * 60 * 60 * 1000);
         const finRace = new Date(dateRace.getTime() + 2 * 60 * 60 * 1000);
 
         if (maintenant < finRace) {
@@ -169,12 +169,6 @@ function getRaceCourante() {
     }
 
     return null;
-}
-
-function getNomPilote(num) {
-    if (!num) return "-"; // Gestion du cas vide
-    const pilote = DATA_PILOTES.find(p => p.num === String(num));
-    return pilote ? pilote.nom : num;
 }
 
 // ____  FUNCTION: CHARGER PRONOSTICS UTILISATEUR ___
@@ -558,39 +552,12 @@ function demarrerTimer(type, sectionId) {
 }
 
 // ___ FUNCTION: print score  ___
-
+// ===== FUNCTION: AFFICHER LE SCORE GÉNÉRAL =====
 function afficherScore() {
     const scoreMainEl = document.querySelector('.score-main');
-    const scoreGpNameEl = document.querySelector('.score-gp-name');
-    const scoreLastThreeEl = document.querySelector('.score-last-three');
-    const raceCourante = getRaceCourante();
-
     if (!scoreMainEl) return;
 
-    // 1. Récupération du score global cumulé
-    // On s'assure de prendre le score total stocké dans currentScores
-    const scoreGlobal = currentScores[pseudo] || 0;
-
-    // 2. Affichage du score principal (Général)
-    scoreMainEl.textContent = scoreGlobal;
-
-    // 3. Mise à jour du bandeau sous le score
-    if (scoreGpNameEl) {
-        const nomGP = (typeof raceCourante !== 'undefined' && raceCourante.gp)
-            ? raceCourante.gp
-            : "Chargement...";
-
-        // On affiche clairement qu'il s'agit du score global
-        scoreGpNameEl.innerHTML = `SCORE GÉNÉRAL <br><small style="color: #e10600">${nomGP}</small>`;
-    }
-
-    // 4. On vide ou on cache la section "Derniers résultats" 
-    // puisqu'on veut que l'utilisateur clique sur la loupe pour l'historique
-    if (scoreLastThreeEl) {
-        scoreLastThreeEl.textContent = "Cliquez sur 🔍 pour le détail";
-        scoreLastThreeEl.style.fontSize = "0.8em";
-        scoreLastThreeEl.style.opacity = "0.6";
-    }
+    scoreMainEl.textContent = currentScores[pseudo] || 0;
 }
 
 // ___ FUNCTION: setup drop zone  ___
@@ -1078,13 +1045,9 @@ function executerDepot(zone, elementSource, zoneSource) {
 
     // 2. Libérer le pilote déjà présent dans la zone de destination
     const existingCard = zone.querySelector('.pilote-card');
-    if (existingCard) {
-        const existingNum = parseInt(existingCard.dataset.num);
-        delete predictions[rank];
-        // On ne le marque plus comme used si il n'est plus nulle part
-        // (La fonction mettreAJourAffichagePronostics s'en occupera)
-    }
-
+    // Libérer le pilote déjà présent dans la zone de destination
+    if (zone.querySelector('.pilote-card')) delete predictions[rank];
+    
     // 3. Enregistrer
     predictions[rank] = num;
     const contentArea = zone.querySelector('.target-area') || zone;
@@ -1102,10 +1065,6 @@ function executerDepot(zone, elementSource, zoneSource) {
     // 4. Mettre à jour les classes "used" sur la liste
     mettreAJourAffichagePronostics();
 }
-let draggedElement = null;
-let draggedFromZone = null; // Permet de tracker si on drag d'une zone
-let touchOffset = { x: 0, y: 0 };
-
 
 
 // ===== FUNCTION: SETUP DROP ZONES =====
@@ -1160,17 +1119,11 @@ function handleDrop(e) {
     executerDepot(e.currentTarget, draggedElement, draggedFromZone);
 }
 
-
-
-let zoneActive = null; // Stocke la zone (.step) cliquée
-
 function initClickAndSelect() {
     // 1. Gérer le clic sur les zones (Steps)
     document.querySelectorAll('.step').forEach(zone => {
         zone.addEventListener('click', (e) => {
-            // Si la zone contient déjà un pilote, on le retire d'abord (optionnel)
-            const cardInZone = zone.querySelector('.pilote-card');
-
+          
             if (zoneActive === zone) {
                 // Si on reclique sur la même zone, on désactive
                 zone.classList.remove('waiting-selection');
