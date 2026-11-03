@@ -947,334 +947,83 @@ function setupButtons() {
         if (e.target === modalRegles) modalRegles.classList.remove('active');
     });
 }
-
+// ===== FUNCTION: BOUTON CLASSEMENT ET FERMETURE DES FENÊTRES =====
 function setupModals() {
-    const modalHistorique = document.getElementById('history-modal');
-    const btnPerso = document.getElementById('open-history'); // "Mon Historique"
-    const btnGlobal = document.getElementById('open-global-history'); // "Historique Adversaires"
-    const btnBack = document.getElementById('btn-back-history');
-
-
-    // 2. Clic sur "Historique ADVERSAIRES" (Global)
-    if (btnGlobal) {
-        btnGlobal.onclick = () => {
-            modalHistorique.classList.add('active');
-            afficherHistoriqueGlobal();
-        };
-    }
-
-    // 3. Fermeture de la modale (croix ou clic extérieur)
-    const closeHistory = document.getElementById('close-history-modal');
-    if (closeHistory) {
-        closeHistory.onclick = () => modalHistorique.classList.remove('active');
-    }
-
-    async function afficherHistoriqueGlobal() {
-        const container = document.getElementById('history-items');
-        const title = document.getElementById('history-title');
-        const btnBack = document.getElementById('btn-back-history');
-
-        title.innerText = "🏁 Choisir un Grand Prix";
-        container.classList.remove('grid-layout'); // Mode liste standard
-        container.innerHTML = "<p class='loading-msg'></p>";
-
-        if (btnBack) btnBack.style.display = "none";
-
-        try {
-            const snapshot = await get(ref(db, 'pronostics'));
-            const allPronos = snapshot.val();
-            const gpSet = new Set();
-
-            // reconstruire la liste des GP depuis les pronos
-            Object.keys(allPronos).forEach(pseudo => {
-                Object.keys(allPronos[pseudo]).forEach(gpName => {
-                    gpSet.add(gpName);
-                });
-            });
-
-            [...gpSet].reverse().forEach(gpName => {
-                const item = document.createElement('div');
-                item.className = 'history-item clickable';
-                item.innerHTML = `
-                <div class="gp-card-info">
-                    <span class="history-item-name">🏍️ ${libelleCourse(gpName)}</span>
-                </div>
-                <div class="go-icon">❯</div>
-            `;
-
-                item.onclick = () => afficherGrilleJoueursGP(gpName);
-                container.appendChild(item);
-            });
-        } catch (e) {
-            container.innerHTML = "<p class='error-msg'>Erreur de chargement.</p>";
-        }
-    }
-
-    async function afficherGrilleJoueursGP(gpName) {
-        const container = document.getElementById('history-items');
-        const title = document.getElementById('history-title');
-        const btnBack = document.getElementById('btn-back-history');
-
-        title.innerText = `👥 Participants : ${libelleCourse(gpName)}`;
-        container.innerHTML = "<p class='loading-msg'>Recherche des pronos...</p>";
-
-        // On active la grille
-        container.classList.add('grid-layout');
-
-        if (btnBack) {
-            btnBack.style.display = "block";
-            btnBack.onclick = () => {
-                container.classList.remove('grid-layout');
-                afficherHistoriqueGlobal();
-            };
-        }
-
-        try {
-            // On récupère TOUS les pronostics pour filtrer les pseudos
-            const snapshot = await get(ref(db, 'pronostics'));
-
-            if (!snapshot.exists()) {
-                console.error("❌ La branche 'pronostics' est vide dans Firebase");
-                container.innerHTML = "<p class='empty-msg'>Aucun prono trouvé.</p>";
-                return;
-            }
-
-            const allData = snapshot.val();
-            container.innerHTML = ""; // On vide le chargement
-
-            let count = 0;
-
-            // On boucle sur chaque PSEUDO 
-            Object.keys(allData).forEach(uName => {
-                // On vérifie si ce pseudo a un dossier pour ce GP précis
-                if (allData[uName][gpName]) {
-                    count++;
-
-                    const card = document.createElement('div');
-                    card.className = 'user-card-grid';
-                    card.innerHTML = `
-                    <div class="user-avatar">${uName.charAt(0).toUpperCase()}</div>
-                    <div class="user-name">${uName}</div>
-                `;
-
-                    card.onclick = () => {
-                        container.classList.remove('grid-layout');
-                        afficherDetailsGP(gpName, uName);
-                    };
-                    container.appendChild(card);
-                }
-            });
-
-            if (count === 0) {
-                console.warn("⚠️ Aucun joueur n'a de prono pour", gpName);
-                container.innerHTML = "<p class='empty-msg'>Aucun prono pour ce GP.</p>";
-            }
-
-        } catch (e) {
-            console.error("❌ Erreur Firebase :", e);
-            container.innerHTML = "<p class='error-msg'>Erreur de connexion.</p>";
-        }
-    }
-
-
-    async function afficherDetailsGP(gpName, pseudo) {
-        const historyContainer = document.getElementById('history-items');
-        const historyFooter = document.getElementById('history-footer');
-        const historyTitle = document.getElementById('history-title');
-        const btnBack = document.getElementById('btn-back-history')
-
-        historyTitle.innerText = `🏁 ${libelleCourse(gpName)}`;
-        historyFooter.style.display = "block";
-
-        try {
-            // 1. Récupérer les résultats officiels (Sprint ET Race)
-            const snapProno = await get(ref(db, `pronostics/${pseudo}/${gpName}`));
-            const prono = snapProno.exists() ? snapProno.val() : {};
-            const snapRes = await get(ref(db, `resultats/${gpName}`));
-            const results = snapRes.exists() ? snapRes.val() : {};
-            const snapdetail = await get(ref(db, `scores_details/${pseudo}/${gpName}`));
-            const detail = snapdetail.exists() ? snapdetail.val() : {};
-
-            historyContainer.innerHTML = `
-            <div class="detail-section">
-                <h4 class="session-title">🏍️ SPRINT</h4>
-                <div class="comparison-grid">
-                    <div class="comparison-grid">
-                        <div class="comp-header" style="display: flex; gap: 10px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; color: #888; font-size: 0.8rem; text-transform: uppercase;">
-                            <span style="width: 45px; flex-shrink: 0;">Pos.</span>
-                            <span style="flex: 1;">Prono</span>
-                            <span style="flex: 1;">Résultat</span>
-                            <span style="margin-left: auto; min-width: 40px; text-align: right;">Pts</span>
-                        </div>
-                    
-                    ${renderRow("1er", getNomPilote(prono.sprint?.['1er']), getNomPilote(results.sprint?.['1er']), detail.sprint?.['1er'])}
-                    ${renderRow("2e", getNomPilote(prono.sprint?.['2e']), getNomPilote(results.sprint?.['2e']), detail.sprint?.['2e'])}
-                    ${renderRow("3e", getNomPilote(prono.sprint?.['3e']), getNomPilote(results.sprint?.['3e']), detail.sprint?.['3e'])}
-                    ${renderRow("Chute", getNomPilote(prono.sprint?.['Chute']), obtenirNomsChutes(results.sprint?.['Chute']), detail.sprint?.['Chute'])}
-                </div>
-                </div>
-            </div>
-
-            <div class="detail-section">
-                <h4 class="session-title">🏁 COURSE</h4>
-                <div class="comparison-grid">
-                    <div class="comp-header" style="display: flex; gap: 10px; font-weight: bold; border-bottom: 1px solid #444; padding-bottom: 5px; color: #888; font-size: 0.8rem; text-transform: uppercase;">
-                        <span style="width: 45px; flex-shrink: 0;">Pos.</span>
-                        <span style="flex: 1;">Prono</span>
-                        <span style="flex: 1;">Résultat</span>
-                        <span style="margin-left: auto; min-width: 40px; text-align: right;">Pts</span>
-                    </div>
-                    
-                    ${renderRow("1er", getNomPilote(prono.race?.['1er']), getNomPilote(results.race?.['1er']), detail.race?.['1er'])}
-                    ${renderRow("2e", getNomPilote(prono.race?.['2e']), getNomPilote(results.race?.['2e']), detail.race?.['2e'])}
-                    ${renderRow("3e", getNomPilote(prono.race?.['3e']), getNomPilote(results.race?.['3e']), detail.race?.['3e'])}
-                    ${renderRow("Chute", getNomPilote(prono.race?.['Chute']), obtenirNomsChutes(results.race?.['Chute']), detail.race?.['Chute'])}
-                </div>
-            </div>
-        
-            <div class="total-bar">
-                <span>🏆 TOTAL GP     </span>
-                <span class="total-val">${((detail.sprint?.['total'] || 0) + (detail.race?.['total'] || 0))} pts</span>
-            </div>
-            
-        `;
-        } catch (e) {
-            console.error(e);
-            historyContainer.innerHTML = "<p>Grand prix en cours.</p>";
-        }
-
-        if (btnBack) {
-            btnBack.style.display = "block";
-            btnBack.onclick = () => {
-                // Si on vient du global, on repart à la grille des joueurs de CE GP
-                afficherGrilleJoueursGP(gpName);
-
-            };
-        }
-    }
-
-    function renderRow(label, prono, reel, pts) {
-        const safeProno = prono || '-';
-        const safeReel = reel || '-';
-
-        const isCorrect = prono && reel && prono === reel;
-        const ptsClass = pts > 0 ? 'pts-pos' : (pts < 0 ? 'pts-neg' : '');
-
-        // Le secret est le "margin-left: auto" sur le dernier élément
-        return `
-        <div class="comp-row" style="display: flex; align-items: center; gap: 10px; padding: 5px 0;">
-            <span class="row-label" style="width: 45px; flex-shrink: 0;">${label}</span>
-            <span class="prio-val" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${safeProno}</span>
-            <span class="res-val ${isCorrect ? 'match' : ''}" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${safeReel}</span>
-            <span class="pts-val ${ptsClass}" style="margin-left: auto; min-width: 40px; text-align: right; font-weight: bold;">${pts || 0}</span>
-        </div>
-    `;
-    }
-
-
-    async function chargerClassementGlobal() {
-        const tbody = document.getElementById('classement-tbody');
-        const loadingEl = document.getElementById('loading');
-        const tableEl = document.getElementById('classement-table');
-        const emptyEl = document.getElementById('empty');
-
-        try {
-            // On récupère tout le nœud scores_details
-            const snapshot = await get(ref(db, 'scores_details/'));
-
-            if (snapshot.exists()) {
-                const allData = snapshot.val();
-                const listeJoueurs = [];
-
-                // Parcours de chaque utilisateur 
-                for (const [pseudo, grandsPrix] of Object.entries(allData)) {
-                    let totalSprint = 0;
-                    let totalRace = 0;
-
-                    // Parcours de chaque GP pour cet utilisateur (ex: Grand_Prix_de_Thaïlande)
-                    for (const gpName in grandsPrix) {
-                        const dataGP = grandsPrix[gpName];
-
-                        // Addition des totaux Sprint et Race s'ils existent
-                        if (dataGP.sprint && dataGP.sprint.total) {
-                            totalSprint += parseInt(dataGP.sprint.total);
-                        }
-                        if (dataGP.race && dataGP.race.total) {
-                            totalRace += parseInt(dataGP.race.total);
-                        }
-                    }
-
-                    listeJoueurs.push({
-                        pseudo: pseudo,
-                        sprint: totalSprint,
-                        race: totalRace,
-                        total: totalSprint + totalRace
-                    });
-                }
-
-                // Tri par score total (du plus haut au plus bas)
-                listeJoueurs.sort((a, b) => b.total - a.total);
-
-                // Génération du HTML
-                tbody.innerHTML = listeJoueurs.map((joueur, index) => {
-                    let medal = '';
-                    if (index === 0) medal = '🥇';
-                    else if (index === 1) medal = '🥈';
-                    else if (index === 2) medal = '🥉';
-
-                    return `
-                    <tr>
-                        <td class="rank-col">${medal} ${index + 1}</td>
-                        <td class="pseudo-col">${joueur.pseudo}</td>
-                        <td class="points-col">${joueur.sprint}</td>
-                        <td class="points-col">${joueur.race}</td>
-                        <td class="total-col">${joueur.total}</td>
-                    </tr>
-                `;
-                }).join('');
-
-                loadingEl.style.display = 'none';
-                emptyEl.style.display = 'none';
-                tableEl.style.display = 'table';
-            } else {
-                loadingEl.style.display = 'none';
-                emptyEl.style.display = 'block';
-            }
-        } catch (e) {
-            console.error("Erreur Firebase:", e);
-            loadingEl.innerHTML = "❌ Erreur de connexion";
-        }
-    }
-
     // --- MODAL CLASSEMENT ---
-    const btnClassement = document.querySelector('.btn-classement');
+    const btnClassement = document.getElementById('btn-ouvrir-classement');
     const modalClassement = document.getElementById('classement-modal');
 
     if (btnClassement && modalClassement) {
         btnClassement.addEventListener('click', (e) => {
-            e.preventDefault(); // Empêche le changement de page si c'est un lien
+            e.preventDefault();
             modalClassement.classList.add('active');
-            if (typeof chargerClassementGlobal === 'function') chargerClassementGlobal();
+            chargerClassementGlobal();
         });
     }
 
-    // --- FERMETURE COMMUNE (Cliquer sur le X ou à côté de la modal) ---
-    const modals = document.querySelectorAll('.modal');
-    modals.forEach(modal => {
-        const closeBtn = modal.querySelector('.close-modal');
+    // --- FERMETURE COMMUNE (croix ou clic sur le fond) ---
+    document.querySelectorAll('.modal').forEach((modal) => {
+        modal.querySelector('.close-modal')?.addEventListener('click', () => {
+            modal.classList.remove('active');
+        });
 
-        // Fermer via le bouton X
-        if (closeBtn) {
-            closeBtn.addEventListener('click', () => modal.classList.remove('active'));
-        }
-
-        // Fermer en cliquant sur le fond noir
         modal.addEventListener('click', (e) => {
             if (e.target === modal) modal.classList.remove('active');
         });
     });
 }
 
+// ===== FUNCTION: CHARGER LE CLASSEMENT GLOBAL =====
+async function chargerClassementGlobal() {
+    const tbody = document.getElementById('classement-tbody');
+    const loadingEl = document.getElementById('loading');
+    const tableEl = document.getElementById('classement-table');
+    const emptyEl = document.getElementById('empty');
+
+    try {
+        const snapshot = await get(ref(db, 'scores_details/'));
+
+        if (!snapshot.exists()) {
+            loadingEl.style.display = 'none';
+            emptyEl.style.display = 'block';
+            return;
+        }
+
+        const listeJoueurs = [];
+
+        for (const [pseudo, grandsPrix] of Object.entries(snapshot.val())) {
+            let totalSprint = 0;
+            let totalRace = 0;
+
+            for (const dataGP of Object.values(grandsPrix)) {
+                totalSprint += parseInt(dataGP.sprint?.total) || 0;
+                totalRace += parseInt(dataGP.race?.total) || 0;
+            }
+
+            listeJoueurs.push({ pseudo, sprint: totalSprint, race: totalRace, total: totalSprint + totalRace });
+        }
+
+        listeJoueurs.sort((a, b) => b.total - a.total);
+
+        const medailles = ['🥇', '🥈', '🥉'];
+        tbody.innerHTML = listeJoueurs.map((joueur, index) => `
+            <tr>
+                <td class="rank-col">${medailles[index] || ''} ${index + 1}</td>
+                <td class="pseudo-col">${joueur.pseudo}</td>
+                <td class="points-col">${joueur.sprint}</td>
+                <td class="points-col">${joueur.race}</td>
+                <td class="total-col">${joueur.total}</td>
+            </tr>
+        `).join('');
+
+        loadingEl.style.display = 'none';
+        emptyEl.style.display = 'none';
+        tableEl.style.display = 'table';
+    } catch (e) {
+        console.error("Erreur Firebase:", e);
+        loadingEl.innerHTML = "❌ Erreur de connexion";
+    }
+}
 
 
 // ===== FUNCTION: CHARGER SCORES UTILISATEUR =====
