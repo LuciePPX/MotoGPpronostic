@@ -109,29 +109,8 @@ if (btnPublier) {
         try {
             await set(ref(db, `resultats/${raceKey}/${session}`), results);
             await executerRecalculGlobal(); // Les scores doivent être calculés avant l'envoi
-
-            // Notification de résultats : le podium est commun, les points sont personnels
-            const course = DATA_CALENDRIER.find(r => getRaceKey(r) === raceKey);
-            const libelle = session === "sprint" ? "Sprint" : "Grand Prix";
-
-            await push(ref(db, "notifications"), {
-                titre: "Résultats disponibles",
-                message: `Les résultats du ${libelle} ${course?.gp ?? raceKey} sont en ligne. Va voir tes points sur le site !`,
-                type: "resultats",
-                course: raceKey,
-                session,
-                date: new Date().toISOString(),
-                envoyee: false
-            });
-
-            // Lance l'envoi tout de suite. Si ça échoue, le passage automatique enverra quand même.
-            try {
-                await declencherEnvoiGitHub();
-            } catch (erreurEnvoi) {
-                console.error("Envoi GitHub :", erreurEnvoi);
-            }
-
-            document.getElementById("status-msg").textContent = "✅ Résultats publiés, notifications en route.";
+            
+            document.getElementById("status-msg").textContent = "✅ Résultats publiés, pense à envoyer la notification.";
         } catch (error) {
             console.error(error);
             alert("Erreur Firebase");
@@ -315,3 +294,42 @@ async function declencherEnvoiGitHub() {
     if (!jeton) throw new Error("jeton GitHub absent de la base");
     await lancerEnvoiGitHub(jeton);
 }
+
+// ===== ENVOYER LA NOTIFICATION D'UN RÉSULTAT PUBLIÉ =====
+document.getElementById("btn-notifier-resultat")?.addEventListener("click", async () => {
+    const raceKey = document.getElementById("select-race").value;
+    const session = document.getElementById("type-session").value;
+    const statut = document.getElementById("status-msg");
+    const bouton = document.getElementById("btn-notifier-resultat");
+
+    // Vérifie qu'un résultat existe bien pour cette session
+    const existe = (await get(ref(db, `resultats/${raceKey}/${session}`))).exists();
+    if (!existe) {
+        statut.textContent = "❌ Publie d'abord le résultat de cette session.";
+        return;
+    }
+
+    const course = DATA_CALENDRIER.find(r => getRaceKey(r) === raceKey);
+    const libelle = session === "sprint" ? "Sprint" : "Grand Prix";
+
+    bouton.disabled = true;
+    try {
+        await push(ref(db, "notifications"), {
+            titre: "Résultats disponibles",
+            message: `Les résultats du ${libelle} ${course?.gp ?? raceKey} sont en ligne. Va voir tes points sur le site !`,
+            type: "resultats",
+            course: raceKey,
+            session,
+            date: new Date().toISOString(),
+            envoyee: false
+        });
+
+        await declencherEnvoiGitHub();
+        statut.textContent = "✅ Notification envoyée. Elle arrive dans 1 à 2 minutes.";
+    } catch (erreur) {
+        console.error(erreur);
+        statut.textContent = `❌ Erreur : ${erreur.message}. Elle partira au prochain envoi automatique.`;
+    } finally {
+        bouton.disabled = false;
+    }
+});
