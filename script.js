@@ -12,7 +12,6 @@ let racePredictions = {};
 let sprintResults = {};
 let raceResults = {};
 let currentScores = {};
-let scoresHistory = {};
 let currentRaceIndex = 0; // Index de la course actuelle dans le calendrier
 let timerIntervals = {}; // Stockage des intervalles de timer
 let firebaseListeners = {}; // Stockage des écouteurs Firebase
@@ -71,11 +70,11 @@ function initialiserJeu() {
     chargerScoreGeneral(pseudo);
     chargerTop3();
 
-    
+
     // Démarrer/Charger timers 
     demarrerTimer('sprint', 'section-sprint');
     demarrerTimer('race', 'section-race');
-    
+}
 
 
 // ____ FUNCTION: firebase data load ____ 
@@ -113,7 +112,7 @@ function chargerDonneesFirebase() {
     // Écouter résultats Sprint
     const sprintResultsRef = ref(db, `resultats/${raceKey}/sprint`);
     if (firebaseListeners[sprintKey]) firebaseListeners[sprintKey].unsubscribe?.();
-    
+
     // Résultats sprint : affichés si présents, sinon le compte à rebours est lancé
     const unsubscribeSprint = onValue(sprintResultsRef, (snapshot) => {
         sprintResults = snapshot.val() || {};
@@ -175,7 +174,7 @@ function getRaceCourante() {
 function getNomPilote(num) {
     if (!num) return "-"; // Gestion du cas vide
     const pilote = DATA_PILOTES.find(p => p.num === String(num));
-    return pilote ? pilote.nom : num; 
+    return pilote ? pilote.nom : num;
 }
 
 // ____  FUNCTION: CHARGER PRONOSTICS UTILISATEUR ___
@@ -279,7 +278,7 @@ function attachDragListeners(card) {
 function chargerResultatsOfficiels() {
     // Afficher résultats du sprint
     const officialSprintEl = document.getElementById('official-sprint');
-    const timerSprintEl = document.getElementById('timer-sprint'); 
+    const timerSprintEl = document.getElementById('timer-sprint');
 
     if (officialSprintEl) {
         if (sprintResults && sprintResults['1er']) {
@@ -313,7 +312,7 @@ function chargerResultatsOfficiels() {
             if (timerRaceEl) timerRaceEl.classList.add('hidden-timer');
         }
     }
-    
+
     // Mettre à jour récap et boutons modifier
     afficherRecap('sprint');
     afficherRecap('race');
@@ -407,7 +406,7 @@ function editerPronostic(type) {
         raceValide = false;
     }
 
-    set(ref(db, path), null); 
+    set(ref(db, path), null);
     genererPilotes();
 
     const section = document.getElementById(`section-${type}`);
@@ -515,7 +514,7 @@ function updateSectionsVisibility() {
     const sectionRace = document.getElementById('section-race');
     const title = document.getElementById('current-title');
 
-    const sprintComplete = sprintPredictions['1er'] && sprintPredictions['2e'] && sprintPredictions['3e'] && sprintPredictions['Chute'];    if (sprintComplete || !canModify('sprint')) {
+    const sprintComplete = sprintPredictions['1er'] && sprintPredictions['2e'] && sprintPredictions['3e'] && sprintPredictions['Chute']; if (sprintComplete || !canModify('sprint')) {
         sectionSprint?.classList.add('hidden');
         sectionRace?.classList.remove('hidden');
         if (title) title.textContent = 'Choisissez pour le GRAND PRIX';
@@ -565,7 +564,7 @@ function afficherScore() {
     const scoreGpNameEl = document.querySelector('.score-gp-name');
     const scoreLastThreeEl = document.querySelector('.score-last-three');
     const raceCourante = getRaceCourante();
-    
+
     if (!scoreMainEl) return;
 
     // 1. Récupération du score global cumulé
@@ -577,10 +576,10 @@ function afficherScore() {
 
     // 3. Mise à jour du bandeau sous le score
     if (scoreGpNameEl) {
-        const nomGP = (typeof raceCourante !== 'undefined' && raceCourante.gp) 
-                      ? raceCourante.gp 
-                      : "Chargement...";
-        
+        const nomGP = (typeof raceCourante !== 'undefined' && raceCourante.gp)
+            ? raceCourante.gp
+            : "Chargement...";
+
         // On affiche clairement qu'il s'agit du score global
         scoreGpNameEl.innerHTML = `SCORE GÉNÉRAL <br><small style="color: #e10600">${nomGP}</small>`;
     }
@@ -836,7 +835,7 @@ function afficherProchainesCourses() {
 
     if (raceName) raceName.textContent = raceCourante.gp;
     if (raceCircuit) raceCircuit.textContent = raceCourante.circuit;
-    
+
     // Formater la date du sprint
     if (raceDateFormatted) {
         const sprintDate = new Date(raceCourante.sprint);
@@ -864,11 +863,11 @@ function afficherProchainesCourses() {
 // Fonction pour charger le score individuel dans le header
 async function chargerScoreGeneral(pseudoUtilisateur) {
     const scoreDisplay = document.getElementById('main-score-display');
-    
+
     try {
         // On cible le score spécifique de l'utilisateur dans le nœud 'scores'
         const snapshot = await get(ref(db, `scores/${pseudoUtilisateur}`));
-        
+
         if (snapshot.exists()) {
             const score = snapshot.val();
             // Mise à jour de l'affichage avec le score récupéré
@@ -885,7 +884,7 @@ async function chargerScoreGeneral(pseudoUtilisateur) {
 
 function chargerTop3() {
     const miniPodium = document.getElementById('mini-podium-list');
-    
+
     // On demande à Firebase les 3 plus gros scores
     // Note : orderByValue trie par ordre croissant, donc on prend les "derniers"
     const scoresRef = query(ref(db, 'scores'), orderByValue(), limitToLast(3));
@@ -893,7 +892,7 @@ function chargerTop3() {
     onValue(scoresRef, (snapshot) => {
         if (snapshot.exists()) {
             let players = [];
-            
+
             snapshot.forEach((childSnapshot) => {
                 players.push({
                     pseudo: childSnapshot.key,
@@ -960,7 +959,7 @@ function setupModals() {
     if (btnGlobal) {
         btnGlobal.onclick = () => {
             modalHistorique.classList.add('active');
-            afficherHistoriqueGlobal(); 
+            afficherHistoriqueGlobal();
         };
     }
 
@@ -970,133 +969,133 @@ function setupModals() {
         closeHistory.onclick = () => modalHistorique.classList.remove('active');
     }
 
-async function afficherHistoriqueGlobal() {
-    const container = document.getElementById('history-items');
-    const title = document.getElementById('history-title');
-    const btnBack = document.getElementById('btn-back-history');
+    async function afficherHistoriqueGlobal() {
+        const container = document.getElementById('history-items');
+        const title = document.getElementById('history-title');
+        const btnBack = document.getElementById('btn-back-history');
 
-    title.innerText = "🏁 Choisir un Grand Prix";
-    container.classList.remove('grid-layout'); // Mode liste standard
-    container.innerHTML = "<p class='loading-msg'></p>";
-    
-    if (btnBack) btnBack.style.display = "none"; 
+        title.innerText = "🏁 Choisir un Grand Prix";
+        container.classList.remove('grid-layout'); // Mode liste standard
+        container.innerHTML = "<p class='loading-msg'></p>";
 
-    try {
-        const snapshot = await get(ref(db, 'pronostics'));
-        const allPronos = snapshot.val();
-        const gpSet = new Set();
+        if (btnBack) btnBack.style.display = "none";
 
-        // reconstruire la liste des GP depuis les pronos
-        Object.keys(allPronos).forEach(pseudo => {
-            Object.keys(allPronos[pseudo]).forEach(gpName => {
-                gpSet.add(gpName);
+        try {
+            const snapshot = await get(ref(db, 'pronostics'));
+            const allPronos = snapshot.val();
+            const gpSet = new Set();
+
+            // reconstruire la liste des GP depuis les pronos
+            Object.keys(allPronos).forEach(pseudo => {
+                Object.keys(allPronos[pseudo]).forEach(gpName => {
+                    gpSet.add(gpName);
+                });
             });
-        });
 
-        [...gpSet].reverse().forEach(gpName => {
-            const item = document.createElement('div');
-            item.className = 'history-item clickable';
-            item.innerHTML = `
+            [...gpSet].reverse().forEach(gpName => {
+                const item = document.createElement('div');
+                item.className = 'history-item clickable';
+                item.innerHTML = `
                 <div class="gp-card-info">
                     <span class="history-item-name">🏍️ ${libelleCourse(gpName)}</span>
                 </div>
                 <div class="go-icon">❯</div>
             `;
-            
-            item.onclick = () => afficherGrilleJoueursGP(gpName);
-            container.appendChild(item);
-        });
-    } catch (e) {
-        container.innerHTML = "<p class='error-msg'>Erreur de chargement.</p>";
-    }
-}
 
-async function afficherGrilleJoueursGP(gpName) {
-    const container = document.getElementById('history-items');
-    const title = document.getElementById('history-title');
-    const btnBack = document.getElementById('btn-back-history');
-
-    title.innerText = `👥 Participants : ${libelleCourse(gpName)}`;
-    container.innerHTML = "<p class='loading-msg'>Recherche des pronos...</p>";
-    
-    // On active la grille
-    container.classList.add('grid-layout'); 
-
-    if (btnBack) {
-        btnBack.style.display = "block";
-        btnBack.onclick = () => {
-            container.classList.remove('grid-layout');
-            afficherHistoriqueGlobal();
-        };
+                item.onclick = () => afficherGrilleJoueursGP(gpName);
+                container.appendChild(item);
+            });
+        } catch (e) {
+            container.innerHTML = "<p class='error-msg'>Erreur de chargement.</p>";
+        }
     }
 
-    try {
-        // On récupère TOUS les pronostics pour filtrer les pseudos
-        const snapshot = await get(ref(db, 'pronostics'));
-        
-        if (!snapshot.exists()) {
-            console.error("❌ La branche 'pronostics' est vide dans Firebase");
-            container.innerHTML = "<p class='empty-msg'>Aucun prono trouvé.</p>";
-            return;
+    async function afficherGrilleJoueursGP(gpName) {
+        const container = document.getElementById('history-items');
+        const title = document.getElementById('history-title');
+        const btnBack = document.getElementById('btn-back-history');
+
+        title.innerText = `👥 Participants : ${libelleCourse(gpName)}`;
+        container.innerHTML = "<p class='loading-msg'>Recherche des pronos...</p>";
+
+        // On active la grille
+        container.classList.add('grid-layout');
+
+        if (btnBack) {
+            btnBack.style.display = "block";
+            btnBack.onclick = () => {
+                container.classList.remove('grid-layout');
+                afficherHistoriqueGlobal();
+            };
         }
 
-        const allData = snapshot.val();
-        container.innerHTML = ""; // On vide le chargement
-        
-        let count = 0;
+        try {
+            // On récupère TOUS les pronostics pour filtrer les pseudos
+            const snapshot = await get(ref(db, 'pronostics'));
 
-        // On boucle sur chaque PSEUDO 
-        Object.keys(allData).forEach(uName => {
-            // On vérifie si ce pseudo a un dossier pour ce GP précis
-            if (allData[uName][gpName]) {
-                count++;
-                
-                const card = document.createElement('div');
-                card.className = 'user-card-grid';
-                card.innerHTML = `
+            if (!snapshot.exists()) {
+                console.error("❌ La branche 'pronostics' est vide dans Firebase");
+                container.innerHTML = "<p class='empty-msg'>Aucun prono trouvé.</p>";
+                return;
+            }
+
+            const allData = snapshot.val();
+            container.innerHTML = ""; // On vide le chargement
+
+            let count = 0;
+
+            // On boucle sur chaque PSEUDO 
+            Object.keys(allData).forEach(uName => {
+                // On vérifie si ce pseudo a un dossier pour ce GP précis
+                if (allData[uName][gpName]) {
+                    count++;
+
+                    const card = document.createElement('div');
+                    card.className = 'user-card-grid';
+                    card.innerHTML = `
                     <div class="user-avatar">${uName.charAt(0).toUpperCase()}</div>
                     <div class="user-name">${uName}</div>
                 `;
-                
-                card.onclick = () => {
-                    container.classList.remove('grid-layout');
-                    afficherDetailsGP(gpName, uName); 
-                };
-                container.appendChild(card);
+
+                    card.onclick = () => {
+                        container.classList.remove('grid-layout');
+                        afficherDetailsGP(gpName, uName);
+                    };
+                    container.appendChild(card);
+                }
+            });
+
+            if (count === 0) {
+                console.warn("⚠️ Aucun joueur n'a de prono pour", gpName);
+                container.innerHTML = "<p class='empty-msg'>Aucun prono pour ce GP.</p>";
             }
-        });
 
-        if (count === 0) {
-            console.warn("⚠️ Aucun joueur n'a de prono pour", gpName);
-            container.innerHTML = "<p class='empty-msg'>Aucun prono pour ce GP.</p>";
+        } catch (e) {
+            console.error("❌ Erreur Firebase :", e);
+            container.innerHTML = "<p class='error-msg'>Erreur de connexion.</p>";
         }
-
-    } catch (e) {
-        console.error("❌ Erreur Firebase :", e);
-        container.innerHTML = "<p class='error-msg'>Erreur de connexion.</p>";
     }
-}
 
 
-async function afficherDetailsGP(gpName, pseudo) {
-    const historyContainer = document.getElementById('history-items');
-    const historyFooter = document.getElementById('history-footer');
-    const historyTitle = document.getElementById('history-title');
-    const btnBack = document.getElementById('btn-back-history')
+    async function afficherDetailsGP(gpName, pseudo) {
+        const historyContainer = document.getElementById('history-items');
+        const historyFooter = document.getElementById('history-footer');
+        const historyTitle = document.getElementById('history-title');
+        const btnBack = document.getElementById('btn-back-history')
 
-    historyTitle.innerText = `🏁 ${libelleCourse(gpName)}`;
-    historyFooter.style.display = "block";
+        historyTitle.innerText = `🏁 ${libelleCourse(gpName)}`;
+        historyFooter.style.display = "block";
 
-    try {
-        // 1. Récupérer les résultats officiels (Sprint ET Race)
-        const snapProno = await get(ref(db, `pronostics/${pseudo}/${gpName}`));
-        const prono = snapProno.exists() ? snapProno.val() : {};
-        const snapRes = await get(ref(db, `resultats/${gpName}`));
-        const results = snapRes.exists() ? snapRes.val() : {};
-        const snapdetail = await get(ref(db, `scores_details/${pseudo}/${gpName}`));
-        const detail = snapdetail.exists() ? snapdetail.val() : {};
+        try {
+            // 1. Récupérer les résultats officiels (Sprint ET Race)
+            const snapProno = await get(ref(db, `pronostics/${pseudo}/${gpName}`));
+            const prono = snapProno.exists() ? snapProno.val() : {};
+            const snapRes = await get(ref(db, `resultats/${gpName}`));
+            const results = snapRes.exists() ? snapRes.val() : {};
+            const snapdetail = await get(ref(db, `scores_details/${pseudo}/${gpName}`));
+            const detail = snapdetail.exists() ? snapdetail.val() : {};
 
-        historyContainer.innerHTML = `
+            historyContainer.innerHTML = `
             <div class="detail-section">
                 <h4 class="session-title">🏍️ SPRINT</h4>
                 <div class="comparison-grid">
@@ -1139,30 +1138,30 @@ async function afficherDetailsGP(gpName, pseudo) {
             </div>
             
         `;
-    } catch (e) {
-        console.error(e);
-        historyContainer.innerHTML = "<p>Grand prix en cours.</p>";
-    }
+        } catch (e) {
+            console.error(e);
+            historyContainer.innerHTML = "<p>Grand prix en cours.</p>";
+        }
 
-    if (btnBack) {
-        btnBack.style.display = "block";
-        btnBack.onclick = () => {
+        if (btnBack) {
+            btnBack.style.display = "block";
+            btnBack.onclick = () => {
                 // Si on vient du global, on repart à la grille des joueurs de CE GP
                 afficherGrilleJoueursGP(gpName);
-            
-        };
+
+            };
+        }
     }
-}
 
-function renderRow(label, prono, reel, pts) {
-    const safeProno = prono || '-';
-    const safeReel = reel || '-';
+    function renderRow(label, prono, reel, pts) {
+        const safeProno = prono || '-';
+        const safeReel = reel || '-';
 
-    const isCorrect = prono && reel && prono === reel;
-    const ptsClass = pts > 0 ? 'pts-pos' : (pts < 0 ? 'pts-neg' : '');
-    
-    // Le secret est le "margin-left: auto" sur le dernier élément
-    return `
+        const isCorrect = prono && reel && prono === reel;
+        const ptsClass = pts > 0 ? 'pts-pos' : (pts < 0 ? 'pts-neg' : '');
+
+        // Le secret est le "margin-left: auto" sur le dernier élément
+        return `
         <div class="comp-row" style="display: flex; align-items: center; gap: 10px; padding: 5px 0;">
             <span class="row-label" style="width: 45px; flex-shrink: 0;">${label}</span>
             <span class="prio-val" style="flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap;">${safeProno}</span>
@@ -1170,60 +1169,60 @@ function renderRow(label, prono, reel, pts) {
             <span class="pts-val ${ptsClass}" style="margin-left: auto; min-width: 40px; text-align: right; font-weight: bold;">${pts || 0}</span>
         </div>
     `;
-}
+    }
 
 
-async function chargerClassementGlobal() {
-    const tbody = document.getElementById('classement-tbody');
-    const loadingEl = document.getElementById('loading');
-    const tableEl = document.getElementById('classement-table');
-    const emptyEl = document.getElementById('empty');
+    async function chargerClassementGlobal() {
+        const tbody = document.getElementById('classement-tbody');
+        const loadingEl = document.getElementById('loading');
+        const tableEl = document.getElementById('classement-table');
+        const emptyEl = document.getElementById('empty');
 
-    try {
-        // On récupère tout le nœud scores_details
-        const snapshot = await get(ref(db, 'scores_details/'));
-        
-        if (snapshot.exists()) {
-            const allData = snapshot.val();
-            const listeJoueurs = [];
+        try {
+            // On récupère tout le nœud scores_details
+            const snapshot = await get(ref(db, 'scores_details/'));
 
-            // Parcours de chaque utilisateur 
-            for (const [pseudo, grandsPrix] of Object.entries(allData)) {
-                let totalSprint = 0;
-                let totalRace = 0;
+            if (snapshot.exists()) {
+                const allData = snapshot.val();
+                const listeJoueurs = [];
 
-                // Parcours de chaque GP pour cet utilisateur (ex: Grand_Prix_de_Thaïlande)
-                for (const gpName in grandsPrix) {
-                    const dataGP = grandsPrix[gpName];
-                    
-                    // Addition des totaux Sprint et Race s'ils existent
-                    if (dataGP.sprint && dataGP.sprint.total) {
-                        totalSprint += parseInt(dataGP.sprint.total);
+                // Parcours de chaque utilisateur 
+                for (const [pseudo, grandsPrix] of Object.entries(allData)) {
+                    let totalSprint = 0;
+                    let totalRace = 0;
+
+                    // Parcours de chaque GP pour cet utilisateur (ex: Grand_Prix_de_Thaïlande)
+                    for (const gpName in grandsPrix) {
+                        const dataGP = grandsPrix[gpName];
+
+                        // Addition des totaux Sprint et Race s'ils existent
+                        if (dataGP.sprint && dataGP.sprint.total) {
+                            totalSprint += parseInt(dataGP.sprint.total);
+                        }
+                        if (dataGP.race && dataGP.race.total) {
+                            totalRace += parseInt(dataGP.race.total);
+                        }
                     }
-                    if (dataGP.race && dataGP.race.total) {
-                        totalRace += parseInt(dataGP.race.total);
-                    }
+
+                    listeJoueurs.push({
+                        pseudo: pseudo,
+                        sprint: totalSprint,
+                        race: totalRace,
+                        total: totalSprint + totalRace
+                    });
                 }
 
-                listeJoueurs.push({
-                    pseudo: pseudo,
-                    sprint: totalSprint,
-                    race: totalRace,
-                    total: totalSprint + totalRace
-                });
-            }
+                // Tri par score total (du plus haut au plus bas)
+                listeJoueurs.sort((a, b) => b.total - a.total);
 
-            // Tri par score total (du plus haut au plus bas)
-            listeJoueurs.sort((a, b) => b.total - a.total);
+                // Génération du HTML
+                tbody.innerHTML = listeJoueurs.map((joueur, index) => {
+                    let medal = '';
+                    if (index === 0) medal = '🥇';
+                    else if (index === 1) medal = '🥈';
+                    else if (index === 2) medal = '🥉';
 
-            // Génération du HTML
-            tbody.innerHTML = listeJoueurs.map((joueur, index) => {
-                let medal = '';
-                if (index === 0) medal = '🥇';
-                else if (index === 1) medal = '🥈';
-                else if (index === 2) medal = '🥉';
-
-                return `
+                    return `
                     <tr>
                         <td class="rank-col">${medal} ${index + 1}</td>
                         <td class="pseudo-col">${joueur.pseudo}</td>
@@ -1232,23 +1231,23 @@ async function chargerClassementGlobal() {
                         <td class="total-col">${joueur.total}</td>
                     </tr>
                 `;
-            }).join('');
+                }).join('');
 
-            loadingEl.style.display = 'none';
-            emptyEl.style.display = 'none';
-            tableEl.style.display = 'table';
-        } else {
-            loadingEl.style.display = 'none';
-            emptyEl.style.display = 'block';
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'none';
+                tableEl.style.display = 'table';
+            } else {
+                loadingEl.style.display = 'none';
+                emptyEl.style.display = 'block';
+            }
+        } catch (e) {
+            console.error("Erreur Firebase:", e);
+            loadingEl.innerHTML = "❌ Erreur de connexion";
         }
-    } catch (e) {
-        console.error("Erreur Firebase:", e);
-        loadingEl.innerHTML = "❌ Erreur de connexion";
     }
-}
 
     // --- MODAL CLASSEMENT ---
-    const btnClassement = document.querySelector('.btn-classement'); 
+    const btnClassement = document.querySelector('.btn-classement');
     const modalClassement = document.getElementById('classement-modal');
 
     if (btnClassement && modalClassement) {
@@ -1263,7 +1262,7 @@ async function chargerClassementGlobal() {
     const modals = document.querySelectorAll('.modal');
     modals.forEach(modal => {
         const closeBtn = modal.querySelector('.close-modal');
-        
+
         // Fermer via le bouton X
         if (closeBtn) {
             closeBtn.addEventListener('click', () => modal.classList.remove('active'));
@@ -1315,12 +1314,12 @@ function executerDepot(zone, elementSource, zoneSource) {
         const oldType = oldSectionId === 'section-sprint' ? 'sprint' : 'race';
         const oldPredictions = oldType === 'sprint' ? sprintPredictions : racePredictions;
         delete oldPredictions[oldRank];
-        
+
         const oldContent = zoneSource.querySelector('.target-area') || zoneSource;
         if (oldContent.querySelector('.pilote-card')) {
-             oldContent.innerHTML = (zoneSource.classList.contains('crash-zone')) ? '' : oldContent.innerHTML;
-             // Si ce n'est pas une crash zone, on vide juste la target area
-             if(zoneSource.querySelector('.target-area')) zoneSource.querySelector('.target-area').innerHTML = '';
+            oldContent.innerHTML = (zoneSource.classList.contains('crash-zone')) ? '' : oldContent.innerHTML;
+            // Si ce n'est pas une crash zone, on vide juste la target area
+            if (zoneSource.querySelector('.target-area')) zoneSource.querySelector('.target-area').innerHTML = '';
         }
         const placeholder = zoneSource.querySelector('small');
         if (placeholder) placeholder.style.display = '';
@@ -1347,12 +1346,12 @@ function executerDepot(zone, elementSource, zoneSource) {
     attachDragListeners(contentArea.querySelector('.pilote-card'));
 
     contentArea.querySelector('.pilote-card').addEventListener('click', (e) => {
-    e.stopPropagation(); // Empêche de déclencher le clic de la zone parente
-    retirerPilote(e.currentTarget, zone);
-});
+        e.stopPropagation(); // Empêche de déclencher le clic de la zone parente
+        retirerPilote(e.currentTarget, zone);
+    });
 
     // 4. Mettre à jour les classes "used" sur la liste
-    mettreAJourAffichagePronostics(); 
+    mettreAJourAffichagePronostics();
 }
 let draggedElement = null;
 let draggedFromZone = null; // Permet de tracker si on drag d'une zone
@@ -1371,13 +1370,13 @@ function retirerPilote(element, fromZone) {
     const oldPredictions = oldType === 'sprint' ? sprintPredictions : racePredictions;
 
     delete oldPredictions[oldRank];
-    
+
     const oldContent = fromZone.querySelector('.target-area');
     if (oldContent) oldContent.innerHTML = '';
-    
+
     const placeholder = fromZone.querySelector('small');
     if (placeholder) placeholder.style.display = '';
-    
+
     fromZone.classList.remove('used-crash');
     fromZone.style.background = '';
 
@@ -1387,7 +1386,7 @@ function retirerPilote(element, fromZone) {
             card.classList.remove('used');
         }
     });
-    
+
     mettreAJourAffichagePronostics();
 }
 
@@ -1422,7 +1421,7 @@ function initClickAndSelect() {
         zone.addEventListener('click', (e) => {
             // Si la zone contient déjà un pilote, on le retire d'abord (optionnel)
             const cardInZone = zone.querySelector('.pilote-card');
-            
+
             if (zoneActive === zone) {
                 // Si on reclique sur la même zone, on désactive
                 zone.classList.remove('waiting-selection');
@@ -1432,7 +1431,7 @@ function initClickAndSelect() {
                 if (zoneActive) zoneActive.classList.remove('waiting-selection');
                 zoneActive = zone;
                 zone.classList.add('waiting-selection');
-                
+
                 // Petit message console pour débugger
             }
         });
@@ -1442,7 +1441,7 @@ function initClickAndSelect() {
     // On utilise la délégation d'événement pour que ça marche même si la liste change
     document.querySelector('.pilotes-list').addEventListener('click', (e) => {
         const card = e.target.closest('.pilote-card');
-        
+
         if (card && zoneActive) {
             if (card.classList.contains('used')) {
                 alert("Ce pilote est déjà utilisé !");
@@ -1550,5 +1549,4 @@ function validerPronostic(type) {
         demarrerTimer('sprint', 'section-sprint');
         demarrerTimer('race', 'section-race');
     });
-}
 }
