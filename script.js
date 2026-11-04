@@ -678,115 +678,145 @@ function construireBlocSession(titre, session, meilleursParieurs) {
     `;
 }
 
-// ===== FONCTION: AFFICHER LA DERNIÈRE COURSE =====
+// ===== ÉTAT : COURSES PASSÉES =====
+let coursesPassees = [];        // Du plus ancien au plus récent
+let indexCoursePassee = 0;      // Course actuellement affichée
+let scoresDetailsCache = {};    // Chargé une seule fois, pour ne pas relire la base à chaque flèche
+
+// ===== FONCTION: CHARGER LES COURSES PASSÉES =====
 async function afficherCoursePrecedente() {
     const container = document.getElementById('previous-races-body');
     if (!container) return;
 
     try {
-        // ===== RÉCUPÉRER LES RÉSULTATS =====
         const snapshot = await get(ref(db, 'resultats'));
-        if (!snapshot.exists()) return;
-
-        const resultats = snapshot.val();
-
-        // ===== TROUVER LA DERNIÈRE COURSE (par date, sans supposer que race existe) =====
-        const derniereCourseKey = Object.keys(resultats).sort(
-            (a, b) => dateDerniereSession(resultats[b]) - dateDerniereSession(resultats[a])
-        )[0];
-
-        const courseData = resultats[derniereCourseKey];
-        const sprint = courseData.sprint || null;
-        const race = courseData.race || null;
-
-        // ===== RÉCUPÉRER LES SCORES =====
-        const scoresSnap = await get(ref(db, 'scores_details'));
-
-        let meilleurSprint = [];
-        let maxScoreSprint = -Infinity;
-        let meilleurRace = [];
-        let maxScoreRace = -Infinity;
-        let meilleurGP = [];
-        let maxScoreGP = -Infinity;
-        let pireGP = [];
-        let minScoreGP = Infinity;
-
-        if (scoresSnap.exists()) {
-            const scores = scoresSnap.val();
-
-            Object.entries(scores).forEach(([joueur, data]) => {
-                const courseScore = data[derniereCourseKey];
-                if (!courseScore) return;
-
-                const sprintTotal = courseScore.sprint?.total || 0;
-                const raceTotal = courseScore.race?.total || 0;
-                const gpTotal = sprintTotal + raceTotal;
-
-                // Meilleur sprint
-                if (sprintTotal > maxScoreSprint) {
-                    maxScoreSprint = sprintTotal;
-                    meilleurSprint = [joueur];
-                } else if (sprintTotal === maxScoreSprint) {
-                    meilleurSprint.push(joueur);
-                }
-
-                // Meilleure course
-                if (raceTotal > maxScoreRace) {
-                    maxScoreRace = raceTotal;
-                    meilleurRace = [joueur];
-                } else if (raceTotal === maxScoreRace) {
-                    meilleurRace.push(joueur);
-                }
-
-                // Meilleur GP (sprint + course)
-                if (gpTotal > maxScoreGP) {
-                    maxScoreGP = gpTotal;
-                    meilleurGP = [joueur];
-                } else if (gpTotal === maxScoreGP) {
-                    meilleurGP.push(joueur);
-                }
-
-                // Pire GP
-                if (gpTotal < minScoreGP) {
-                    minScoreGP = gpTotal;
-                    pireGP = [joueur];
-                } else if (gpTotal === minScoreGP) {
-                    pireGP.push(joueur);
-                }
-            });
+        if (!snapshot.exists()) {
+            container.innerHTML = "<p>Aucune course n'a encore de résultats.</p>";
+            return;
         }
 
-        // ===== AFFICHAGE =====
-        container.innerHTML = `
-            <div class="race-info" style="max-width: none; margin: 0 auto;">
-                <h2>Dernière course</h2>
-                <div class="race-gp-name">
-                    <span>${libelleCourse(derniereCourseKey)}</span>
-                </div>
-                <div class="race-details">
-                    <div class="detail-item">
-                        <span class="detail-icon">🏁</span>
-                        <span>Résultats officiels</span>
-                    </div>
-                </div>
-                <div class="stats-box" style="display: flex; gap: 25px; flex-wrap: wrap;">
-                    ${construireBlocSession("⏱️ Sprint", sprint, meilleurSprint)}
-                    ${construireBlocSession("🏁 Grand Prix", race, meilleurRace)}
-                </div>
-                <div style="flex: 1;">
-                    <h4>Récapitulatif du week-end</h4>
-                    <div><strong>🥇 Meilleur parieur GP :</strong> ${meilleurGP.join(', ') || "Aucun"}</div>
-                    <div><strong>😞 Pire parieur GP :</strong> ${pireGP.join(', ') || "Aucun"}</div>
-                </div>
-            </div>
-        `;
+        const resultats = snapshot.val();
+        coursesPassees = Object.keys(resultats)
+                        .map((cle) => ({
+                            cle,
+                            date: dateDerniereSession(resultats[cle]),
+                            data: resultats[cle] // on garde les résultats avec la course
+                        }))
+                        .sort((a, b) => a.date - b.date);
 
+        const scoresSnap = await get(ref(db, 'scores_details'));
+        scoresDetailsCache = scoresSnap.exists() ? scoresSnap.val() : {};
+
+        indexCoursePassee = coursesPassees.length - 1; // on commence par la plus récente
+        brancherFlechesCoursesPassees();
+        afficherCoursePassee();
     } catch (error) {
-        console.error("Erreur chargement course précédente :", error);
-        container.innerHTML = "<p>Impossible de charger la dernière course.</p>";
+        console.error("Erreur chargement courses précédentes :", error);
+        container.innerHTML = "<p>Impossible de charger les courses précédentes.</p>";
     }
 }
 
+// ===== FONCTION: BRANCHER LES FLÈCHES (une seule fois) =====
+function brancherFlechesCoursesPassees() {
+    const prev = document.getElementById('previous-races-prev');
+    const next = document.getElementById('previous-races-next');
+    if (!prev || !next || prev.dataset.branche) return;
+    prev.dataset.branche = "1";
+
+    prev.addEventListener('click', () => {
+        if (indexCoursePassee > 0) {
+            indexCoursePassee--;
+            afficherCoursePassee();
+        }
+    });
+
+    next.addEventListener('click', () => {
+        if (indexCoursePassee < coursesPassees.length - 1) {
+            indexCoursePassee++;
+            afficherCoursePassee();
+        }
+    });
+}
+
+// ===== FONCTION: AFFICHER LA COURSE SÉLECTIONNÉE =====
+function afficherCoursePassee() {
+    const container = document.getElementById('previous-races-body');
+    const course = coursesPassees[indexCoursePassee];
+    if (!container || !course) return;
+
+    const resultats = course.data;
+    const { meilleurSprint, meilleurRace, meilleurGP, pireGP } = calculerMeilleurs(course.cle);
+
+    const dateTexte = course.date
+        ? new Date(course.date).toLocaleDateString('fr-FR', {
+            weekday: 'short', day: 'numeric', month: 'short', year: 'numeric'
+        })
+        : 'Date inconnue';
+
+    container.innerHTML = `
+        <div class="race-info" style="max-width: none; margin: 0 auto;">
+            <h2>Course</h2>
+            <div class="race-gp-name">
+                <span>${libelleCourse(course.cle)}</span>
+            </div>
+            <div class="race-details">
+                <div class="detail-item">
+                    <span class="detail-icon">📅</span>
+                    <span>${dateTexte}</span>
+                </div>
+            </div>
+            <div class="stats-box" style="display: flex; gap: 25px; flex-wrap: wrap;">
+                ${construireBlocSession("⏱️ Sprint", resultats.sprint, meilleurSprint)}
+                ${construireBlocSession("🏁 Grand Prix", resultats.race, meilleurRace)}
+            </div>
+            <div style="flex: 1;">
+                <h4>Récapitulatif du week-end</h4>
+                <div><strong>🥇 Meilleur parieur GP :</strong> ${meilleurGP.join(', ') || "Aucun"}</div>
+                <div><strong>😞 Pire parieur GP :</strong> ${pireGP.join(', ') || "Aucun"}</div>
+            </div>
+        </div>
+    `;
+
+    const compteur = document.getElementById('previous-races-compteur');
+    if (compteur) compteur.textContent = `${indexCoursePassee + 1} / ${coursesPassees.length}`;
+
+    const prev = document.getElementById('previous-races-prev');
+    const next = document.getElementById('previous-races-next');
+    if (prev) prev.disabled = indexCoursePassee === 0;
+    if (next) next.disabled = indexCoursePassee === coursesPassees.length - 1;
+}
+
+// ===== FONCTION: MEILLEURS ET PIRES PARIEURS D'UNE COURSE =====
+// Même logique qu'avant, mais à partir du cache
+function calculerMeilleurs(cle) {
+    let meilleurSprint = [], maxScoreSprint = -Infinity;
+    let meilleurRace = [], maxScoreRace = -Infinity;
+    let meilleurGP = [], maxScoreGP = -Infinity;
+    let pireGP = [], minScoreGP = Infinity;
+
+    Object.entries(scoresDetailsCache).forEach(([joueur, data]) => {
+        const courseScore = data[cle];
+        if (!courseScore) return;
+
+        const sprintTotal = courseScore.sprint?.total || 0;
+        const raceTotal = courseScore.race?.total || 0;
+        const gpTotal = sprintTotal + raceTotal;
+
+        if (sprintTotal > maxScoreSprint) { maxScoreSprint = sprintTotal; meilleurSprint = [joueur]; }
+        else if (sprintTotal === maxScoreSprint) meilleurSprint.push(joueur);
+
+        if (raceTotal > maxScoreRace) { maxScoreRace = raceTotal; meilleurRace = [joueur]; }
+        else if (raceTotal === maxScoreRace) meilleurRace.push(joueur);
+
+        if (gpTotal > maxScoreGP) { maxScoreGP = gpTotal; meilleurGP = [joueur]; }
+        else if (gpTotal === maxScoreGP) meilleurGP.push(joueur);
+
+        if (gpTotal < minScoreGP) { minScoreGP = gpTotal; pireGP = [joueur]; }
+        else if (gpTotal === minScoreGP) pireGP.push(joueur);
+    });
+
+    return { meilleurSprint, meilleurRace, meilleurGP, pireGP };
+}
 
 // ===== FUNCTION: AFFICHER PROCHAINES COURSES =====
 function afficherProchainesCourses() {

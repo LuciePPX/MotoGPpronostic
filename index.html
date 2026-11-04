@@ -72,13 +72,16 @@
                     <div id="previous-races-container" class="race-block">
                         <div id="previous-races-content" >
                             <h2>Courses précédentes</h2>
-                                <div id="previous-races-body">
-                                    Chargement...
+                                <div class="previous-races-carousel">
+                                    <button type="button" class="fleche-course" id="previous-races-prev" aria-label="Course précédente">◀</button>
+                                    <div id="previous-races-body">Chargement...</div>
+                                    <button type="button" class="fleche-course" id="previous-races-next" aria-label="Course suivante">▶</button>
                                 </div>
+
+                                <div id="previous-races-compteur" class="compteur-course"></div>
                         </div>
                     </div>
-
-                    
+    
                     <!-- Prochaine course -->
                     <div id="next-race-container" class="race-block">
                         <div class="race-content-wrapper">
