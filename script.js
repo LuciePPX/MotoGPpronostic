@@ -71,7 +71,7 @@ function initialiserJeu() {
     initClickAndSelect();
     setupButtons();
     setupModals();
-    chargerScoreGeneral(pseudo);
+    chargerScoreUtilisateur();
     chargerTop3();
 
 
@@ -143,7 +143,7 @@ function chargerDonneesFirebase() {
     firebaseListeners[raceResultsKey] = { unsubscribe: unsubscribeRace };
 
     // ------------------ Charger les scores ------------------
-    chargerScoresUtilisateur();
+    chargerScoreUtilisateur();
 }
 
 
@@ -559,7 +559,7 @@ function demarrerTimer(type, sectionId) {
 // ___ FUNCTION: print score  ___
 // ===== FUNCTION: AFFICHER LE SCORE GÉNÉRAL =====
 function afficherScore() {
-    const scoreMainEl = document.querySelector('.score-main');
+    const scoreMainEl = document.getElementById('main-score-display');
     if (!scoreMainEl) return;
 
     scoreMainEl.textContent = currentScores[pseudo] || 0;
@@ -861,29 +861,6 @@ function afficherProchainesCourses() {
 // ===== UTILITIES: RÉCAP ET MODIFICATION =====
 
 
-// ===== FUNCTION: AFFICHER SCORE =====
-// Fonction pour charger le score individuel dans le header
-async function chargerScoreGeneral(pseudoUtilisateur) {
-    const scoreDisplay = document.getElementById('main-score-display');
-
-    try {
-        // On cible le score spécifique de l'utilisateur dans le nœud 'scores'
-        const snapshot = await get(ref(db, `scores/${pseudoUtilisateur}`));
-
-        if (snapshot.exists()) {
-            const score = snapshot.val();
-            // Mise à jour de l'affichage avec le score récupéré
-            scoreDisplay.textContent = score;
-        } else {
-            scoreDisplay.textContent = 0;
-            console.warn("Aucun score trouvé pour cet utilisateur.");
-        }
-    } catch (e) {
-        console.error("Erreur lors de la récupération du score:", e);
-        scoreDisplay.textContent = "Score Général : !";
-    }
-}
-
 function chargerTop3() {
     const miniPodium = document.getElementById('mini-podium-list');
 
@@ -1028,13 +1005,17 @@ async function chargerClassementGlobal() {
 }
 
 
-// ===== FUNCTION: CHARGER SCORES UTILISATEUR =====
-function chargerScoresUtilisateur() {
-    get(ref(db, 'scores/' + pseudo)).then((snapshot) => {
-        currentScores[pseudo] = snapshot.val() || 0;
-        afficherScore();
-    });
+// ===== FUNCTION: CHARGER LE SCORE DU JOUEUR (une seule lecture) =====
+async function chargerScoreUtilisateur() {
+    try {
+        const snapshot = await get(ref(db, `scores/${pseudo}`));
+        currentScores[pseudo] = snapshot.exists() ? snapshot.val() : 0;
+    } catch (e) {
+        console.error("Erreur lors de la récupération du score :", e);
+        currentScores[pseudo] = 0;
+    }
 
+    afficherScore();
 }
 
 
