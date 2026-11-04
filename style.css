@@ -1776,3 +1776,123 @@ button {
         grid-template-columns: 1fr;
     }
 }
+
+.previous-races-nav {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 12px;
+}
+
+#previous-races-compteur {
+    font-family: 'Oswald', sans-serif;
+    color: var(--text-secondary);
+}
+
+.previous-races-carousel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+#previous-races-body {
+    flex: 1;
+    min-width: 0;
+}
+
+.fleche-course {
+    flex: 0 0 44px;
+    height: 44px;
+    font-size: 1.3em;
+    border-radius: 8px;
+    background: var(--red);
+    color: var(--text-main);
+}
+
+.fleche-course:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.compteur-course {
+    text-align: center;
+    margin-top: 10px;
+    font-family: 'Oswald', sans-serif;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 480px) {
+    .fleche-course {
+        flex-basis: 36px;
+        height: 36px;
+        font-size: 1em;
+    }
+}
+
+/* ===== FLÈCHES DES COURSES PASSÉES (version finale) ===== */
+.previous-races-carousel {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    width: 100%;
+}
+
+#previous-races-body {
+    flex: 1 1 auto;
+    min-width: 0;
+}
+
+.fleche-course {
+    flex: 0 0 auto;
+    align-self: center;
+    width: 44px;
+    height: 44px;
+    padding: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    border: 2px solid var(--red);
+    background: transparent;
+    color: var(--red);
+    font-size: 1.1em;
+    line-height: 1;
+    cursor: pointer;
+    transition: background 0.2s ease, color 0.2s ease, transform 0.2s ease;
+}
+
+.fleche-course:hover:not(:disabled) {
+    background: var(--red);
+    color: var(--text-main);
+    transform: scale(1.08);
+}
+
+.fleche-course:disabled {
+    opacity: 0.25;
+    cursor: not-allowed;
+    border-color: var(--gray-light);
+    color: var(--gray-light);
+}
+
+.compteur-course {
+    text-align: center;
+    margin-top: 12px;
+    font-family: 'Oswald', sans-serif;
+    font-size: 0.9em;
+    letter-spacing: 1px;
+    color: var(--text-secondary);
+}
+
+@media (max-width: 480px) {
+    .previous-races-carousel {
+        gap: 6px;
+    }
+
+    .fleche-course {
+        width: 36px;
+        height: 36px;
+        font-size: 0.95em;
+    }
+}
