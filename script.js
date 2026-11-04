@@ -522,6 +522,7 @@ function updateSectionsVisibility() {
         sectionRace?.classList.add('hidden');
         if (title) title.textContent = 'Choisissez pour le SPRINT';
     }
+    rafraichirPilotesUtilises();
 }
 
 
@@ -975,12 +976,16 @@ async function chargerScoreUtilisateur() {
 }
 
 
-// ===== FUNCTION: EST UTILISÉ =====
-function estUtilise(num) {
-    return (
-        Object.values(sprintPredictions).includes(num) ||
-        Object.values(racePredictions).includes(num)
-    );
+// ===== FUNCTION: PILOTE DÉJÀ PLACÉ DANS LA SESSION COURANTE =====
+// Par défaut, on regarde la session affichée (sprint ou course)
+function estUtilise(num, type = sessionCourante()) {
+    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
+    return Object.values(predictions).includes(num);
+}
+
+// La session affichée est celle dont le bloc n'est pas caché
+function sessionCourante() {
+    return document.getElementById('section-sprint')?.classList.contains('hidden') ? 'race' : 'sprint';
 }
 
 
