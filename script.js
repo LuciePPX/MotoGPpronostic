@@ -65,6 +65,7 @@ function initialiserJeu() {
     afficherProchainesCourses();
     afficherCoursePrecedente();
     genererPilotes();
+    setupRecherche();
     afficherScore();
     setupDropZones();
     initClickAndSelect();
@@ -452,11 +453,6 @@ function genererPilotes() {
 
     pilotesList.innerHTML = '';
 
-    const searchInput = document.querySelector('.search-input');
-    if (searchInput) {
-        searchInput.addEventListener('input', (e) => filtrerPilotes(e.target.value));
-    }
-
     DATA_PILOTES.forEach((pilote) => {
         const div = document.createElement('div');
         div.className = 'pilote-card';
@@ -489,6 +485,15 @@ function filtrerPilotes(valeur) {
         const correspond = nom.includes(recherche) || num.includes(recherche);
         card.style.display = correspond ? 'block' : 'none';
     });
+}
+
+// ===== FUNCTION: BRANCHER LA RECHERCHE (une seule fois) =====
+function setupRecherche() {
+    const searchInput = document.querySelector('.search-input');
+    if (!searchInput || searchInput.dataset.branche) return;
+    searchInput.dataset.branche = "1";
+
+    searchInput.addEventListener('input', (e) => filtrerPilotes(e.target.value));
 }
 
 function handleDragStart(e) {
