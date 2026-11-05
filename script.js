@@ -5,6 +5,8 @@ import { libelleCourse, normaliser } from './utils.js';
 import { initPreferences } from './prefs.js';
 import { initPaddock } from './paddock.js';
 import { setupModals } from './classement.js';
+import { etat, getRaceCourante } from './etat.js';
+import { demarrerTimer, creerTimer } from './timer.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
@@ -62,6 +64,7 @@ window.addEventListener('beforeunload', () => {
 // ===== FUNCTION: INITIALISER JEU =====
 function initialiserJeu() {
 
+    etat.rafraichirRecap = () => { afficherRecap('sprint'); afficherRecap('race'); };
     chargerDonneesFirebase();
     afficherProchainesCourses();
     afficherCoursePrecedente();
@@ -145,32 +148,6 @@ function chargerDonneesFirebase() {
 
     // ------------------ Charger les scores ------------------
     chargerScoreUtilisateur();
-}
-
-
-// ____ FUNCTION: get current race  ____
-function getRaceCourante() {
-    const maintenant = new Date();
-
-    for (let i = 0; i < DATA_CALENDRIER.length; i++) {
-        const race = DATA_CALENDRIER[i];
-        const dateRace = new Date(race.race);
-
-        const finRace = new Date(dateRace.getTime() + 2 * 60 * 60 * 1000);
-
-        if (maintenant < finRace) {
-            currentRaceIndex = i;
-            return race; // Retourne l'objet complet
-        }
-    }
-
-    // Si toutes les courses sont passées, retourner la dernière
-    if (DATA_CALENDRIER.length > 0) {
-        currentRaceIndex = DATA_CALENDRIER.length - 1;
-        return DATA_CALENDRIER[currentRaceIndex];
-    }
-
-    return null;
 }
 
 // ____  FUNCTION: CHARGER PRONOSTICS UTILISATEUR ___
@@ -526,37 +503,6 @@ function updateSectionsVisibility() {
     rafraichirPilotesUtilises();
 }
 
-
-// ___ FUNCTION: begin timer ___
-function demarrerTimer(type, sectionId) {
-    const timerElement = document.getElementById(`timer-${type}`);
-    if (!timerElement) return;
-    timerElement.classList.remove('hidden-timer');
-
-    const raceCourante = getRaceCourante(); // Ta nouvelle fonction
-    if (!raceCourante) return;
-
-    // 1. Vérifier si on a déjà les résultats dans Firebase
-    const results = type === 'sprint' ? sprintResults : raceResults;
-    if (results && Object.keys(results).length > 0) {
-        timerElement.innerHTML = "🏁 Course terminée";
-        return;
-    }
-
-    // 2. Calculer si l'événement est déjà passé
-    const dateEvent = new Date(type === 'sprint' ? raceCourante.sprint : raceCourante.race);
-    const maintenant = new Date();
-
-    if (maintenant > dateEvent) {
-        // Si l'heure de départ est passée mais qu'on n'a pas encore les résultats
-        timerElement.innerHTML = "🏃 En cours / En attente";
-        timerElement.style.color = "#ffa500"; // Orange
-    } else {
-        // Sinon, on lance le compte à rebours normalement
-        const timerKey = `timer_${type}_${currentRaceIndex}`;
-        creerTimer(dateEvent, timerKey, timerElement);
-    }
-}
 
 // ___ FUNCTION: print score  ___
 // ===== FUNCTION: AFFICHER LE SCORE GÉNÉRAL =====
@@ -1053,51 +999,6 @@ function initClickAndSelect() {
             zoneActive = null;
         }
     });
-}
-
-
-
-
-// ===== FUNCTION: CRÉER TIMER COUNTDOWN =====
-function creerTimer(dateStr, timerKey, timerElement) {
-    if (timerIntervals[timerKey]) clearInterval(timerIntervals[timerKey]);
-
-    function updateTimer() {
-        const now = new Date().getTime();
-        const eventTime = new Date(dateStr).getTime();
-        const diff = eventTime - now;
-
-        if (diff <= 0) {
-            timerElement.innerHTML = '⏳ C\'est parti !';
-            timerElement.style.color = '#00ff00';
-            clearInterval(timerIntervals[timerKey]);
-            delete timerIntervals[timerKey];
-            afficherRecap('sprint');
-            afficherRecap('race');
-            return false;
-        }
-
-        const jours = Math.floor(diff / (1000 * 60 * 60 * 24));
-        const heures = Math.floor((diff % (1000 * 60 * 60 * 24)) / (1000 * 60 * 60));
-        const minutes = Math.floor((diff % (1000 * 60 * 60)) / (1000 * 60));
-        const secondes = Math.floor((diff % (1000 * 60)) / 1000);
-
-        timerElement.innerHTML = `
-            <div style="display:flex;gap:10px;font-weight:bold">
-                <div style="text-align:center"><div style="font-size:1.5em;color:#e10600">${jours}</div><div style="font-size:0.8em;color:#ccc">jours</div></div>
-                <div style="text-align:center"><div style="font-size:1.5em;color:#e10600">${heures}</div><div style="font-size:0.8em;color:#ccc">heures</div></div>
-                <div style="text-align:center"><div style="font-size:1.5em;color:#e10600">${minutes}</div><div style="font-size:0.8em;color:#ccc">min</div></div>
-                <div style="text-align:center"><div style="font-size:1.5em;color:#e10600">${secondes}</div><div style="font-size:0.8em;color:#ccc">sec</div></div>
-            </div>
-        `;
-        return true;
-    }
-
-    if (!updateTimer()) return;
-
-    timerIntervals[timerKey] = setInterval(() => {
-        if (!updateTimer()) clearInterval(timerIntervals[timerKey]);
-    }, 1000);
 }
 
 // ===== FUNCTION: AFFICHER RÉSULTATS =====
