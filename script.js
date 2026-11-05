@@ -7,6 +7,7 @@ import { initPaddock } from './paddock.js';
 import { setupModals } from './classement.js';
 import { etat, getRaceCourante } from './etat.js';
 import { demarrerTimer, creerTimer } from './timer.js';
+import { lireScoreJoueur, afficherScoreGeneral, chargerTop3 } from './score.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
@@ -69,8 +70,8 @@ function initialiserJeu() {
     afficherProchainesCourses();
     afficherCoursePrecedente();
     genererPilotes();
-    setupRecherche();
-    afficherScore();
+    setupRecherche();  
+    afficherScoreGeneral(currentScores[pseudo] || 0);
     setupDropZones();
     initClickAndSelect();
     setupButtons();
@@ -503,16 +504,6 @@ function updateSectionsVisibility() {
     rafraichirPilotesUtilises();
 }
 
-
-// ___ FUNCTION: print score  ___
-// ===== FUNCTION: AFFICHER LE SCORE GÉNÉRAL =====
-function afficherScore() {
-    const scoreMainEl = document.getElementById('main-score-display');
-    if (!scoreMainEl) return;
-
-    scoreMainEl.textContent = currentScores[pseudo] || 0;
-}
-
 // ___ FUNCTION: setup drop zone  ___
 
 function setupDropZones() {
@@ -761,42 +752,6 @@ function afficherProchainesCourses() {
         `;
     }
 }
-
-// ===== UTILITIES: RÉCAP ET MODIFICATION =====
-
-
-function chargerTop3() {
-    const miniPodium = document.getElementById('mini-podium-list');
-
-    // On demande à Firebase les 3 plus gros scores
-    // Note : orderByValue trie par ordre croissant, donc on prend les "derniers"
-    const scoresRef = query(ref(db, 'scores'), orderByValue(), limitToLast(3));
-
-    onValue(scoresRef, (snapshot) => {
-        if (snapshot.exists()) {
-            let players = [];
-
-            snapshot.forEach((childSnapshot) => {
-                players.push({
-                    pseudo: childSnapshot.key,
-                    score: childSnapshot.val()
-                });
-            });
-
-            // Firebase trie en croissant, on inverse pour avoir le 1er en haut
-            players.reverse();
-            // Génération du HTML
-            miniPodium.innerHTML = players.map((p, i) => `
-                <div class="mini-rank-item">
-                    <span class="player-name">${p.pseudo}</span>
-                    <span class="player-score">${p.score}</span>
-                </div>
-            `).join('');
-        } else {
-            miniPodium.innerHTML = "Aucun score pour le moment";
-        }
-    });
-}
 // ===== FUNCTION: SETUP BUTTONS =====
 function setupButtons() {
     // Validation
@@ -831,19 +786,11 @@ function setupButtons() {
     });
 }
 
-// ===== FUNCTION: CHARGER LE SCORE DU JOUEUR (une seule lecture) =====
+// ===== FUNCTION: CHARGER LE SCORE DU JOUEUR =====
 async function chargerScoreUtilisateur() {
-    try {
-        const snapshot = await get(ref(db, `scores/${pseudo}`));
-        currentScores[pseudo] = snapshot.exists() ? snapshot.val() : 0;
-    } catch (e) {
-        console.error("Erreur lors de la récupération du score :", e);
-        currentScores[pseudo] = 0;
-    }
-
-    afficherScore();
+    currentScores[pseudo] = await lireScoreJoueur(pseudo);
+    afficherScoreGeneral(currentScores[pseudo]);
 }
-
 
 // ===== FUNCTION: PILOTE DÉJÀ PLACÉ DANS LA SESSION COURANTE =====
 // Par défaut, on regarde la session affichée (sprint ou course)
