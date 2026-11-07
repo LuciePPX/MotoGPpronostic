@@ -255,8 +255,8 @@ export const DATA_CALENDRIER = [
     "gp": "Grand Prix du Qatar",
     "circuit": "Lusail International Circuit",
     "image": "https://upload.wikimedia.org/wikipedia/commons/c/c7/Lusail_International_Circuit_2023.svg",
-    "sprint": "2026-11-07T18:00:00",
-    "race": "2026-11-08T18:00:00",
+    "sprint": "2026-11-07T17:00:00",
+    "race": "2026-11-08T17:00:00",
     "stats2025": {
         "vainqueurGP": "Marc Márquez",
         "vainqueurSprint": "Marc Márquez",
