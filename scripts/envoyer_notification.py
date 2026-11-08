@@ -134,12 +134,13 @@ def rappels_weekend(maintenant, calendrier):
 
 
 def rappels_course(maintenant, calendrier):
-    """1h avant le sprint et 1h avant la course."""
+    """1h avant le sprint et la course. Tolère un retard du planificateur."""
     for course in calendrier:
         cle = cle_course(course["gp"])
         for session, texte in (("sprint", course["sprint"]), ("race", course["race"])):
             depart = heure_paris(texte)
-            if not (depart - timedelta(hours=1) <= maintenant < depart):
+            # Dès 1h avant, et jusqu'à 2h après le départ (retard du planificateur)
+            if not (depart - timedelta(hours=1) <= maintenant < depart + timedelta(hours=2)):
                 continue
 
             drapeau = db.reference(f"rappels_course/{cle}/{session}")
@@ -147,8 +148,12 @@ def rappels_course(maintenant, calendrier):
                 continue
 
             libelle = "Sprint" if session == "sprint" else "Grand Prix"
-            titre = f"{libelle} dans 1h : {course['gp']}"
-            corps = f"Départ à {depart.hour}h{depart.minute:02d}. Dernier moment pour valider tes pronos !"
+            titre = f"{libelle} : {course['gp']}"
+            if maintenant < depart:
+                corps = f"Départ à {depart.hour}h{depart.minute:02d}. Dernier moment pour valider tes pronos !"
+            else:
+                corps = "C'est parti ! Les pronos sont fermés."
+
             if envoyer_a_ceux_qui_veulent("rappel_course", titre, corps) > 0:
                 drapeau.set(True)
 

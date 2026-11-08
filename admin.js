@@ -110,7 +110,11 @@ if (btnPublier) {
             await set(ref(db, `resultats/${raceKey}/${session}`), results);
             await executerRecalculGlobal(); // Les scores doivent être calculés avant l'envoi
             
-            document.getElementById("status-msg").textContent = "✅ Résultats publiés, pense à envoyer la notification.";
+            document.getElementById("status-msg").textContent = "✅ Résultats publiés.";
+
+                if (confirm("Envoyer la notification « Résultats disponibles » aux joueurs ?")) {
+                    await envoyerNotifResultat(raceKey, session);
+                }
         } catch (error) {
             console.error(error);
             alert("Erreur Firebase");
@@ -333,3 +337,28 @@ document.getElementById("btn-notifier-resultat")?.addEventListener("click", asyn
         bouton.disabled = false;
     }
 });
+
+// ===== ENVOYER LA NOTIFICATION « RÉSULTATS DISPONIBLES » =====
+async function envoyerNotifResultat(raceKey, session) {
+    const statut = document.getElementById("status-msg");
+    const course = DATA_CALENDRIER.find(r => getRaceKey(r) === raceKey);
+    const libelle = session === "sprint" ? "Sprint" : "Grand Prix";
+
+    try {
+        await push(ref(db, "notifications"), {
+            titre: "Résultats disponibles",
+            message: `Les résultats du ${libelle} ${course?.gp ?? raceKey} sont en ligne. Va voir tes points sur le site !`,
+            type: "resultats",
+            course: raceKey,
+            session,
+            date: new Date().toISOString(),
+            envoyee: false
+        });
+
+        await declencherEnvoiGitHub();
+        statut.textContent = "✅ Résultats publiés et notification envoyée.";
+    } catch (erreur) {
+        console.error(erreur);
+        statut.textContent = `❌ Résultats publiés, mais notification non envoyée : ${erreur.message}. Elle partira au prochain envoi automatique.`;
+    }
+}
