@@ -14,8 +14,6 @@ import { afficherProchainesCourses, canModify } from './courses.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
-let sprintPredictions = {};
-let racePredictions = {};
 let sprintResults = {};
 let raceResults = {};
 let currentScores = {};
@@ -109,8 +107,8 @@ function chargerDonneesFirebase() {
 
     const unsubscribe = onValue(dbRef, (snapshot) => {
         const data = snapshot.val() || {};
-        sprintPredictions = data.sprint || {};
-        racePredictions = data.race || {};
+        etat.sprintPredictions = data.sprint || {};
+        etat.racePredictions = data.race || {};
 
         chargerPronosticsUtilisateur();
         chargerResultatsOfficiels();
@@ -161,8 +159,8 @@ function chargerPronosticsUtilisateur() {
     rankSprintPositions.forEach((rank) => {
         const rankClass = rank === '1er' ? 'rank-1' : rank === '2e' ? 'rank-2' : 'rank-3';
         const element = document.querySelector(`#section-sprint .${rankClass}`);
-        if (element && sprintPredictions[rank]) {
-            const pilote = DATA_PILOTES.find((p) => parseInt(p.num) === sprintPredictions[rank]);
+        if (element && etat.sprintPredictions[rank]) {
+            const pilote = DATA_PILOTES.find((p) => parseInt(p.num) === etat.sprintPredictions[rank]);
             if (pilote) {
                 const contentArea = element.querySelector('.target-area');
                 const placeholder = element.querySelector('small');
@@ -173,8 +171,8 @@ function chargerPronosticsUtilisateur() {
                     if (card) attachDragListeners(card);
                 }
             }
-            if (sprintPredictions['1er']) sprintValide = true;
-            if (racePredictions['1er']) raceValide = true;
+            if (etat.sprintPredictions['1er']) sprintValide = true;
+            if (etat.racePredictions['1er']) raceValide = true;
         }
     });
 
@@ -182,8 +180,8 @@ function chargerPronosticsUtilisateur() {
     rankSprintPositions.forEach((rank) => {
         const rankClass = rank === '1er' ? 'rank-1' : rank === '2e' ? 'rank-2' : 'rank-3';
         const element = document.querySelector(`#section-race .${rankClass}`);
-        if (element && racePredictions[rank]) {
-            const pilote = DATA_PILOTES.find((p) => parseInt(p.num) === racePredictions[rank]);
+        if (element && etat.racePredictions[rank]) {
+            const pilote = DATA_PILOTES.find((p) => parseInt(p.num) === etat.racePredictions[rank]);
             if (pilote) {
                 const contentArea = element.querySelector('.target-area');
                 const placeholder = element.querySelector('small');
@@ -199,8 +197,8 @@ function chargerPronosticsUtilisateur() {
 
     // Crash predictions
     const sprintCrash = document.querySelector('#section-sprint .crash-zone');
-    if (sprintCrash && sprintPredictions['Chute']) {
-        const pilote = DATA_PILOTES.find((p) => parseInt(p.num) === sprintPredictions['Chute']);
+    if (sprintCrash && etat.sprintPredictions['Chute']) {
+        const pilote = DATA_PILOTES.find((p) => parseInt(p.num) === etat.sprintPredictions['Chute']);
         if (pilote) {
             sprintCrash.innerHTML = afficherPiloteEnZone(pilote, 'Chute');
             attachDragListeners(sprintCrash.querySelector('.pilote-card'));
@@ -209,8 +207,8 @@ function chargerPronosticsUtilisateur() {
     }
 
     const raceCrash = document.querySelector('#section-race .crash-zone');
-    if (raceCrash && racePredictions['Chute']) {
-        const pilote = DATA_PILOTES.find((p) => parseInt(p.num) === racePredictions['Chute']);
+    if (raceCrash && etat.racePredictions['Chute']) {
+        const pilote = DATA_PILOTES.find((p) => parseInt(p.num) === etat.racePredictions['Chute']);
         if (pilote) {
             raceCrash.innerHTML = afficherPiloteEnZone(pilote, 'Chute');
             attachDragListeners(raceCrash.querySelector('.pilote-card'));
@@ -301,7 +299,7 @@ function chargerResultatsOfficiels() {
 function afficherRecap(type) {
     const recapEl = document.getElementById(`recap-${type}`);
     const btnContainer = document.getElementById(`btn-edit-${type}-container`);
-    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
+    const predictions = type === 'sprint' ? etat.sprintPredictions : etat.racePredictions;
     const btnValider = document.getElementById(`btn-valider-${type}`);
 
     if (recapEl) {
@@ -348,10 +346,10 @@ function editerPronostic(type) {
     if (!path) return;
 
     if (type === 'sprint') {
-        sprintPredictions = {};
+        etat.sprintPredictions = {};
         sprintValide = false;
     } else {
-        racePredictions = {};
+        etat.racePredictions = {};
         raceValide = false;
     }
 
@@ -467,7 +465,7 @@ function updateSectionsVisibility() {
     const sectionRace = document.getElementById('section-race');
     const title = document.getElementById('current-title');
 
-    const sprintComplete = sprintPredictions['1er'] && sprintPredictions['2e'] && sprintPredictions['3e'] && sprintPredictions['Chute']; if (sprintComplete || !canModify('sprint')) {
+    const sprintComplete = etat.sprintPredictions['1er'] && etat.sprintPredictions['2e'] && etat.sprintPredictions['3e'] && etat.sprintPredictions['Chute']; if (sprintComplete || !canModify('sprint')) {
         sectionSprint?.classList.add('hidden');
         sectionRace?.classList.remove('hidden');
         if (title) title.textContent = 'Choisissez pour le GRAND PRIX';
@@ -562,7 +560,7 @@ async function chargerScoreUtilisateur() {
 // ===== FUNCTION: PILOTE DÉJÀ PLACÉ DANS LA SESSION COURANTE =====
 // Par défaut, on regarde la session affichée (sprint ou course)
 function estUtilise(num, type = sessionCourante()) {
-    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
+    const predictions = type === 'sprint' ? etat.sprintPredictions : etat.racePredictions;
     return Object.values(predictions).includes(num);
 }
 
@@ -577,7 +575,7 @@ function sessionCourante() {
 function executerDepot(zone, elementSource, zoneSource) {
     const sectionId = zone.closest('[id^="section-"]')?.id;
     const type = sectionId === 'section-sprint' ? 'sprint' : 'race';
-    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
+    const predictions = type === 'sprint' ? etat.sprintPredictions : etat.racePredictions;
     const rank = zone.getAttribute('data-rank') || 'Chute';
     const num = parseInt(elementSource.dataset.num);
     const nom = elementSource.dataset.nom;
@@ -636,7 +634,7 @@ function libererZone(zone) {
     const rank = zone.getAttribute('data-rank');
     const sectionId = zone.closest('[id^="section-"]')?.id;
     const type = sectionId === 'section-sprint' ? 'sprint' : 'race';
-    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
+    const predictions = type === 'sprint' ? etat.sprintPredictions : etat.racePredictions;
 
     delete predictions[rank];
 
@@ -737,7 +735,7 @@ function afficherResultats(type, sectionId) {
 
 // ===== FUNCTION: VALIDER PRONOSTIC =====
 function validerPronostic(type) {
-    const predictions = type === 'sprint' ? sprintPredictions : racePredictions;
+    const predictions = type === 'sprint' ? etat.sprintPredictions : etat.racePredictions;
 
     if (!predictions['1er'] || !predictions['2e'] || !predictions['3e'] || !predictions['Chute']) {
         alert('Veuillez compléter le podium ET le pari chute avant de valider');
