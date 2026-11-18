@@ -20,11 +20,7 @@ let currentScores = {};
 let currentRaceIndex = 0; // Index de la course actuelle dans le calendrier
 let timerIntervals = {}; // Stockage des intervalles de timer
 let firebaseListeners = {}; // Stockage des écouteurs Firebase
-let sprintValide = false;
-let raceValide = false;
-let draggedElement = null; // Carte pilote en cours de glisser-déposer
-let draggedFromZone = null; // Zone d'où vient la carte glissée
-let zoneActive = null; // Zone (.step) sélectionnée au clic
+
 
 // ===== DÉMARRAGE APRÈS CONNEXION =====
 // auth-ui.js envoie cet événement quand le joueur est connecté
@@ -171,8 +167,8 @@ function chargerPronosticsUtilisateur() {
                     if (card) attachDragListeners(card);
                 }
             }
-            if (etat.sprintPredictions['1er']) sprintValide = true;
-            if (etat.racePredictions['1er']) raceValide = true;
+            if (etat.sprintPredictions['1er']) etat.sprintValide = true;
+            if (etat.racePredictions['1er']) etat.raceValide = true;
         }
     });
 
@@ -347,10 +343,10 @@ function editerPronostic(type) {
 
     if (type === 'sprint') {
         etat.sprintPredictions = {};
-        sprintValide = false;
+        etat.sprintValide = false;
     } else {
         etat.racePredictions = {};
-        raceValide = false;
+        etat.raceValide = false;
     }
 
     set(ref(db, path), null);
@@ -389,7 +385,7 @@ function mettreAJourAffichagePronostics() {
     if (!pilotesColumn) return;
 
     // ON CACHE UNIQUEMENT SI LES DEUX SONT VALIDÉS
-    if (sprintValide && raceValide) {
+    if (etat.sprintValide && etat.raceValide) {
         pilotesColumn.style.display = 'none';
         if (podiumColumn) podiumColumn.style.display = 'none';
     } else {
@@ -449,15 +445,15 @@ function setupRecherche() {
 }
 
 function handleDragStart(e) {
-    draggedElement = e.target;
-    draggedFromZone = draggedElement.closest('.step');
+    etat.draggedElement = e.target;
+    etat.draggedFromZone = etat.draggedElement.closest('.step');
     e.target.style.opacity = '0.5';
 }
 
 function handleDragEnd(e) {
     if (e.target) e.target.style.opacity = '1';
-    draggedElement = null;
-    draggedFromZone = null;
+    etat.draggedElement = null;
+    etat.draggedFromZone = null;
 }
 
 function updateSectionsVisibility() {
@@ -498,10 +494,10 @@ function setupDropZones() {
         pilotesListContainer.addEventListener('drop', (e) => {
             e.preventDefault();
             // si on lâche sur la liste, on retire simplement la prédiction
-            if (!draggedElement || !draggedFromZone) return;
+            if (!etat.draggedElement || !etat.draggedFromZone) return;
 
-            const num = parseInt(draggedElement.dataset.num);
-            libererZone(draggedFromZone);
+            const num = parseInt(etat.draggedElement.dataset.num);
+            libererZone(etat.draggedFromZone);
         });
     }
 
@@ -510,10 +506,10 @@ function setupDropZones() {
         const targetZone = e.target.closest('.step');
         const overList = e.target.closest('.pilotes-list');
         if (targetZone || overList) return; // déjà géré
-        if (!draggedElement || !draggedFromZone) return;
+        if (!etat.draggedElement || !etat.draggedFromZone) return;
 
-        const num = parseInt(draggedElement.dataset.num);
-        libererZone(draggedFromZone);
+        const num = parseInt(etat.draggedElement.dataset.num);
+        libererZone(etat.draggedFromZone);
     });
 }
 
@@ -668,7 +664,7 @@ function handleDragLeave(e) {
 // Modifie ton handleDrop PC
 function handleDrop(e) {
     e.preventDefault();
-    executerDepot(e.currentTarget, draggedElement, draggedFromZone);
+    executerDepot(e.currentTarget, etat.draggedElement, etat.draggedFromZone);
 }
 
 function initClickAndSelect() {
@@ -676,14 +672,14 @@ function initClickAndSelect() {
     document.querySelectorAll('.step').forEach(zone => {
         zone.addEventListener('click', (e) => {
           
-            if (zoneActive === zone) {
+            if (etat.zoneActive === zone) {
                 // Si on reclique sur la même zone, on désactive
                 zone.classList.remove('waiting-selection');
-                zoneActive = null;
+                etat.zoneActive = null;
             } else {
                 // On active la nouvelle zone
-                if (zoneActive) zoneActive.classList.remove('waiting-selection');
-                zoneActive = zone;
+                if (etat.zoneActive) etat.zoneActive.classList.remove('waiting-selection');
+                etat.zoneActive = zone;
                 zone.classList.add('waiting-selection');
 
                 // Petit message console pour débugger
@@ -696,7 +692,7 @@ function initClickAndSelect() {
     document.querySelector('.pilotes-list').addEventListener('click', (e) => {
         const card = e.target.closest('.pilote-card');
 
-        if (card && zoneActive) {
+        if (card && etat.zoneActive) {
             if (card.classList.contains('used')) {
                 alert("Ce pilote est déjà utilisé !");
                 return;
@@ -704,11 +700,11 @@ function initClickAndSelect() {
 
             // Utilise ta fonction executerDepot existante !
             // On passe null pour zoneSource car c'est un nouveau choix depuis la liste
-            executerDepot(zoneActive, card, null);
+            executerDepot(etat.zoneActive, card, null);
 
             // On désactive la zone après le choix
-            zoneActive.classList.remove('waiting-selection');
-            zoneActive = null;
+            etat.zoneActive.classList.remove('waiting-selection');
+            etat.zoneActive = null;
         }
     });
 }
@@ -748,8 +744,8 @@ function validerPronostic(type) {
     set(ref(db, path), predictions).then(() => {
         alert(`✅ Vos pronostics ${type.toUpperCase()} ont été sauvegardés!`);
 
-        if (type === 'sprint') sprintValide = true;
-        if (type === 'race') raceValide = true;
+        if (type === 'sprint') etat.sprintValide = true;
+        if (type === 'race') etat.raceValide = true;
 
         if (typeof mettreAJourAffichagePronostics === 'function') mettreAJourAffichagePronostics();
         afficherRecap(type);
