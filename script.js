@@ -11,6 +11,7 @@ import { demarrerTimer, creerTimer } from './timer.js';
 import { lireScoreJoueur, afficherScoreGeneral, chargerTop3 } from './score.js';
 import { afficherProchainesCourses, canModify } from './courses.js';
 import { genererPilotes, setupRecherche, estUtilise, rafraichirPilotesUtilises } from './pilotes.js';
+import { attachDragListeners } from './glisser.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
@@ -238,11 +239,6 @@ function afficherPiloteEnZone(pilote, rank) {
     }
 }
 
-export function attachDragListeners(card) {
-    card.addEventListener('dragstart', handleDragStart);
-    card.addEventListener('dragend', handleDragEnd);
-}
-
 
 // ____ FUNCTION: load officals results ____
 function chargerResultatsOfficiels() {
@@ -393,18 +389,6 @@ function mettreAJourAffichagePronostics() {
     }
 }
 
-
-export function handleDragStart(e) {
-    etat.draggedElement = e.target;
-    etat.draggedFromZone = etat.draggedElement.closest('.step');
-    e.target.style.opacity = '0.5';
-}
-
-export function handleDragEnd(e) {
-    if (e.target) e.target.style.opacity = '1';
-    etat.draggedElement = null;
-    etat.draggedFromZone = null;
-}
 
 function updateSectionsVisibility() {
     const sectionSprint = document.getElementById('section-sprint');

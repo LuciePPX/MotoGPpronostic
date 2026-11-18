@@ -1,7 +1,7 @@
 import { DATA_PILOTES } from './config.js';
 import { etat } from './etat.js';
 import { normaliser } from './utils.js';
-import { attachDragListeners, handleDragStart, handleDragEnd } from './script.js';
+import { handleDragStart, handleDragEnd } from './glisser.js';
 
 // ===== FUNCTION: CRÉER LA LISTE DES PILOTES =====
 export function genererPilotes() {
