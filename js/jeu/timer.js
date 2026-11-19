@@ -1,5 +1,6 @@
 import { etat, getRaceCourante } from '../coeur/etat.js';
 
+
 // ===== FUNCTION: BEGIN TIMER =====
 export function demarrerTimer(type, sectionId) {
     const timerElement = document.getElementById(`timer-${type}`);
@@ -28,6 +29,7 @@ export function demarrerTimer(type, sectionId) {
         creerTimer(dateEvent, timerKey, timerElement);
     }
 }
+
 
 // ===== FUNCTION: CRÉER TIMER COUNTDOWN =====
 export function creerTimer(dateStr, timerKey, timerElement) {

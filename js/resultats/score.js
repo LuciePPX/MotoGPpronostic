@@ -2,6 +2,7 @@ import { ref, get, query, orderByValue, limitToLast, onValue } from "https://www
 import { db } from '../coeur/firebase-init.js';
 import { etat } from "../coeur/etat.js";
 
+
 // ===== FUNCTION: LIRE LE SCORE GÉNÉRAL D'UN JOUEUR =====
 // Renvoie 0 si le joueur n'a pas encore de score
 export async function lireScoreJoueur(pseudo) {
@@ -14,11 +15,13 @@ export async function lireScoreJoueur(pseudo) {
     }
 }
 
+
 // ===== FUNCTION: AFFICHER LE SCORE GÉNÉRAL DANS L'EN-TÊTE =====
 export function afficherScoreGeneral(score) {
     const scoreEl = document.getElementById('main-score-display');
     if (scoreEl) scoreEl.textContent = score;
 }
+
 
 // ===== FUNCTION: TOP 3 EN DIRECT =====
 export function chargerTop3() {
@@ -48,6 +51,7 @@ export function chargerTop3() {
         `).join('');
     });
 }
+
 
 // ===== FUNCTION: CHARGER LE SCORE DU JOUEUR =====
 export async function chargerScoreUtilisateur() {

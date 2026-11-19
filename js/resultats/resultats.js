@@ -5,12 +5,14 @@ import { libelleCourse } from '../coeur/utils.js';
 import { etat } from '../coeur/etat.js';
 import { afficherRecap, updateSectionsVisibility } from '../jeu/pronostics.js';
 
+
 // ===== FUNCTION: NOM D'UN PILOTE À PARTIR DE SON NUMÉRO =====
 export function obtenirNomPilote(num) {
     if (!num) return 'TBD';
     const pilote = DATA_PILOTES.find(p => parseInt(p.num) === parseInt(num));
     return pilote ? pilote.nom : `Pilote #${num}`;
 }
+
 
 // ===== FUNCTION: NOMS DES PILOTES CHUTÉS =====
 // Les résultats stockent un tableau (ex. [25, 89]), les pronostics un seul numéro
@@ -23,6 +25,7 @@ export function obtenirNomsChutes(valeur) {
     return numeros.map((num) => obtenirNomPilote(num)).join(', ');
 }
 
+
 // ===== FUNCTION: DATE DE LA DERNIÈRE SESSION D'UNE COURSE =====
 function dateDerniereSession(courseData) {
     const dates = [courseData.sprint?.timestamp, courseData.race?.timestamp]
@@ -32,6 +35,7 @@ function dateDerniereSession(courseData) {
 
     return dates.length > 0 ? Math.max(...dates) : 0;
 }
+
 
 // ===== FUNCTION: BLOC D'UNE SESSION (SPRINT OU GRAND PRIX) =====
 function construireBlocSession(titre, session, meilleursParieurs) {
@@ -54,6 +58,7 @@ function construireBlocSession(titre, session, meilleursParieurs) {
         </div>
     `;
 }
+
 
 // ===== FUNCTION: CHARGER LES COURSES PASSÉES =====
 export async function afficherCoursePrecedente() {
@@ -88,6 +93,7 @@ export async function afficherCoursePrecedente() {
     }
 }
 
+
 // ===== FUNCTION: BRANCHER LES FLÈCHES (une seule fois) =====
 function brancherFlechesCoursesPassees() {
     const prev = document.getElementById('previous-races-prev');
@@ -109,6 +115,7 @@ function brancherFlechesCoursesPassees() {
         }
     });
 }
+
 
 // ===== FUNCTION: AFFICHER LA COURSE SÉLECTIONNÉE =====
 function afficherCoursePassee() {
@@ -157,6 +164,7 @@ function afficherCoursePassee() {
     if (prev) prev.disabled = etat.indexCoursePassee === 0;
     if (next) next.disabled = etat.indexCoursePassee === etat.coursesPassees.length - 1;
 }
+
 
 // ===== FUNCTION: MEILLEURS ET PIRES PARIEURS D'UNE COURSE =====
 function calculerMeilleurs(cle) {

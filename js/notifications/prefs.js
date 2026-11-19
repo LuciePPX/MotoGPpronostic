@@ -4,6 +4,7 @@ import { activerNotifications } from './notifications.js';
 
 const TYPES = ["rappel_weekend", "rappel_course", "resume_lundi", "resultats"];
 
+
 // ===== FONCTION: BRANCHER LE BOUTON 🔔 ET SA FENÊTRE =====
 export async function initPreferences(pseudo) {
     const fenetre = document.getElementById('preferences-modal');

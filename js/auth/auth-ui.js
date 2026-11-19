@@ -9,7 +9,6 @@ import {
 } from "./auth.js";
 
 // ===== ÉLÉMENTS DE LA PAGE =====
-const ecranConnexion = document.getElementById("login-screen");
 const champEmail = document.getElementById("auth-email");
 const champMotDePasse = document.getElementById("auth-mot-de-passe");
 const champPseudo = document.getElementById("auth-pseudo");

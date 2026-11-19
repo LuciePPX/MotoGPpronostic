@@ -1,22 +1,20 @@
-import { DATA_PILOTES, DATA_CALENDRIER } from '../../config.js';
-import { ref, set, get, onValue, query, orderByValue, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
+
+import { ref, onValue} from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { db } from './firebase-init.js';
-import { normaliser } from './utils.js';
 import { afficherCoursePrecedente, chargerResultatsOfficiels, afficherResultats } from '../resultats/resultats.js';
 import { initPreferences } from '../notifications/prefs.js';
 import { initPaddock } from '../resultats/paddock.js';
 import { setupModals } from '../resultats/classement.js';
 import { etat, getRaceCourante } from './etat.js';
 import { demarrerTimer, creerTimer } from '../jeu/timer.js';
-import { lireScoreJoueur, afficherScoreGeneral, chargerTop3, chargerScoreUtilisateur } from '../resultats/score.js';
+import { afficherScoreGeneral, chargerTop3, chargerScoreUtilisateur } from '../resultats/score.js';
 import { afficherProchainesCourses } from '../jeu/courses.js';
-import { genererPilotes, setupRecherche, estUtilise, rafraichirPilotesUtilises } from '../jeu/pilotes.js';
-import { attachDragListeners, setupDropZones, initClickAndSelect } from '../jeu/glisser.js';
-import { chargerPronosticsUtilisateur, afficherPiloteEnZone, afficherRecap, mettreAJourAffichagePronostics, updateSectionsVisibility, validerPronostic } from '../jeu/pronostics.js';
+import { genererPilotes, setupRecherche } from '../jeu/pilotes.js';
+import { setupDropZones, initClickAndSelect } from '../jeu/glisser.js';
+import { chargerPronosticsUtilisateur, afficherRecap, validerPronostic } from '../jeu/pronostics.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';
-let currentScores = {};
 let timerIntervals = {}; // Stockage des intervalles de timer
 let firebaseListeners = {}; // Stockage des écouteurs Firebase
 
@@ -41,6 +39,7 @@ document.addEventListener('joueur-connecte', (e) => {
     initPaddock();
 });
 
+
 // ___ FUNCTION: cleanning ___
 window.addEventListener('beforeunload', () => {
 
@@ -58,6 +57,7 @@ window.addEventListener('beforeunload', () => {
 
     firebaseListeners = {};
 });
+
 
 // ===== FUNCTION: INITIALISER JEU =====
 function initialiserJeu() {
@@ -84,7 +84,6 @@ function initialiserJeu() {
 
 
 // ____ FUNCTION: firebase data load ____ 
-
 function chargerDonneesFirebase() {
     // Récupérer la course courante une seule fois
     const raceCourante = getRaceCourante();
@@ -147,9 +146,6 @@ function chargerDonneesFirebase() {
     // ------------------ Charger les scores ------------------
     chargerScoreUtilisateur();
 }
-
-
-
 
 
 // ===== FUNCTION: SETUP BUTTONS =====

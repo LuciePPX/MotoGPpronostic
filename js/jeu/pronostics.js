@@ -7,6 +7,7 @@ import { genererPilotes, rafraichirPilotesUtilises } from './pilotes.js';
 import { demarrerTimer } from './timer.js';
 import { canModify } from './courses.js';
 
+
 // ===== FUNCTION: AFFICHER UN PILOTE DANS UNE ZONE =====
 export function afficherPiloteEnZone(pilote, rank) {
     if (rank === 'Chute') {
@@ -23,6 +24,7 @@ export function afficherPiloteEnZone(pilote, rank) {
         </div>
     `;
 }
+
 
 // ===== FUNCTION: CHARGER LES PRONOSTICS DU JOUEUR DANS LES ZONES =====
 export function chargerPronosticsUtilisateur() {
@@ -93,6 +95,7 @@ export function chargerPronosticsUtilisateur() {
     updateSectionsVisibility();
 }
 
+
 // ===== FUNCTION: RÉCAPITULATIF DE MES PRONOSTICS =====
 export function afficherRecap(type) {
     const recapEl = document.getElementById(`recap-${type}`);
@@ -137,6 +140,7 @@ export function afficherRecap(type) {
     }
 }
 
+
 // ===== FUNCTION: MODIFIER UN PRONOSTIC (avant le départ) =====
 function editerPronostic(type) {
     const path = getPronosticPath(type);
@@ -169,6 +173,7 @@ function editerPronostic(type) {
     mettreAJourAffichagePronostics();
 }
 
+
 // ===== FUNCTION: CHEMIN FIREBASE DU PRONOSTIC COURANT =====
 export function getPronosticPath(type) {
     const raceCourante = getRaceCourante();
@@ -177,6 +182,7 @@ export function getPronosticPath(type) {
     const raceKey = raceCourante.gp.replace(/\s+/g, "_").replace(/[^\w-]/g, "");
     return `pronostics/${etat.pseudo}/${raceKey}/${type}`;
 }
+
 
 // ===== FUNCTION: CACHER LA ZONE DE PRONOSTICS QUAND LES DEUX SONT VALIDÉS =====
 export function mettreAJourAffichagePronostics() {
@@ -188,6 +194,7 @@ export function mettreAJourAffichagePronostics() {
     pilotesColumn.style.display = masquer ? 'none' : 'flex';
     if (podiumColumn) podiumColumn.style.display = masquer ? 'none' : 'flex';
 }
+
 
 // ===== FUNCTION: AFFICHER LA SESSION À PRONOSTIQUER =====
 export function updateSectionsVisibility() {
@@ -209,6 +216,7 @@ export function updateSectionsVisibility() {
 
     rafraichirPilotesUtilises();
 }
+
 
 // ===== FUNCTION: VALIDER ET ENREGISTRER UN PRONOSTIC =====
 export function validerPronostic(type) {

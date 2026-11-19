@@ -1,5 +1,6 @@
 import { getRaceCourante } from '../coeur/etat.js';
 
+
 // ===== FUNCTION: AFFICHER LA PROCHAINE COURSE =====
 export function afficherProchainesCourses() {
     const raceCourante = getRaceCourante();
@@ -32,6 +33,7 @@ export function afficherProchainesCourses() {
         `;
     }
 }
+
 
 // ===== FUNCTION: LA SESSION PEUT-ELLE ENCORE ÊTRE MODIFIÉE ? =====
 // Vrai tant que le départ de la session (sprint ou course) n'est pas passé

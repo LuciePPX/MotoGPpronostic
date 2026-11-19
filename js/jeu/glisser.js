@@ -1,6 +1,7 @@
 import { etat } from '../coeur/etat.js';
 import { afficherPiloteEnZone, mettreAJourAffichagePronostics } from './pronostics.js';
-import { estUtilise, rafraichirPilotesUtilises } from './pilotes.js';
+import { rafraichirPilotesUtilises } from './pilotes.js';
+
 
 // ===== FUNCTION: RENDRE UNE CARTE GLISSABLE =====
 export function attachDragListeners(card) {
@@ -8,12 +9,14 @@ export function attachDragListeners(card) {
     card.addEventListener('dragend', handleDragEnd);
 }
 
+
 // ===== FUNCTION: DÉBUT ET FIN DU GLISSER =====
 export function handleDragStart(e) {
     etat.draggedElement = e.target;
     etat.draggedFromZone = etat.draggedElement.closest('.step');
     e.target.style.opacity = '0.5';
 }
+
 
 export function handleDragEnd(e) {
     if (e.target) e.target.style.opacity = '1';
@@ -42,6 +45,7 @@ function libererZone(zone) {
     rafraichirPilotesUtilises();
     mettreAJourAffichagePronostics();
 }
+
 
 // ===== FUNCTION: setup drop zone  =====
 export function setupDropZones() {
@@ -170,12 +174,15 @@ export function initClickAndSelect() {
         }
     });
 }
+
+
 // ===== HANDLERS DU GLISSER-DÉPOSER SUR LES ZONES =====
 function handleDragOver(e) {
     e.preventDefault();
     e.dataTransfer.dropEffect = 'move';
     e.currentTarget.style.background = 'rgba(225, 6, 0, 0.3)';
 }
+
 
 function handleDragLeave(e) {
     const zone = e.currentTarget;
@@ -185,6 +192,7 @@ function handleDragLeave(e) {
         zone.style.background = '';
     }
 }
+
 
 function handleDrop(e) {
     e.preventDefault();

@@ -3,6 +3,7 @@ import { db } from '../coeur/firebase-init.js';
 import { DATA_PILOTES, DATA_CALENDRIER } from '../../config.js';
 import { cleCourse, libelleCourse } from '../coeur/utils.js';
 
+
 // Affiche +3, -1 ou 0
 const fmt = (n) => (n > 0 ? `+${n}` : `${n}`);
 
@@ -12,11 +13,13 @@ const pts = (n) => {
     return `<span class="${classe}">${fmt(n)}</span>`;
 };
 
+
 function nomPilote(num) {
     if (num === undefined || num === null || num === "") return "—";
     const pilote = DATA_PILOTES.find(p => parseInt(p.num) === parseInt(num));
     return pilote ? pilote.nom : `#${num}`;
 }
+
 
 function nomsChutes(valeur) {
     if (valeur === undefined || valeur === null) return "—";
@@ -24,9 +27,11 @@ function nomsChutes(valeur) {
     return liste.length ? liste.map(nomPilote).join(", ") : "Aucune";
 }
 
+
 function indexCalendrier(cle) {
     return DATA_CALENDRIER.findIndex(c => cleCourse(c.gp) === cle);
 }
+
 
 // ===== FONCTION: BRANCHER LE BOUTON ET LA FENÊTRE =====
 export function initPaddock() {
@@ -42,6 +47,7 @@ export function initPaddock() {
     });
     liste.addEventListener('change', () => afficherCourse(liste.value));
 }
+
 
 // ===== FONCTION: LISTE DES COURSES DÉJÀ JOUÉES (la plus récente en premier) =====
 async function remplirCourses() {
@@ -65,6 +71,7 @@ async function remplirCourses() {
 
     afficherCourse(cles[0]);
 }
+
 
 // ===== FONCTION: AFFICHER UNE COURSE =====
 async function afficherCourse(cle) {
@@ -105,6 +112,7 @@ async function afficherCourse(cle) {
     });
 }
 
+
 // ===== AFFICHAGE : PODIUMS OFFICIELS =====
 function blocPodiums(res) {
     return `
@@ -114,6 +122,7 @@ function blocPodiums(res) {
         </div>
     `;
 }
+
 
 function blocSession(titre, session) {
     if (!session) {
@@ -129,6 +138,7 @@ function blocSession(titre, session) {
         </div>
     `;
 }
+
 
 // ===== AFFICHAGE : CLASSEMENT DE LA COURSE =====
 function tableauClassement(lignes) {
@@ -152,6 +162,7 @@ function tableauClassement(lignes) {
     `;
 }
 
+
 // ===== AFFICHAGE : PRONOS D'UN JOUEUR =====
 function afficherDetail(cle, pseudo, tousScores, tousPronos, res) {
     const zone = document.getElementById('paddock-detail');
@@ -165,6 +176,7 @@ function afficherDetail(cle, pseudo, tousScores, tousPronos, res) {
     `;
     zone.scrollIntoView({ behavior: "smooth", block: "start" });
 }
+
 
 function tableauPronos(titre, prono, reel, points) {
     if (!prono) {

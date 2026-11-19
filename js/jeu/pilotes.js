@@ -3,6 +3,7 @@ import { etat } from '../coeur/etat.js';
 import { normaliser } from '../coeur/utils.js';
 import { handleDragStart, handleDragEnd } from './glisser.js';
 
+
 // ===== FUNCTION: CRÉER LA LISTE DES PILOTES =====
 export function genererPilotes() {
     const pilotesList = document.querySelector('.pilotes-list');
@@ -29,6 +30,7 @@ export function genererPilotes() {
     });
 }
 
+
 // ===== FUNCTION: FILTRER LA LISTE PAR NOM OU NUMÉRO =====
 export function filtrerPilotes(valeur) {
     const pilotesList = document.querySelectorAll('.pilotes-list .pilote-card');
@@ -42,6 +44,7 @@ export function filtrerPilotes(valeur) {
     });
 }
 
+
 // ===== FUNCTION: BRANCHER LA RECHERCHE (une seule fois) =====
 export function setupRecherche() {
     const searchInput = document.querySelector('.search-input');
@@ -51,17 +54,20 @@ export function setupRecherche() {
     searchInput.addEventListener('input', (e) => filtrerPilotes(e.target.value));
 }
 
+
 // ===== FUNCTION: LA SESSION AFFICHÉE (sprint ou course) =====
 // La session affichée est celle dont le bloc n'est pas caché
 export function sessionCourante() {
     return document.getElementById('section-sprint')?.classList.contains('hidden') ? 'race' : 'sprint';
 }
 
+
 // ===== FUNCTION: PILOTE DÉJÀ PLACÉ DANS LA SESSION COURANTE =====
 export function estUtilise(num, type = sessionCourante()) {
     const predictions = type === 'sprint' ? etat.sprintPredictions : etat.racePredictions;
     return Object.values(predictions).includes(num);
 }
+
 
 // ===== FUNCTION: MARQUER LES PILOTES DÉJÀ UTILISÉS DANS LA LISTE =====
 export function rafraichirPilotesUtilises() {

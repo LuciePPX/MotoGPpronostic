@@ -4,6 +4,7 @@ import { ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-dat
 // Clé publique Web Push, générée dans Firebase > Cloud Messaging
 const CLE_VAPID = "BHYVF375ucdXpq-d_mut2AC8T3o1OrEw5JCA4GsE1TrVwywwqlLvQDq2opC909110ytA8xvhIwosS9nQG0pIwbk";
 
+
 // ===== FONCTION: ACTIVER LES NOTIFICATIONS =====
 // Demande l'autorisation, récupère le jeton du téléphone et l'enregistre sous le pseudo
 export async function activerNotifications(app, db, pseudo) {
