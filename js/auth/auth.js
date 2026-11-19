@@ -5,7 +5,7 @@ import {
     onAuthStateChanged
 } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-auth.js";
 import { ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { auth, db } from "./firebase-init.js";
+import { auth, db } from "../coeur/firebase-init.js";
 
 // Lettres, chiffres, tiret et underscore, entre 2 et 15 caractères
 const REGEX_PSEUDO = /^[A-Za-z0-9_-]{2,15}$/;
