@@ -1,5 +1,6 @@
 import { ref, get, query, orderByValue, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { db } from './firebase-init.js';
+import { etat } from "./etat.js";
 
 // ===== FUNCTION: LIRE LE SCORE GÉNÉRAL D'UN JOUEUR =====
 // Renvoie 0 si le joueur n'a pas encore de score
@@ -46,4 +47,10 @@ export function chargerTop3() {
             </div>
         `).join('');
     });
+}
+
+// ===== FUNCTION: CHARGER LE SCORE DU JOUEUR =====
+export async function chargerScoreUtilisateur() {
+    etat.currentScores[etat.pseudo] = await lireScoreJoueur(etat.pseudo);
+    afficherScoreGeneral(etat.currentScores[etat.pseudo]);
 }

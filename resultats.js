@@ -3,6 +3,7 @@ import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-dat
 import { db } from './firebase-init.js';
 import { libelleCourse } from './utils.js';
 import { etat } from './etat.js';
+import { afficherRecap, updateSectionsVisibility } from './pronostics.js';
 
 // ===== FUNCTION: NOM D'UN PILOTE À PARTIR DE SON NUMÉRO =====
 export function obtenirNomPilote(num) {
@@ -186,4 +187,70 @@ function calculerMeilleurs(cle) {
     });
 
     return { meilleurSprint, meilleurRace, meilleurGP, pireGP };
+}
+
+
+// ===== FUNCTION: AFFICHER RÉSULTATS =====
+
+export function afficherResultats(type, sectionId) {
+    const timerElement = document.getElementById(`timer-${type}`);
+    if (!timerElement) return;
+
+    const results = type === 'sprint' ? etat.sprintResults : etat.raceResults;
+
+    if (Object.keys(results).length === 0) return;
+
+    timerElement.innerHTML = `✅ Résultats ${type === 'sprint' ? 'Sprint' : 'Course'} reçus`;
+    timerElement.style.background = 'linear-gradient(135deg, rgba(0, 255, 0, 0.2) 0%, rgba(0, 255, 0, 0.05) 100%)';
+    timerElement.style.color = '#00ff00';
+
+    // Charger résultats officiels
+    chargerResultatsOfficiels();
+}
+
+
+// ===== FUNCTION: load officals results =====
+export function chargerResultatsOfficiels() {
+    // Afficher résultats du sprint
+    const officialSprintEl = document.getElementById('official-sprint');
+    const timerSprintEl = document.getElementById('timer-sprint');
+
+    if (officialSprintEl) {
+        if (etat.sprintResults && etat.sprintResults['1er']) {
+            if (timerSprintEl) timerSprintEl.style.display = 'none';
+
+            officialSprintEl.innerHTML = `
+                <div><strong>🥇 </strong> ${obtenirNomPilote(etat.sprintResults['1er'])}</div>
+                <div><strong>🥈 </strong> ${obtenirNomPilote(etat.sprintResults['2e'])}</div>
+                <div><strong>🥉 </strong> ${obtenirNomPilote(etat.sprintResults['3e'])}</div>
+                <div><strong>💥 </strong> ${obtenirNomsChutes(etat.sprintResults['Chute'])}</div>
+            `;
+        } else {
+            if (timerSprintEl) timerSprintEl.classList.add('hidden-timer');
+        }
+    }
+
+    // Afficher résultats de la race
+    const officialRaceEl = document.getElementById('official-race');
+    const timerRaceEl = document.getElementById('timer-race');
+
+    if (officialRaceEl) {
+        if (etat.raceResults && etat.raceResults['1er']) {
+            if (timerRaceEl) timerRaceEl.style.display = 'none';
+            officialRaceEl.innerHTML = `
+                <div><strong>🥇 </strong> ${obtenirNomPilote(etat.raceResults['1er'])}</div>
+                <div><strong>🥈 </strong> ${obtenirNomPilote(etat.raceResults['2e'])}</div>
+                <div><strong>🥉 </strong> ${obtenirNomPilote(etat.raceResults['3e'])}</div>
+                <div><strong>💥 </strong> ${obtenirNomsChutes(etat.raceResults['Chute'])}}</div>
+            `;
+        } else {
+            if (timerRaceEl) timerRaceEl.classList.add('hidden-timer');
+        }
+    }
+
+    // Mettre à jour récap et boutons modifier
+    afficherRecap('sprint');
+    afficherRecap('race');
+    // ajuster les sections en fonction des pronostics
+    updateSectionsVisibility();
 }
