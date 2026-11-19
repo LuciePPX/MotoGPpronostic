@@ -1,4 +1,4 @@
-import { etat } from './etat.js';
+import { etat } from '../coeur/etat.js';
 import { afficherPiloteEnZone, mettreAJourAffichagePronostics } from './pronostics.js';
 import { estUtilise, rafraichirPilotesUtilises } from './pilotes.js';
 

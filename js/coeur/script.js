@@ -1,18 +1,18 @@
-import { DATA_PILOTES, DATA_CALENDRIER } from './config.js';
+import { DATA_PILOTES, DATA_CALENDRIER } from '../../config.js';
 import { ref, set, get, onValue, query, orderByValue, limitToLast } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
 import { db } from './firebase-init.js';
 import { normaliser } from './utils.js';
-import { afficherCoursePrecedente, chargerResultatsOfficiels, afficherResultats } from './resultats.js';
-import { initPreferences } from './prefs.js';
-import { initPaddock } from './paddock.js';
-import { setupModals } from './classement.js';
+import { afficherCoursePrecedente, chargerResultatsOfficiels, afficherResultats } from '../resultats/resultats.js';
+import { initPreferences } from '../notifications/prefs.js';
+import { initPaddock } from '../resultats/paddock.js';
+import { setupModals } from '../resultats/classement.js';
 import { etat, getRaceCourante } from './etat.js';
-import { demarrerTimer, creerTimer } from './timer.js';
-import { lireScoreJoueur, afficherScoreGeneral, chargerTop3, chargerScoreUtilisateur } from './score.js';
-import { afficherProchainesCourses } from './courses.js';
-import { genererPilotes, setupRecherche, estUtilise, rafraichirPilotesUtilises } from './pilotes.js';
-import { attachDragListeners, setupDropZones, initClickAndSelect } from './glisser.js';
-import { chargerPronosticsUtilisateur, afficherPiloteEnZone, afficherRecap, mettreAJourAffichagePronostics, updateSectionsVisibility, validerPronostic } from './pronostics.js';
+import { demarrerTimer, creerTimer } from '../jeu/timer.js';
+import { lireScoreJoueur, afficherScoreGeneral, chargerTop3, chargerScoreUtilisateur } from '../resultats/score.js';
+import { afficherProchainesCourses } from '../jeu/courses.js';
+import { genererPilotes, setupRecherche, estUtilise, rafraichirPilotesUtilises } from '../jeu/pilotes.js';
+import { attachDragListeners, setupDropZones, initClickAndSelect } from '../jeu/glisser.js';
+import { chargerPronosticsUtilisateur, afficherPiloteEnZone, afficherRecap, mettreAJourAffichagePronostics, updateSectionsVisibility, validerPronostic } from '../jeu/pronostics.js';
 
 // ===== GLOBAL STATE =====
 let pseudo = '';

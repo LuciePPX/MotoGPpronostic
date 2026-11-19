@@ -1,4 +1,4 @@
-import { DATA_CALENDRIER } from './config.js';
+import { DATA_CALENDRIER } from '../../config.js';
 
 // ===== CLÉ D'UNE COURSE (même règle que dans la base et dans Python) =====
 export function cleCourse(gp) {

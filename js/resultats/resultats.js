@@ -1,9 +1,9 @@
-import { DATA_PILOTES } from './config.js';
+import { DATA_PILOTES } from '../../config.js';
 import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { db } from './firebase-init.js';
-import { libelleCourse } from './utils.js';
-import { etat } from './etat.js';
-import { afficherRecap, updateSectionsVisibility } from './pronostics.js';
+import { db } from '../coeur/firebase-init.js';
+import { libelleCourse } from '../coeur/utils.js';
+import { etat } from '../coeur/etat.js';
+import { afficherRecap, updateSectionsVisibility } from '../jeu/pronostics.js';
 
 // ===== FUNCTION: NOM D'UN PILOTE À PARTIR DE SON NUMÉRO =====
 export function obtenirNomPilote(num) {

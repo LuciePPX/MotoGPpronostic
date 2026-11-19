@@ -1,5 +1,5 @@
 import { ref, get, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { app, db } from './firebase-init.js';
+import { app, db } from '../coeur/firebase-init.js';
 import { activerNotifications } from './notifications.js';
 
 const TYPES = ["rappel_weekend", "rappel_course", "resume_lundi", "resultats"];

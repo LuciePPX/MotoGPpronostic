@@ -1,4 +1,4 @@
-import { DATA_CALENDRIER } from './config.js';
+import { DATA_CALENDRIER } from '../../config.js';
 
 // ===== ÉTAT PARTAGÉ DU JEU =====
 // Un seul objet exporté : les autres fichiers modifient ses propriétés (etat.x = ...).

@@ -1,7 +1,7 @@
-import { DATA_PILOTES, DATA_CALENDRIER } from "./config.js";
+import { DATA_PILOTES, DATA_CALENDRIER } from "../../config.js";
 import { ref, set, get, push } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { db } from "./firebase-init.js";
-import { surveillerConnexion } from "./auth.js";
+import { db } from "../coeur/firebase-init.js";
+import { surveillerConnexion } from "../auth/auth.js";
 
 // ===== CONTRÔLE D'ACCÈS =====
 // La page n'est accessible qu'à un compte connecté et listé dans admins

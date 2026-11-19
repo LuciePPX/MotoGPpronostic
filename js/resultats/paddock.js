@@ -1,7 +1,7 @@
 import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { db } from './firebase-init.js';
-import { DATA_PILOTES, DATA_CALENDRIER } from './config.js';
-import { cleCourse, libelleCourse } from './utils.js';
+import { db } from '../coeur/firebase-init.js';
+import { DATA_PILOTES, DATA_CALENDRIER } from '../../config.js';
+import { cleCourse, libelleCourse } from '../coeur/utils.js';
 
 // Affiche +3, -1 ou 0
 const fmt = (n) => (n > 0 ? `+${n}` : `${n}`);

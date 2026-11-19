@@ -1,5 +1,5 @@
 import { ref, get } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { db } from './firebase-init.js';
+import { db } from '../coeur/firebase-init.js';
 
 // ===== FUNCTION: BOUTON CLASSEMENT ET FERMETURE DES FENÊTRES =====
 export function setupModals() {

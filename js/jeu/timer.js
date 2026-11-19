@@ -1,4 +1,4 @@
-import { etat, getRaceCourante } from './etat.js';
+import { etat, getRaceCourante } from '../coeur/etat.js';
 
 // ===== FUNCTION: BEGIN TIMER =====
 export function demarrerTimer(type, sectionId) {

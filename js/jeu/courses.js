@@ -1,4 +1,4 @@
-import { getRaceCourante } from './etat.js';
+import { getRaceCourante } from '../coeur/etat.js';
 
 // ===== FUNCTION: AFFICHER LA PROCHAINE COURSE =====
 export function afficherProchainesCourses() {

@@ -1,7 +1,7 @@
 import { ref, set } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { db } from './firebase-init.js';
-import { DATA_PILOTES } from './config.js';
-import { etat, getRaceCourante } from './etat.js';
+import { db } from '../coeur/firebase-init.js';
+import { DATA_PILOTES } from '../../config.js';
+import { etat, getRaceCourante } from '../coeur/etat.js';
 import { attachDragListeners } from './glisser.js';
 import { genererPilotes, rafraichirPilotesUtilises } from './pilotes.js';
 import { demarrerTimer } from './timer.js';

@@ -1,6 +1,6 @@
 import { ref, get, query, orderByValue, limitToLast, onValue } from "https://www.gstatic.com/firebasejs/10.7.1/firebase-database.js";
-import { db } from './firebase-init.js';
-import { etat } from "./etat.js";
+import { db } from '../coeur/firebase-init.js';
+import { etat } from "../coeur/etat.js";
 
 // ===== FUNCTION: LIRE LE SCORE GÉNÉRAL D'UN JOUEUR =====
 // Renvoie 0 si le joueur n'a pas encore de score
